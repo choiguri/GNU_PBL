@@ -7,11 +7,11 @@
 #include "InputActionValue.h"
 #include "GnuCharacter.generated.h"
 
-// Input °ü·Ã
+// Input ï¿½ï¿½ï¿½ï¿½
 class UInputMappingContext;
 class UInputAction;
 class UGnuCharacterAnimInstance;
-// ÄÁÆ®·Ñ °ü·Ã
+// ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 class USpringArmComponent;
 class UCameraComponent;
 

@@ -20,7 +20,7 @@ AGnuCharacter::AGnuCharacter()
 
 
 	///////////////////////////
-	// ÄÁÆ®·Ñ °ü·Ã
+	// ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	UCharacterMovementComponent* MovementComponent = GetCharacterMovement();
 	MovementComponent->bOrientRotationToMovement = false;
 
@@ -59,10 +59,10 @@ void AGnuCharacter::Tick(float DeltaTime)
 
 	FRotator CameraRotation = Camera->GetComponentRotation();
 
-	// Ä³¸¯ÅÍ°¡ È¸ÀüÇÒ ¶§, ÇÇÄ¡¿Í ·Ñ È¸Àü°ªÀº ¹«½ÃÇÏ°í ¿ä °ª¸¸ »ç¿ëÇÕ´Ï´Ù.
+	// Ä³ï¿½ï¿½ï¿½Í°ï¿½ È¸ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½, ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ È¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
 	FRotator TargetRotation(0.0f, CameraRotation.Yaw, 0.0f);
 
-	// Ä³¸¯ÅÍÀÇ È¸ÀüÀ» Ä«¸Þ¶ó ¹æÇâÀ¸·Î ¼³Á¤ÇÕ´Ï´Ù.
+	// Ä³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È¸ï¿½ï¿½ï¿½ï¿½ Ä«ï¿½Þ¶ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
 	SetActorRotation(TargetRotation);
 
 }
