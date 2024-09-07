@@ -37,6 +37,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input")
 	UInputAction* JumpAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input")
+	bool isWaking;
+
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

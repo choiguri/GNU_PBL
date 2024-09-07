@@ -39,4 +39,5 @@ public:
 	void SetIsBackMove(bool Value);
 	void SetIsLeftMove(bool Value);
 	void SetIsRightMove(bool Value);
+	bool isWalking();
 };

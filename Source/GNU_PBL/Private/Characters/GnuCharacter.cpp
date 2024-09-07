@@ -14,16 +14,18 @@ AGnuCharacter::AGnuCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	///////////////////////////
+	// 캐릭터 회전
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
-
-	///////////////////////////
-	// ��Ʈ�� ����
 	UCharacterMovementComponent* MovementComponent = GetCharacterMovement();
-	MovementComponent->bOrientRotationToMovement = false;
-
+	MovementComponent->bOrientRotationToMovement = true;
+	MovementComponent->RotationRate = FRotator(0.f, 720.f, 0.f);
+	//////////////////////////
+	
+	// 카메라
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->SetupAttachment(GetRootComponent());
 	SpringArm->TargetArmLength = 300.0f;
@@ -32,6 +34,8 @@ AGnuCharacter::AGnuCharacter()
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
 	///////////////////////////
+
+	isWaking = false;
 }
 
 // Called when the game starts or when spawned
@@ -56,15 +60,7 @@ void AGnuCharacter::BeginPlay()
 void AGnuCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	FRotator CameraRotation = Camera->GetComponentRotation();
-
-	// ĳ���Ͱ� ȸ���� ��, ��ġ�� �� ȸ������ �����ϰ� �� ���� ����մϴ�.
-	FRotator TargetRotation(0.0f, CameraRotation.Yaw, 0.0f);
-
-	// ĳ������ ȸ���� ī�޶� �������� �����մϴ�.
-	SetActorRotation(TargetRotation);
-
+	isWaking = MyAnimInstance->isWalking();
 }
 
 void AGnuCharacter::Move(const FInputActionValue& value)
@@ -137,7 +133,8 @@ void AGnuCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	{
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AGnuCharacter::Move);
 		EnhancedInputComponent->BindAction(RotationAction, ETriggerEvent::Triggered, this, &AGnuCharacter::Rotation);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AGnuCharacter::Jump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
 	}
 }

@@ -46,3 +46,10 @@ void UGnuCharacterAnimInstance::SetIsRightMove(bool Value)
 {
 	isRightMove = Value;
 }
+
+bool UGnuCharacterAnimInstance::isWalking()
+{
+	if (MoveLength == 0)
+		return false;
+	else return true;
+}
