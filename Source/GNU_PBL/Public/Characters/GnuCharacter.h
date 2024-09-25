@@ -7,6 +7,7 @@
 #include "InputActionValue.h"
 #include "GnuCharacter.generated.h"
 
+
 // Input ����
 class UInputMappingContext;
 class UInputAction;
@@ -15,6 +16,7 @@ class UGnuCharacterAnimInstance;
 class USpringArmComponent;
 class UCameraComponent;
 
+class AGun;
 
 UCLASS()
 class GNU_PBL_API AGnuCharacter : public ACharacter
@@ -59,4 +61,10 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+private:
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AGun> GunClass;
+
+	UPROPERTY()
+	AGun* Gun;
 };

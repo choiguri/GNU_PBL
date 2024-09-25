@@ -7,6 +7,7 @@
 #include "EnhancedInputComponent.h"
 #include "Characters/GnuCharacterAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Weapons/Gun.h"
 
 // Sets default values
 AGnuCharacter::AGnuCharacter()
@@ -54,6 +55,8 @@ void AGnuCharacter::BeginPlay()
 			EnhancedInputSystem->AddMappingContext(MappingContext, 0);
 		}
 	}
+
+	Gun = GetWorld()->SpawnActor<AGun>(GunClass);
 }
 
 // Called every frame
