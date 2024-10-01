@@ -38,10 +38,13 @@ protected:
 	UInputAction* RotationAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input")
 	UInputAction* JumpAction;
-
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input")
+	UInputAction* ShootAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input")
 	bool isWaking;
 
+
+	
 
 protected:
 	// Called when the game starts or when spawned
@@ -50,6 +53,7 @@ protected:
 	void Move(const FInputActionValue& value);
 	void Rotation(const FInputActionValue& value);
 	void UpdateAnimInstance(const FVector2D& MoveVector2D);
+	void Shoot();
 
 public:	
 	// Sets default values for this character's properties
@@ -61,10 +65,14 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	
+
 private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AGun> GunClass;
 
 	UPROPERTY()
 	AGun* Gun;
+
+	
 };

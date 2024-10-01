@@ -39,6 +39,8 @@ AGnuCharacter::AGnuCharacter()
 	isWaking = false;
 }
 
+
+
 // Called when the game starts or when spawned
 void AGnuCharacter::BeginPlay()
 {
@@ -118,6 +120,15 @@ void AGnuCharacter::UpdateAnimInstance(const FVector2D& MoveVector2D)
 	}
 }
 
+void AGnuCharacter::Shoot()
+{
+	if (GetController() != nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("fire!"));
+		Gun->PullTrigger();
+	}
+}
+
 
 void AGnuCharacter::Rotation(const FInputActionValue& value)
 {
@@ -140,6 +151,7 @@ void AGnuCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		EnhancedInputComponent->BindAction(RotationAction, ETriggerEvent::Triggered, this, &AGnuCharacter::Rotation);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Started, this, &AGnuCharacter::Shoot);
 
 	}
 }
