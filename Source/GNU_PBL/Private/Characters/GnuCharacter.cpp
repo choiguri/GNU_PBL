@@ -17,9 +17,9 @@ AGnuCharacter::AGnuCharacter()
 
 	///////////////////////////
 	// 캐릭터 회전
-	bUseControllerRotationPitch = true;
+	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = true;
-	bUseControllerRotationRoll = true;
+	bUseControllerRotationRoll = false;
 
 	UCharacterMovementComponent* MovementComponent = GetCharacterMovement();
 	MovementComponent->bOrientRotationToMovement = true;
