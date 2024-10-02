@@ -17,9 +17,9 @@ AGnuCharacter::AGnuCharacter()
 
 	///////////////////////////
 	// 캐릭터 회전
-	bUseControllerRotationPitch = false;
-	bUseControllerRotationYaw = false;
-	bUseControllerRotationRoll = false;
+	bUseControllerRotationPitch = true;
+	bUseControllerRotationYaw = true;
+	bUseControllerRotationRoll = true;
 
 	UCharacterMovementComponent* MovementComponent = GetCharacterMovement();
 	MovementComponent->bOrientRotationToMovement = true;
@@ -152,7 +152,6 @@ void AGnuCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Started, this, &AGnuCharacter::Shoot);
-		
 	}
 }
 
