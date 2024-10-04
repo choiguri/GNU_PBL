@@ -62,10 +62,10 @@ void AGnuMonster::OnPlayerExitRange(UPrimitiveComponent* OverlappedComponent, AA
 
 void AGnuMonster::PlayAttackMontage()
 {
-	UAnimInstance* instance = GetMesh()->GetAnimInstance();
+	/*UAnimInstance* instance = GetMesh()->GetAnimInstance();
 	if (instance != nullptr)
 	{
 		instance->Montage_Play(AttackMontage);
 		GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Red, TEXT("PlayAttackMontage"));
-	}
+	}*/
 }

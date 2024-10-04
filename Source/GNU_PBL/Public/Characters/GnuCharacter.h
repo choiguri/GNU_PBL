@@ -26,7 +26,7 @@ protected:
 	UGnuCharacterAnimInstance* MyAnimInstance;
 	UPROPERTY(VisibleAnywhere)
 	USpringArmComponent* SpringArm;
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UCameraComponent* Camera;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input")
 	UInputMappingContext* MappingContext;

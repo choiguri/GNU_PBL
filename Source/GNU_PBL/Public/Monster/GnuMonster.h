@@ -47,7 +47,7 @@ public:
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	UPROPERTY(EditDefaultsOnly, Category = "Montage")
-	UAnimMontage* AttackMontage;
+	UAnimMontage* AttackMontage; 
 
 	UFUNCTION()
 	void PlayAttackMontage();
