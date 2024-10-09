@@ -17,5 +17,25 @@ class GNUMULTIPLAYERSESSIONS_API UGNUMenu : public UUserWidget
 public:
 	UFUNCTION(BlueprintCallable)
 	void MenuSetup();
+
+protected:
+
+	virtual bool Initialize() override;
+
+private:
+	// if meta is BindWidget, WBP and C++ must have same name
+	UPROPERTY(meta = (BindWidget))
+	class UButton* HostButton;
+
+	UPROPERTY(meta = (BindWidget))
+	UButton* JoinButton;
+
+	UFUNCTION()
+	void HostButtonClicked();
+
+	UFUNCTION()
+	void JoinButtonClicked();
 	
+	// The subsystem designed to hanle all online session functionality
+	class UGNUMultiplayerSessionsSubsystem* MultiplayerSessionsSubsystem;
 };
