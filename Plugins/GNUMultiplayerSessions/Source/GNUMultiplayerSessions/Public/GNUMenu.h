@@ -16,11 +16,12 @@ class GNUMULTIPLAYERSESSIONS_API UGNUMenu : public UUserWidget
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void MenuSetup();
+	void MenuSetup(int32 NumberOfPublicConnections = 4, FString TypeOfMatch = FString(TEXT("FreeForAll")));
 
 protected:
 
 	virtual bool Initialize() override;
+	virtual void NativeDestruct() override;
 
 private:
 	// if meta is BindWidget, WBP and C++ must have same name
@@ -35,7 +36,12 @@ private:
 
 	UFUNCTION()
 	void JoinButtonClicked();
+
+	void MenuTearDown();
 	
 	// The subsystem designed to hanle all online session functionality
 	class UGNUMultiplayerSessionsSubsystem* MultiplayerSessionsSubsystem;
+
+	int32 NumPublicConnections{4};
+	FString MatchType{TEXT("FreeForAll")};
 };

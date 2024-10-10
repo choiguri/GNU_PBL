@@ -5,8 +5,10 @@
 #include "Components/Button.h"
 #include "GNUMultiplayerSessionsSubsystem.h"
 
-void UGNUMenu::MenuSetup()
+void UGNUMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch)
 {
+	NumPublicConnections = NumberOfPublicConnections;
+	MatchType = TypeOfMatch;
 	AddToViewport();
 	SetVisibility(ESlateVisibility::Visible);
 	//bIsFocusable = true;
@@ -52,6 +54,14 @@ bool UGNUMenu::Initialize()
 	return true;
 }
 
+// NativeDestruct는 RemoveFromParent 시 실행됨 
+void UGNUMenu::NativeDestruct()
+{
+	MenuTearDown();
+
+	Super::NativeDestruct();
+}
+
 void UGNUMenu::HostButtonClicked()
 {
 	if (GEngine)
@@ -62,7 +72,12 @@ void UGNUMenu::HostButtonClicked()
 
 	if (MultiplayerSessionsSubsystem)
 	{
-		MultiplayerSessionsSubsystem->CreateSession(4, FString("FreeForAll"));
+		MultiplayerSessionsSubsystem->CreateSession(NumPublicConnections, MatchType);
+		UWorld* World = GetWorld();
+		if (World)
+		{
+			World->ServerTravel("/Game/GNU/Maps/Lobby?listen");
+		}
 	}
 }
 
@@ -72,5 +87,21 @@ void UGNUMenu::JoinButtonClicked()
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow,
 			FString::Printf(TEXT("Join Button Clicked")));
+	}
+}
+
+void UGNUMenu::MenuTearDown()
+{
+	RemoveFromParent();
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		APlayerController* PlayerController = World->GetFirstPlayerController();
+		if (PlayerController)
+		{
+			FInputModeGameOnly InputModeData;
+			PlayerController->SetInputMode(InputModeData);
+			PlayerController->SetShowMouseCursor(false);
+		}
 	}
 }

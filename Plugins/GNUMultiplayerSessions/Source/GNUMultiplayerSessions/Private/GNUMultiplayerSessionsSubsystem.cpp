@@ -3,6 +3,7 @@
 
 #include "GNUMultiplayerSessionsSubsystem.h"
 #include "OnlineSubsystem.h"
+#include "OnlineSessionSettings.h"
 
 UGNUMultiplayerSessionsSubsystem::UGNUMultiplayerSessionsSubsystem():
 	CreateSessionCompleteDelegate(FOnCreateSessionCompleteDelegate::CreateUObject(this, &ThisClass::OnCreateSessionComplete)),
@@ -21,6 +22,36 @@ UGNUMultiplayerSessionsSubsystem::UGNUMultiplayerSessionsSubsystem():
 
 void UGNUMultiplayerSessionsSubsystem::CreateSession(int32 NumPublicConnections, FString MatchType)
 {
+	if (!SessionInterface.IsValid())
+	{
+		return;
+	}
+
+	auto ExistingSession = SessionInterface->GetNamedSession(NAME_GameSession);
+	if (ExistingSession != nullptr) // 세션 생성 전 세션이 존재한다면 파괴
+	{
+		SessionInterface->DestroySession(NAME_GameSession);
+	}
+	// delegate를 FDelegateHandle에 저장하여 나중에 리스트에서 삭제 가능
+	CreateSessionCompleteDelegateHandle = SessionInterface->AddOnCreateSessionCompleteDelegate_Handle(CreateSessionCompleteDelegate);
+
+	LastSessionSettings = MakeShareable(new FOnlineSessionSettings());
+
+	// GetSubsystemName()의 반환값이 NULL이면 LANMatch 이기 때문에 true Steam 이면 false
+	LastSessionSettings->bIsLANMatch = IOnlineSubsystem::Get()->GetSubsystemName() == "NULL" ? true : false;
+	LastSessionSettings->NumPublicConnections = NumPublicConnections; // Create Session 함수의 매개변수
+	LastSessionSettings->bAllowJoinInProgress = true;
+	LastSessionSettings->bAllowJoinViaPresence = true;
+	LastSessionSettings->bShouldAdvertise = true;
+	LastSessionSettings->bUsesPresence = true;
+	LastSessionSettings->Set(FName("MatchType"), MatchType, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+
+	const ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
+	// 세션 생성 실패시 핸들을 이용해 delegate 리스트에서 delegate 삭제
+	if (!SessionInterface->CreateSession(*LocalPlayer->GetPreferredUniqueNetId(), NAME_GameSession, *LastSessionSettings))
+	{
+		SessionInterface->ClearOnCreateSessionCompleteDelegate_Handle(CreateSessionCompleteDelegateHandle);
+	}
 
 }
 
