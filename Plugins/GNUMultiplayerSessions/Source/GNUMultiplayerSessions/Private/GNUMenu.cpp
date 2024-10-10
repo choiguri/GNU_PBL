@@ -33,6 +33,11 @@ void UGNUMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch)
 	{
 		MultiplayerSessionsSubsystem = GameInstance->GetSubsystem<UGNUMultiplayerSessionsSubsystem>();
 	}
+
+	if (MultiplayerSessionsSubsystem)
+	{
+		MultiplayerSessionsSubsystem->MultiplayerOnCreateSessionComplete.AddDynamic(this, &ThisClass::OnCreateSession);
+	}
 }
 
 bool UGNUMenu::Initialize()
@@ -62,22 +67,42 @@ void UGNUMenu::NativeDestruct()
 	Super::NativeDestruct();
 }
 
-void UGNUMenu::HostButtonClicked()
+void UGNUMenu::OnCreateSession(bool bWasSuccessful)
 {
-	if (GEngine)
+	if (bWasSuccessful)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow,
-			FString::Printf(TEXT("Host Button Clicked")));
-	}
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow,
+				FString(TEXT("Session created successfully!")));
+		}
 
-	if (MultiplayerSessionsSubsystem)
-	{
-		MultiplayerSessionsSubsystem->CreateSession(NumPublicConnections, MatchType);
 		UWorld* World = GetWorld();
 		if (World)
 		{
 			World->ServerTravel("/Game/GNU/Maps/Lobby?listen");
 		}
+	}
+	else
+	{
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red,
+				FString(TEXT("Failed to create session!")));
+		}
+	}
+}
+// host button 클릭 -> hostbuttonclicked 호출 -> createsession 호출 -> 세션 설정 -> 인터페이스 기능으로 세션 생성
+// 1. 세션 생성 실패 시 delegate handle clear 하고 false값 broadcast -> menu에서 false값 받아서 OnCreateSession에서
+// 세션 생성이 실패 되었다는 것을 수신, 아무것도 안함
+// 2. 새션 생성 성공 시 delegate handle clear하고 true값 broadcast -> menu에서 true 값 받아서 OnCreateSession에서 세션 생성 성공을 수신 
+// -> 세션 생성 성공했다고 스크린에 메세지
+void UGNUMenu::HostButtonClicked()
+{
+	
+	if (MultiplayerSessionsSubsystem)
+	{
+		MultiplayerSessionsSubsystem->CreateSession(NumPublicConnections, MatchType);
 	}
 }
 

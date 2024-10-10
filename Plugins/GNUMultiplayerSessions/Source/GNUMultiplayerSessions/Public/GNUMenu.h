@@ -23,6 +23,12 @@ protected:
 	virtual bool Initialize() override;
 	virtual void NativeDestruct() override;
 
+	//
+	// Callbacks for the custom delegates on the MultiplayerSessionsSubsystem
+	//
+	UFUNCTION()
+	void OnCreateSession(bool bWasSuccessful);
+
 private:
 	// if meta is BindWidget, WBP and C++ must have same name
 	UPROPERTY(meta = (BindWidget))

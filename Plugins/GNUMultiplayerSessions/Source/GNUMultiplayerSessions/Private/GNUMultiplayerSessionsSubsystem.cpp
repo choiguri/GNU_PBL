@@ -17,6 +17,11 @@ UGNUMultiplayerSessionsSubsystem::UGNUMultiplayerSessionsSubsystem():
 	if (Subsystem)
 	{
 		SessionInterface = Subsystem->GetSessionInterface();
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Blue,
+				FString::Printf(TEXT("Found subsystem %s"), *Subsystem->GetSubsystemName().ToString()));
+		}
 	}
 }
 
@@ -51,6 +56,9 @@ void UGNUMultiplayerSessionsSubsystem::CreateSession(int32 NumPublicConnections,
 	if (!SessionInterface->CreateSession(*LocalPlayer->GetPreferredUniqueNetId(), NAME_GameSession, *LastSessionSettings))
 	{
 		SessionInterface->ClearOnCreateSessionCompleteDelegate_Handle(CreateSessionCompleteDelegateHandle);
+
+		// Broadcast our own custom delegate
+		MultiplayerOnCreateSessionComplete.Broadcast(false);
 	}
 
 }
@@ -77,7 +85,12 @@ void UGNUMultiplayerSessionsSubsystem::StartSession()
 
 void UGNUMultiplayerSessionsSubsystem::OnCreateSessionComplete(FName SessionName, bool bWasSuccessful)
 {
+	if (SessionInterface)
+	{
+		SessionInterface->ClearOnCreateSessionCompleteDelegate_Handle(CreateSessionCompleteDelegateHandle);
+	}
 
+	MultiplayerOnCreateSessionComplete.Broadcast(bWasSuccessful);
 }
 
 void UGNUMultiplayerSessionsSubsystem::OnFindSessionsComplete(bool bWasSuccessful)
