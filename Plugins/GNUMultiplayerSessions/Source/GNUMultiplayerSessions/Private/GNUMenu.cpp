@@ -4,6 +4,8 @@
 #include "GNUMenu.h"
 #include "Components/Button.h"
 #include "GNUMultiplayerSessionsSubsystem.h"
+#include "OnlineSessionSettings.h"
+#include "Interfaces/OnlineSessionInterface.h"
 
 void UGNUMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch)
 {
@@ -37,6 +39,13 @@ void UGNUMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch)
 	if (MultiplayerSessionsSubsystem)
 	{
 		MultiplayerSessionsSubsystem->MultiplayerOnCreateSessionComplete.AddDynamic(this, &ThisClass::OnCreateSession);
+		MultiplayerSessionsSubsystem->MultiplayerOnFindSessionsComplete.AddUObject(this, &ThisClass::OnFindSessions);
+		MultiplayerSessionsSubsystem->MultiplayerOnJoinSessionComplete.AddUObject(this, &ThisClass::OnJoinSession);
+		MultiplayerSessionsSubsystem->MultiplayerOnDestroySessionComplete.AddDynamic(this, &ThisClass::OnDestroySession);
+		MultiplayerSessionsSubsystem->MultiplayerOnStartSessionComplete.AddDynamic(this, &ThisClass::OnStartSession);
+
+
+
 	}
 }
 
@@ -92,6 +101,23 @@ void UGNUMenu::OnCreateSession(bool bWasSuccessful)
 		}
 	}
 }
+void UGNUMenu::OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionResults, bool bWasSuccessful)
+{
+
+}
+void UGNUMenu::OnJoinSession(EOnJoinSessionCompleteResult::Type Result)
+{
+
+}
+void UGNUMenu::OnDestroySession(bool bWasSuccessful)
+{
+
+}
+void UGNUMenu::OnStartSession(bool bWasSuccessful)
+{
+
+}
+
 // host button 클릭 -> hostbuttonclicked 호출 -> createsession 호출 -> 세션 설정 -> 인터페이스 기능으로 세션 생성
 // 1. 세션 생성 실패 시 delegate handle clear 하고 false값 broadcast -> menu에서 false값 받아서 OnCreateSession에서
 // 세션 생성이 실패 되었다는 것을 수신, 아무것도 안함
