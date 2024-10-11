@@ -15,6 +15,8 @@ class UGnuCharacterAnimInstance;
 class USpringArmComponent;
 class UCameraComponent;
 
+// Monster class
+class AGnuAttackCollisionActor;
 
 UCLASS()
 class GNU_PBL_API AGnuCharacter : public ACharacter
@@ -49,9 +51,15 @@ protected:
 	void Rotation(const FInputActionValue& value);
 	void UpdateAnimInstance(const FVector2D& MoveVector2D);
 
+	// 공격 맞았는지 체크
+	UPROPERTY(VisibleInstanceOnly)
+	AGnuAttackCollisionActor* OverlapItem;
+
 public:	
 	// Sets default values for this character's properties
 	AGnuCharacter();
+
+	void SetOverlapItem(AGnuAttackCollisionActor* _overlapItem) { OverlapItem = _overlapItem; }
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

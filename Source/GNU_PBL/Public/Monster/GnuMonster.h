@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "GnuFireballActor.h"
+#include "Animation/AnimNotifies/AnimNotify.h"
 #include "GnuMonster.generated.h"
 
 class UCapsuleComponent;
@@ -18,36 +20,24 @@ public:
 	// Sets default values for this character's properties
 	AGnuMonster();
 
+	void SpawnFireball();  // 파이어볼 발사 함수
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 private:
 
-	UPROPERTY(VisibleAnywhere)
-	USphereComponent* DetectRange;
-
 
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-
-	// Overlap Functions
-	UFUNCTION()
-	void OnPlayerEnterRange(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
-		bool bFromSweep, const FHitResult& SweepResult);
-
-	UFUNCTION()
-	void OnPlayerExitRange(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-
 	UPROPERTY(EditDefaultsOnly, Category = "Montage")
 	UAnimMontage* AttackMontage; 
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	TSubclassOf<class AGnuFireballActor> FireballClass;
 
 	UFUNCTION()
 	void PlayAttackMontage();

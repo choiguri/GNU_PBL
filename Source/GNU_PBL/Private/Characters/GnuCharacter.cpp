@@ -36,6 +36,7 @@ AGnuCharacter::AGnuCharacter()
 	///////////////////////////
 
 	isWaking = false;
+	OverlapItem = nullptr;	// 공격이 맞았는지 확인
 }
 
 // Called when the game starts or when spawned
