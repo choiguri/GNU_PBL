@@ -9,7 +9,7 @@
 
 //
 // Declaring our own custom delegates for the Menu class to bind callbacks to 
-//
+// menu class 에 대해 만든 커스텀 delegate
 // Dynamic이 붙을려면 param의 타입이 블루 프린트와 호환이 되어야 한다. 
 // Dynamic이면 UFUNCTION macro 해줘야 함.
 // Dynamic이 아니면 함수 바인딩할 때 AddDynamic이 아닌 AddUObject를 사용해야함
@@ -63,10 +63,12 @@ protected:
 private:
 	IOnlineSessionPtr SessionInterface;
 	TSharedPtr<FOnlineSessionSettings> LastSessionSettings;
+	TSharedPtr<FOnlineSessionSearch> LastSessionSearch;
 
 	//
 	// To add to the Online Session Interface delegate list.
 	// We'll bind our MultiPlayerSessionSubsystem internal callbacks to these.
+	// Interface 용으로 만들어진 delegate
 	//
 	FOnCreateSessionCompleteDelegate CreateSessionCompleteDelegate;
 	FDelegateHandle CreateSessionCompleteDelegateHandle;
@@ -82,4 +84,8 @@ private:
 
 	FOnStartSessionCompleteDelegate StartSessionCompleteDelegate;
 	FDelegateHandle StartSessionCompleteDelegateHandle;
+
+	bool bCreateSessionOnDestroy{ false };
+	int32 LastNumPublicConnections;
+	FString LastMatchType;
 };
