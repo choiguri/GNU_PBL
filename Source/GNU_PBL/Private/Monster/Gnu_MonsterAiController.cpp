@@ -37,25 +37,24 @@ void AGnu_MonsterAiController::Tick(float DeltaSecond)
 		GetBlackboardComponent()->SetValueAsVector(TEXT("PlayerLocation"), PlayerPawn->GetActorLocation());
 		GetBlackboardComponent()->SetValueAsVector(TEXT("LastKnownPlayerLocation"), PlayerPawn->GetActorLocation());
 
-		/*
 		// 타겟팅 함수는 (Actor)SetFocalPoint, SetFocus, ClearFocus가 있음
-		SetFocus(PlayerPawn);
+		/*SetFocus(PlayerPawn);*/
 		// 움직임 함수는 (AiController)MoveTo, MoveToLocation MoveToActor가 있음
 		// 대상, 가까이 갈 거리
-		MoveToActor(PlayerPawn, AcceptanceRadius);
-		*/
+		/*MoveToActor(PlayerPawn, AcceptanceRadius);*/
 	}
 	else 
 	{
 		// PlayerLocation 키 값을 초기화 시키기
 		GetBlackboardComponent()->ClearValue(TEXT("PlayerLoaction"));
 
-		/*
+		
 		// 두 함수 모두 AiController에 있음
 		// 우선순위를 바꿔주기 위해 GamePlay를 가져옴
-		ClearFocus(EAIFocusPriority::Gameplay);
-		StopMovement();
-		*/
+		// 포커스를 클리어해서 바라보는 행동 중지
+		/*ClearFocus(EAIFocusPriority::Gameplay);
+		StopMovement();*/
+		
 	}
 
 }

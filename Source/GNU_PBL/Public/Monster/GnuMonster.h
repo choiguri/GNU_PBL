@@ -20,7 +20,9 @@ public:
 	// Sets default values for this character's properties
 	AGnuMonster();
 
-	void SpawnFireball();  // 파이어볼 발사 함수
+	void SpawnFireball();  // 파이어볼 소환 함수
+
+	void SpawnFiretornado(); // 파이어토네이도 소환 함수
 
 protected:
 	// Called when the game starts or when spawned
@@ -34,12 +36,22 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Montage")
-	UAnimMontage* AttackMontage; 
+	UAnimMontage* AttackMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Montage")
+	UAnimMontage* FlyingAttackMontage;
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
 	TSubclassOf<class AGnuFireballActor> FireballClass;
 
-	UFUNCTION()
-	void PlayAttackMontage();
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	TSubclassOf<class AGnuFiretornadoActor> FiretornadoClass;
 
+
+	UFUNCTION()
+	void PlayDefaultAttackMontage();
+
+	UFUNCTION()
+	void PlayFlyingAttackMontage();
 };

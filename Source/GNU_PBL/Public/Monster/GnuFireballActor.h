@@ -19,6 +19,11 @@ public:
 
     void LaunchProjectile(AActor* IgnoredActor);  // 발사 함수
 
+private:
+    FTimerHandle DestructionTimerHandle; // 파괴 타이머 핸들
+
+    void DestroyFireball(); // 파이어볼 삭제 함수
+
 protected:
     virtual void BeginPlay() override;
 

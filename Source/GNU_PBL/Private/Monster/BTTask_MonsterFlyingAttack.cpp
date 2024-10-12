@@ -1,17 +1,16 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Monster/BTTask_MonsterAttack.h"
+#include "Monster/BTTask_MonsterFlyingAttack.h"
 #include "Monster/GnuMonster.h"
 #include "AIController.h"
 
-
-UBTTask_MonsterAttack::UBTTask_MonsterAttack()
+UBTTask_MonsterFlyingAttack::UBTTask_MonsterFlyingAttack()
 {
-	NodeName = TEXT("DefaultAttack");
+	NodeName = TEXT("Flying Attack");
 }
 
-EBTNodeResult::Type UBTTask_MonsterAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+EBTNodeResult::Type UBTTask_MonsterFlyingAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 
@@ -26,8 +25,8 @@ EBTNodeResult::Type UBTTask_MonsterAttack::ExecuteTask(UBehaviorTreeComponent& O
 		return EBTNodeResult::Failed;
 	}
 
-	Monster->PlayDefaultAttackMontage();
+	Monster->PlayFlyingAttackMontage();
 
-	
+
 	return EBTNodeResult::Succeeded;
 }
