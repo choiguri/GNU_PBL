@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/GameModeBase.h"
+#include "GameFramework/GameMode.h"
 #include "GNULobbyGameMode.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class GNU_PBL_API AGNULobbyGameMode : public AGameModeBase
+class GNU_PBL_API AGNULobbyGameMode : public AGameMode
 {
 	GENERATED_BODY()
 
