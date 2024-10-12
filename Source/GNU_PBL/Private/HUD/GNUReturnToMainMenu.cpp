@@ -1,13 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "HUD/ReturnToMainMenu.h"
+#include "HUD/GNUReturnToMainMenu.h"
 #include "Components/Button.h"
 #include "GameFramework/PlayerController.h"
 #include "GNUMultiplayerSessionsSubsystem.h"
 #include "GameFramework/GameModeBase.h"
 
-void UReturnToMainMenu::MenuSetup()
+void UGNUReturnToMainMenu::MenuSetup()
 {
 	AddToViewport();
 	SetVisibility(ESlateVisibility::Visible);
@@ -43,7 +43,7 @@ void UReturnToMainMenu::MenuSetup()
 	}
 }
 
-bool UReturnToMainMenu::Initialize()
+bool UGNUReturnToMainMenu::Initialize()
 {
 	if (!Super::Initialize())
 	{
@@ -55,7 +55,7 @@ bool UReturnToMainMenu::Initialize()
 	return true;
 }
 
-void UReturnToMainMenu::OnDestroySession(bool bWasSuccessful)
+void UGNUReturnToMainMenu::OnDestroySession(bool bWasSuccessful)
 {
 	if (!bWasSuccessful)
 	{
@@ -82,7 +82,7 @@ void UReturnToMainMenu::OnDestroySession(bool bWasSuccessful)
 	}
 }
 
-void UReturnToMainMenu::MenuTearDown()
+void UGNUReturnToMainMenu::MenuTearDown()
 {
 	RemoveFromParent();
 
@@ -101,7 +101,7 @@ void UReturnToMainMenu::MenuTearDown()
 
 
 
-void UReturnToMainMenu::ReturnButtonClicked()
+void UGNUReturnToMainMenu::ReturnButtonClicked()
 {
 	// 세션이 없는데 버튼을 계속 누르면 DestorySession 함수가 계속 호출 될 것이기에 비활성화
 	ReturnButton->SetIsEnabled(false);

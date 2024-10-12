@@ -7,6 +7,7 @@
 #include "EnhancedInputComponent.h"
 #include "Characters/GnuCharacterAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Components/WidgetComponent.h"
 
 // Sets default values
 AGnuCharacter::AGnuCharacter()
@@ -36,6 +37,12 @@ AGnuCharacter::AGnuCharacter()
 	///////////////////////////
 
 	isWaking = false;
+
+	// UI 추가 파트
+	OverHeadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverHeadWidget"));
+	OverHeadWidget->SetupAttachment(RootComponent);
+
+	
 }
 
 // Called when the game starts or when spawned

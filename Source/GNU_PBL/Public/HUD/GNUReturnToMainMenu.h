@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "ReturnToMainMenu.generated.h"
+#include "GNUReturnToMainMenu.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class GNU_PBL_API UReturnToMainMenu : public UUserWidget
+class GNU_PBL_API UGNUReturnToMainMenu : public UUserWidget
 {
 	GENERATED_BODY()
 	
