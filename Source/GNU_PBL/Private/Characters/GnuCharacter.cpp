@@ -8,6 +8,9 @@
 #include "Characters/GnuCharacterAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/WidgetComponent.h"
+#include "Net/UnrealNetwork.h"
+#include "HUD/GNUOverHeadWidget.h"
+#include "PlayerController/GNUPlayerController.h"
 
 // Sets default values
 AGnuCharacter::AGnuCharacter()
@@ -38,9 +41,11 @@ AGnuCharacter::AGnuCharacter()
 
 	isWaking = false;
 
+	//
 	// UI 추가 파트
-	OverHeadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverHeadWidget"));
-	OverHeadWidget->SetupAttachment(RootComponent);
+	//
+	/*OverHeadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverHeadWidget"));
+	OverHeadWidget->SetupAttachment(RootComponent);*/
 
 	
 }
@@ -61,6 +66,17 @@ void AGnuCharacter::BeginPlay()
 			EnhancedInputSystem->AddMappingContext(MappingContext, 0);
 		}
 	}
+
+	//
+	// HP 업데이트
+	//
+	GNUPlayerController = Cast<AGNUPlayerController>(Controller);
+	if (GNUPlayerController)
+	{
+		GNUPlayerController->SetHUDHealth(Health, MaxHealth);
+		GNUPlayerController->SetHUDPlayerName(PlayerName);
+	}
+
 }
 
 // Called every frame
@@ -145,4 +161,29 @@ void AGnuCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 	}
 }
+
+
+
+void AGnuCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AGnuCharacter, Health);
+	DOREPLIFETIME(AGnuCharacter, PlayerName);
+}
+
+void AGnuCharacter::OnRep_PlayerName()
+{
+	
+}
+
+/// 
+/// HP 바
+/// 
+void AGnuCharacter::OnRep_Health()
+{
+
+}
+
+
 

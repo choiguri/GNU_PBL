@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
+#include "GameFramework/PlayerState.h"
 #include "GnuCharacter.generated.h"
 
 // Input ����
@@ -63,10 +64,30 @@ public:
 ////////////////////
 //////////////////// UI 파트
 private:
+	// 머리 위의 스팀 닉네임 표시
+	/*UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	class UWidgetComponent* OverHeadWidget;*/
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	class UWidgetComponent* OverHeadWidget;
+	UPROPERTY(ReplicatedUsing = OnRep_PlayerName, VisibleAnywhere, Category = "Player Stats")
+	APawn* PlayerName = StaticCast<APawn*>(this);
+
+
+	UFUNCTION()
+	void OnRep_PlayerName();
+
+	// HP바 표시
+	UPROPERTY(EditAnywhere, Category = "Player Stats")
+	float MaxHealth = 100.f;
+
+	UPROPERTY(ReplicatedUsing = OnRep_Health, VisibleAnywhere, Category = "Player Stats")
+	float Health = 1.f;
+
+	UFUNCTION()
+	void OnRep_Health();
+
+	class AGNUPlayerController* GNUPlayerController;
 
 public:
-	
+	// 서버에서 수정 -> RepNotify -> 클라이언트 반응
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

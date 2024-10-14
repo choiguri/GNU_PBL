@@ -4,22 +4,20 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "GNUOverHeadWidget.generated.h"
+#include "GNUCharacterOverlay.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class GNU_PBL_API UGNUOverHeadWidget : public UUserWidget
+class GNU_PBL_API UGNUCharacterOverlay : public UUserWidget
 {
 	GENERATED_BODY()
-
+	
 public:
+	UPROPERTY(meta = (BindWidget))
+	class UProgressBar* HealthBar;
 
 	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* DisplayText;
-
-	
-protected:
-	/*virtual void NativeDestruct() override;*/
+	class UTextBlock* HealthText;
 };
