@@ -18,13 +18,41 @@ class GNU_PBL_API AGNUPlayerController : public APlayerController
 public:
 
 	void SetHUDHealth(float Health, float MaxHealth);
+	void SetHUDCombatTime(float CombatTime);
+
+	virtual void Tick(float DeltaTime) override;
+	virtual float GetServertime();
+	virtual void ReceivedPlayer() override;
 	/*void SetHUDPlayerName(APawn* InPawn);*/
 
 protected:
 	virtual void BeginPlay() override;
+	void SetHUDTime();
+
+	// 서버와 클라이언트 사이의 시간 동기화
+
+	// 현재 서버 시간 요청
+	UFUNCTION(Server, Reliable)
+	void ServerRequestServerTime(float TimeOfClientRequest);
+
+	// 현재 서버 시간과 서버에서 클라이언트로의 응답시간 
+	UFUNCTION(Client, Reliable)
+	void ClientReportServerTime(float TimeOfClientRequest, float TimeServerReceivedClientRequest);
+
+	float ClientServerDelta = 0.f; // 서버와 클라이언트 사이의 차이 
+
+	UPROPERTY(EditAnywhere, Category = Time)
+	float TimeSyncFrequency = 5.f;
+
+	float TimeSyncRunningTime = 0.0f;
+	void CheckTimeSync(float DeltaTime);
+
+	
 
 private:
-
+	UPROPERTY()
 	class AGNUHUD* GNUHUD;
 
+	float TotalTime = 120.f;
+	uint32 CountdownInt = 0;
 };
