@@ -44,8 +44,8 @@ AGnuCharacter::AGnuCharacter()
 	//
 	// UI 추가 파트
 	//
-	/*OverHeadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverHeadWidget"));
-	OverHeadWidget->SetupAttachment(RootComponent);*/
+	OverHeadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverHeadWidget"));
+	OverHeadWidget->SetupAttachment(RootComponent);
 
 	
 }
@@ -74,8 +74,10 @@ void AGnuCharacter::BeginPlay()
 	if (GNUPlayerController)
 	{
 		GNUPlayerController->SetHUDHealth(Health, MaxHealth);
-		GNUPlayerController->SetHUDPlayerName(PlayerName);
+		/*GNUPlayerController->SetHUDPlayerName(PlayerName);*/
 	}
+
+	
 
 }
 
@@ -169,13 +171,35 @@ void AGnuCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AGnuCharacter, Health);
-	DOREPLIFETIME(AGnuCharacter, PlayerName);
+	/*DOREPLIFETIME(AGnuCharacter, PlayerName);*/
 }
 
-void AGnuCharacter::OnRep_PlayerName()
+
+void AGnuCharacter::ClientSetName_Implementation(const FString& Name)
 {
-	
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (PlayerController)
+	{
+		PlayerController->PlayerState->SetPlayerName(Name);
+	}
+
 }
+
+
+void AGnuCharacter::ServerSetPlayerName_Implementation(const FString& PlayerName)
+{
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (PlayerController)
+	{
+		PlayerController->PlayerState->SetPlayerName(PlayerName);
+		ClientSetName(PlayerName);
+	}
+}
+
+//void AGnuCharacter::OnRep_PlayerName()
+//{
+//	
+//}
 
 /// 
 /// HP 바

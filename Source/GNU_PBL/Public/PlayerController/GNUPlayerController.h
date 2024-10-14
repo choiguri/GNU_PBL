@@ -18,7 +18,7 @@ class GNU_PBL_API AGNUPlayerController : public APlayerController
 public:
 
 	void SetHUDHealth(float Health, float MaxHealth);
-	void SetHUDPlayerName(APawn* InPawn);
+	/*void SetHUDPlayerName(APawn* InPawn);*/
 
 protected:
 	virtual void BeginPlay() override;

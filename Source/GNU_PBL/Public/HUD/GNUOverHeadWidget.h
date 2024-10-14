@@ -19,7 +19,12 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* DisplayText;
 
+	void SetDisplayText(FString TextToDisplay);
+
+	UFUNCTION(BlueprintCallable)
+	void ShowPlayerName(APawn* InPawn);
+
 	
 protected:
-	/*virtual void NativeDestruct() override;*/
+	virtual void NativeDestruct() override;
 };

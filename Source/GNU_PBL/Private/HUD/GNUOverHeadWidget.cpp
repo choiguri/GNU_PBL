@@ -2,53 +2,65 @@
 
 
 #include "HUD/GNUOverHeadWidget.h"
-//#include "Components/TextBlock.h"
-//#include "GameFrameWork/PlayerState.h"
-//
-//void UGNUOverHeadWidget::SetDisplayText(FString TextToDisplay)
-//{
-//	if (DisplayText)
-//	{
-//		DisplayText->SetText(FText::FromString(TextToDisplay));
-//	}
-//}
-//
-//void UGNUOverHeadWidget::ShowPlayerNetRole(APawn* InPawn)
-//{
-//	APlayerState* PlayerState = InPawn->GetPlayerState();
-//
-//	FString PlayerName = FString("");
-//	if (PlayerState)
-//	{
-//		PlayerName = PlayerState->GetPlayerName();
-//	}
-//	SetDisplayText(PlayerName);
-//
-//	/*ENetRole LocalRole = InPawn->GetLocalRole();
-//	FString Role;
-//	switch (LocalRole)
-//	{
-//	case ENetRole::ROLE_Authority:
-//		Role = FString("Authority");
-//		break;
-//	case ENetRole::ROLE_AutonomousProxy:
-//		Role = FString("Autonomous Proxy");
-//		break;
-//	case ENetRole::ROLE_SimulatedProxy:
-//		Role = FString("Simulated Proxy");
-//		break;
-//	case ENetRole::ROLE_None:
-//		Role = FString("None");
-//		break;
-//	}
-//
-//	FString LocalRoleString = FString::Printf(TEXT("Local Role: %s"), *Role);*/
-//	
-//}
+#include "Components/TextBlock.h"
+#include "GameFrameWork/PlayerState.h"
 
-//void UGNUOverHeadWidget::NativeDestruct()
-//{
-//	RemoveFromViewport();
-//
-//	Super::NativeDestruct();
-//}
+void UGNUOverHeadWidget::SetDisplayText(FString TextToDisplay)
+{
+	if (DisplayText)
+	{
+		DisplayText->SetText(FText::FromString(TextToDisplay));
+	}
+}
+
+void UGNUOverHeadWidget::ShowPlayerName(APawn* InPawn)
+{
+	APlayerState* PlayerState = InPawn->GetPlayerState();
+
+	if (PlayerState)
+	{
+		FString PlayerName = PlayerState->GetPlayerName();
+
+		FString LocalRoleString = FString::Printf(TEXT("%s"), *PlayerName);
+		SetDisplayText(LocalRoleString);
+	}
+	/*APlayerState* PlayerState = InPawn->GetPlayerState();
+
+	FString PlayerName;
+	if (PlayerState)
+	{
+		PlayerName = PlayerState->GetPlayerName();
+	}*/
+	/*APlayerState* PlayerState = InPawn->GetPlayerState();
+	ENetRole LocalRole = InPawn->GetLocalRole();
+	FString Role;
+	if (PlayerState)
+	{
+		switch (LocalRole)
+		{
+		case ENetRole::ROLE_Authority:
+			Role = PlayerState->GetPlayerName();
+			break;
+		case ENetRole::ROLE_AutonomousProxy:
+			Role = PlayerState->GetPlayerName();
+			break;
+		case ENetRole::ROLE_SimulatedProxy:
+			Role = PlayerState->GetPlayerName();
+			break;
+		case ENetRole::ROLE_None:
+			Role = PlayerState->GetPlayerName();
+			break;
+		}*/
+
+	/*}
+
+	FString LocalRoleString = FString::Printf(TEXT("Local Role: %s"), *Role);
+	SetDisplayText(LocalRoleString);*/
+}
+
+void UGNUOverHeadWidget::NativeDestruct()
+{
+	RemoveFromViewport();
+
+	Super::NativeDestruct();
+}

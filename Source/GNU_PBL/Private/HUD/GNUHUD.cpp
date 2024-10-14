@@ -12,7 +12,7 @@ void AGNUHUD::BeginPlay()
 	Super::BeginPlay();
 
 	AddCharacterOverlay();
-	AddCharacterOverHead();
+	/*AddCharacterOverHead();*/
 }
 
 void AGNUHUD::AddCharacterOverlay()
@@ -26,15 +26,15 @@ void AGNUHUD::AddCharacterOverlay()
 	}
 }
 
-void AGNUHUD::AddCharacterOverHead()
-{
-	APlayerController* PlayerController = GetOwningPlayerController();
-	if (PlayerController && CharacterOverHeadClass)
-	{
-		CharacterOverHead = CreateWidget<UGNUOverHeadWidget>(PlayerController, CharacterOverHeadClass);
-		CharacterOverHead->AddToViewport();
-	}
-}
+//void AGNUHUD::AddCharacterOverHead()
+//{
+//	APlayerController* PlayerController = GetOwningPlayerController();
+//	if (PlayerController && CharacterOverHeadClass)
+//	{
+//		CharacterOverHead = CreateWidget<UGNUOverHeadWidget>(PlayerController, CharacterOverHeadClass);
+//		CharacterOverHead->AddToViewport();
+//	}
+//}
 
 
 void AGNUHUD::DrawHUD()

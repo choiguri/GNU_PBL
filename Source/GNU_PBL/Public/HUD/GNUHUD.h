@@ -22,10 +22,10 @@ public:
 
 	class UGNUCharacterOverlay* CharacterOverlay;
 
-	UPROPERTY(EditAnywhere, Category = "Player Stats")
+	/*UPROPERTY(EditAnywhere, Category = "Player Stats")
 	TSubclassOf<class UUserWidget> CharacterOverHeadClass;
 
-	class UGNUOverHeadWidget* CharacterOverHead;
+	class UGNUOverHeadWidget* CharacterOverHead;*/
 
 protected:
 	virtual void BeginPlay() override;

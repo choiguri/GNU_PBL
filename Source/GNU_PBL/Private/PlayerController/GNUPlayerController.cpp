@@ -33,20 +33,20 @@ void AGNUPlayerController::SetHUDHealth(float Health, float MaxHealth)
 	}
 }
 
-void AGNUPlayerController::SetHUDPlayerName(APawn* InPawn)
-{
-	GNUHUD = GNUHUD == nullptr ? Cast<AGNUHUD>(GetHUD()) : GNUHUD;
-
-	if (GNUHUD && GNUHUD->CharacterOverHead && GNUHUD->CharacterOverHead->DisplayText)
-	{
-		APlayerState* PlayerStates = InPawn->GetPlayerState();
-
-		FString PlayerName = "";
-		if (PlayerStates)
-		{
-			PlayerName = PlayerStates->GetPlayerName();
-		}
-		GNUHUD->CharacterOverHead->DisplayText->SetText(FText::FromString(PlayerName));
-	}
-
-}
+//void AGNUPlayerController::SetHUDPlayerName(APawn* InPawn)
+//{
+//	GNUHUD = GNUHUD == nullptr ? Cast<AGNUHUD>(GetHUD()) : GNUHUD;
+//
+//	if (GNUHUD && GNUHUD->CharacterOverHead && GNUHUD->CharacterOverHead->DisplayText)
+//	{
+//		APlayerState* PlayerStates = InPawn->GetPlayerState();
+//
+//		FString PlayerName = "";
+//		if (PlayerStates)
+//		{
+//			PlayerName = PlayerStates->GetPlayerName();
+//		}
+//		GNUHUD->CharacterOverHead->DisplayText->SetText(FText::FromString(PlayerName));
+//	}
+//
+//}
