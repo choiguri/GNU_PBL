@@ -7,6 +7,11 @@
 #include "HUD/GNUOverHeadWidget.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
+#include "HUD/GNUReturnToMainMenu.h"
+#include "EnhancedInputSubsystems.h"
+#include "EnhancedInputComponent.h"
+
+
 
 
 void AGNUPlayerController::BeginPlay()
@@ -14,6 +19,15 @@ void AGNUPlayerController::BeginPlay()
 	Super::BeginPlay();
 
 	GNUHUD = Cast<AGNUHUD>(GetHUD());
+
+	if (ULocalPlayer* LocalPlayer = GetLocalPlayer())
+	{
+		UEnhancedInputLocalPlayerSubsystem* Subsystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+		if (Subsystem)
+		{
+			Subsystem->AddMappingContext(MappingContext, 0);
+		}
+	}
 }
 
 void AGNUPlayerController::Tick(float DeltaTime)
@@ -84,6 +98,44 @@ void AGNUPlayerController::SetHUDTime()
 	CountdownInt = SecondsLeft;
 }
 
+void AGNUPlayerController::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+	if (InputComponent == nullptr) return;
+
+	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent))
+	{
+		EnhancedInputComponent->BindAction(QuitAction, ETriggerEvent::Started, this, &AGNUPlayerController::ShowReturnToMainMenu);
+	}
+	/*InputComponent->BindAction("MainMenu", EInputEvent::IE_Pressed, this, &AGNUPlayerController::ShowReturnToMainMenu);*/
+}
+	
+	
+
+void AGNUPlayerController::ShowReturnToMainMenu()
+{
+	if (ReturnToMainMenuWidget == nullptr) return;
+	if (ReturnToMainMenu == nullptr)
+	{
+		ReturnToMainMenu = CreateWidget<UGNUReturnToMainMenu>(this, ReturnToMainMenuWidget);
+	}
+
+	if (ReturnToMainMenu)
+	{
+		bReturnToMainMenuOpen = !bReturnToMainMenuOpen;
+		if (bReturnToMainMenuOpen)
+		{
+			ReturnToMainMenu->MenuSetup();
+		}
+		else
+		{
+			ReturnToMainMenu->MenuTearDown();
+		}
+	}
+
+
+}
+
 void AGNUPlayerController::CheckTimeSync(float DeltaTime)
 {
 	TimeSyncRunningTime += DeltaTime;
@@ -95,6 +147,9 @@ void AGNUPlayerController::CheckTimeSync(float DeltaTime)
 	}
 }
 
+// 서버와 클라이언트 사이의 RoundTripTime 계산 하기 위한 함수들
+// 클라이언트가 요청하고 서버에 도착하는 시간, 서버에서 클라이언트로 응답하는 시간
+// 두 개를 합쳐서 RTT, 하지만 두 개가 같지는 않아서 RTT / 2 가 각각의 시간이라고 장담하지는 못한다.
 float AGNUPlayerController::GetServertime()
 {
 	if (HasAuthority()) return GetWorld()->GetTimeSeconds();
@@ -114,20 +169,3 @@ void AGNUPlayerController::ClientReportServerTime_Implementation(float TimeOfCli
 	ClientServerDelta = CurrentServerTime - GetWorld()->GetTimeSeconds();
 }
 
-//void AGNUPlayerController::SetHUDPlayerName(APawn* InPawn)
-//{
-//	GNUHUD = GNUHUD == nullptr ? Cast<AGNUHUD>(GetHUD()) : GNUHUD;
-//
-//	if (GNUHUD && GNUHUD->CharacterOverHead && GNUHUD->CharacterOverHead->DisplayText)
-//	{
-//		APlayerState* PlayerStates = InPawn->GetPlayerState();
-//
-//		FString PlayerName = "";
-//		if (PlayerStates)
-//		{
-//			PlayerName = PlayerStates->GetPlayerName();
-//		}
-//		GNUHUD->CharacterOverHead->DisplayText->SetText(FText::FromString(PlayerName));
-//	}
-//
-//}

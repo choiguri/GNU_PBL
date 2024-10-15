@@ -74,7 +74,7 @@ void AGnuCharacter::BeginPlay()
 	if (GNUPlayerController)
 	{
 		GNUPlayerController->SetHUDHealth(Health, MaxHealth);
-		/*GNUPlayerController->SetHUDPlayerName(PlayerName);*/
+
 	}
 
 	
@@ -139,6 +139,7 @@ void AGnuCharacter::UpdateAnimInstance(const FVector2D& MoveVector2D)
 }
 
 
+
 void AGnuCharacter::Rotation(const FInputActionValue& value)
 {
 	if (GetController() != nullptr)
@@ -160,7 +161,6 @@ void AGnuCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		EnhancedInputComponent->BindAction(RotationAction, ETriggerEvent::Triggered, this, &AGnuCharacter::Rotation);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-
 	}
 }
 
@@ -171,7 +171,7 @@ void AGnuCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AGnuCharacter, Health);
-	/*DOREPLIFETIME(AGnuCharacter, PlayerName);*/
+
 }
 
 
@@ -195,11 +195,6 @@ void AGnuCharacter::ServerSetPlayerName_Implementation(const FString& PlayerName
 		ClientSetName(PlayerName);
 	}
 }
-
-//void AGnuCharacter::OnRep_PlayerName()
-//{
-//	
-//}
 
 /// 
 /// HP 바

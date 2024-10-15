@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/PlayerState.h"
+#include "InputActionValue.h"
+
 #include "GNUPlayerController.generated.h"
 
 /**
@@ -23,11 +25,20 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual float GetServertime();
 	virtual void ReceivedPlayer() override;
-	/*void SetHUDPlayerName(APawn* InPawn);*/
 
 protected:
 	virtual void BeginPlay() override;
 	void SetHUDTime();
+	
+	virtual void SetupInputComponent() override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input")
+	class UInputMappingContext* MappingContext;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input")
+	class UInputAction* QuitAction;
+
+	void ShowReturnToMainMenu();
 
 	// 서버와 클라이언트 사이의 시간 동기화
 
@@ -47,11 +58,18 @@ protected:
 	float TimeSyncRunningTime = 0.0f;
 	void CheckTimeSync(float DeltaTime);
 
-	
 
 private:
 	UPROPERTY()
 	class AGNUHUD* GNUHUD;
+
+	UPROPERTY(EditAnywhere, Category = "HUD")
+	TSubclassOf<class UUserWidget> ReturnToMainMenuWidget;
+
+	UPROPERTY()
+	class UGNUReturnToMainMenu* ReturnToMainMenu;
+
+	bool bReturnToMainMenuOpen = false;
 
 	float TotalTime = 120.f;
 	uint32 CountdownInt = 0;

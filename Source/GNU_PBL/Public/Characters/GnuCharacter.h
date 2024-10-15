@@ -38,6 +38,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input")
 	UInputAction* JumpAction;
 
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input")
 	bool isWaking;
 
@@ -63,19 +64,11 @@ public:
 
 ////////////////////
 //////////////////// UI 파트
+////////////////////
 private:
 	// 머리 위의 스팀 닉네임 표시
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UWidgetComponent* OverHeadWidget;
-
-	/*UPROPERTY(ReplicatedUsing = OnRep_PlayerName, VisibleAnywhere, Category = "Player Stats")
-	APawn* PlayerName = StaticCast<APawn*>(this);
-
-
-	UFUNCTION()
-	void OnRep_PlayerName();*/
-
-	
 
 	// HP바 표시
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
@@ -96,6 +89,7 @@ public:
 	// 서버에서 수정 -> RepNotify -> 클라이언트 반응
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	// Implementation으로 정의해서 밑줄이 뜨더라도 오류가 아님
 	UFUNCTION(Client, Reliable)
 	void ClientSetName(const FString& Name);
 
