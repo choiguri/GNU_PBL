@@ -120,12 +120,30 @@ void AGnuCharacter::UpdateAnimInstance(const FVector2D& MoveVector2D)
 	}
 }
 
-void AGnuCharacter::Shoot()
+void AGnuCharacter::StartFire()
 {
 	if (GetController() != nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("fire!"));
 		Gun->PullTrigger();
+	}
+}
+
+void AGnuCharacter::StopFire()
+{
+	if (GetController() != nullptr)
+	{
+		Gun->ReleaseTrigger();
+	}
+}
+
+
+void AGnuCharacter::Reroad()
+{
+	if (GetController() != nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Reroad!"));
+		Gun->Reload();
 	}
 }
 
@@ -151,7 +169,9 @@ void AGnuCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		EnhancedInputComponent->BindAction(RotationAction, ETriggerEvent::Triggered, this, &AGnuCharacter::Rotation);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Started, this, &AGnuCharacter::Shoot);
+		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Started, this, &AGnuCharacter::StartFire);
+		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Completed, this, &AGnuCharacter::StopFire);
+		EnhancedInputComponent->BindAction(ReroadAction, ETriggerEvent::Started, this, &AGnuCharacter::Reroad);
 	}
 }
 

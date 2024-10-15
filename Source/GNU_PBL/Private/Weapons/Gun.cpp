@@ -22,25 +22,63 @@ AGun::AGun()
 
 void AGun::PullTrigger()
 {
-	UGameplayStatics::SpawnEmitterAttached(MuzzleFlash, Mesh, TEXT("MuzzleFlashSocket"));
-
-	APawn* OwnerPawn = Cast<APawn>(GetOwner());
-	if (OwnerPawn == nullptr) return;
-	AController* OwnerController = OwnerPawn->GetController();
-	if (OwnerController == nullptr) return;
-
-	FVector Location;
-	FRotator Rotation; 
-	OwnerController->GetPlayerViewPoint(Location, Rotation);
-
-	FVector End = Location + Rotation.Vector() * MaxRange;
-	// TODO: LineTrace 
-	
-	FHitResult Hit;
-	bool bSuccess = GetWorld()->LineTraceSingleByChannel(Hit, Location, End, ECollisionChannel::ECC_GameTraceChannel1);
-	if (bSuccess)
+	if (!GetWorld()->GetTimerManager().IsTimerActive(FireTimerHandle))
 	{
-		DrawDebugPoint(GetWorld(), Hit.Location, 20, FColor::Red, true);
+		GetWorld()->GetTimerManager().SetTimer(FireTimerHandle, this, &AGun::Fire, FireInterval, true, 0.f);
+	}
+}
+
+// Trigger release logic (stop firing)
+void AGun::ReleaseTrigger()
+{
+	// Stop the firing timer when the trigger is released
+	GetWorld()->GetTimerManager().ClearTimer(FireTimerHandle);
+}
+
+
+void AGun::Fire()
+{
+	if (RemainAmmo > 0)
+	{
+		UGameplayStatics::SpawnEmitterAttached(MuzzleFlash, Mesh, TEXT("MuzzleFlashSocket"));
+
+		APawn* OwnerPawn = Cast<APawn>(GetOwner());
+		if (OwnerPawn == nullptr) return;
+		AController* OwnerController = OwnerPawn->GetController();
+		if (OwnerController == nullptr) return;
+
+		FVector Location;
+		FRotator Rotation;
+		OwnerController->GetPlayerViewPoint(Location, Rotation);
+
+		FVector End = Location + Rotation.Vector() * MaxRange;
+		// TODO: LineTrace 
+
+		FHitResult Hit;
+		bool bSuccess = GetWorld()->LineTraceSingleByChannel(Hit, Location, End, ECollisionChannel::ECC_GameTraceChannel1);
+		if (bSuccess)
+		{
+			FVector ShotDirection = -Rotation.Vector();
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactEffect, Hit.Location, ShotDirection.Rotation());
+		}
+
+		RemainAmmo--;
+		UE_LOG(LogTemp, Warning, TEXT("Remaining Ammo: %d"), RemainAmmo);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Out of ammo!"));
+		ReleaseTrigger();
+	}
+}
+
+
+void AGun::Reload()
+{
+	if (RemainAmmo < MaxAmmo)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Reloading..."));
+		RemainAmmo = MaxAmmo; 
 	}
 }
 
@@ -49,6 +87,7 @@ void AGun::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	RemainAmmo = MaxAmmo;
 }
 
 // Called every frame

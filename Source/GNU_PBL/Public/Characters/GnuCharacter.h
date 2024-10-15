@@ -41,6 +41,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input")
 	UInputAction* ShootAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input")
+	UInputAction* ReroadAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input")
 	bool isWaking;
 
 
@@ -53,7 +55,9 @@ protected:
 	void Move(const FInputActionValue& value);
 	void Rotation(const FInputActionValue& value);
 	void UpdateAnimInstance(const FVector2D& MoveVector2D);
-	void Shoot();
+	void StartFire();
+	void StopFire();
+	void Reroad();
 
 public:	
 	// Sets default values for this character's properties
