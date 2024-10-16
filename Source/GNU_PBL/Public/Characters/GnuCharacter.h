@@ -57,7 +57,7 @@ protected:
 	void Move(const FInputActionValue& value);
 	void Rotation(const FInputActionValue& value);
 	void UpdateAnimInstance(const FVector2D& MoveVector2D);
-	void Aiming(const FInputActionValue& value);
+	void Aiming();
 	void StartFire();
 	void StopFire();
 	void Reroad();

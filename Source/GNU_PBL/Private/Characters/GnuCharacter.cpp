@@ -120,11 +120,15 @@ void AGnuCharacter::UpdateAnimInstance(const FVector2D& MoveVector2D)
 	}
 }
 
-void AGnuCharacter::Aiming(const FInputActionValue& value)
+void AGnuCharacter::Aiming()
 {
 	if (GetController() != nullptr)
 	{
-			
+		UE_LOG(LogTemp, Warning, TEXT("Aiming..."));
+		const FRotator ControllerRotation = GetController()->GetControlRotation();
+		float Pitch = ControllerRotation.Pitch;
+		UE_LOG(LogTemp, Warning, TEXT("Pitch : %f"), Pitch);
+		MyAnimInstance->SetAimPitch(Pitch);
 	}
 }
 
