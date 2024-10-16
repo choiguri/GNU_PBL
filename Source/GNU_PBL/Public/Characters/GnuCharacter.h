@@ -37,6 +37,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input")
 	UInputAction* RotationAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input")
+	UInputAction* AimingAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input")
 	UInputAction* JumpAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input")
 	UInputAction* ShootAction;
@@ -55,6 +57,7 @@ protected:
 	void Move(const FInputActionValue& value);
 	void Rotation(const FInputActionValue& value);
 	void UpdateAnimInstance(const FVector2D& MoveVector2D);
+	void Aiming(const FInputActionValue& value);
 	void StartFire();
 	void StopFire();
 	void Reroad();

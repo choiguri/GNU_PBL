@@ -51,10 +51,11 @@ private:
 	UPROPERTY(EditAnywhere)
 	float ReroadingDelay = 3.f;
 	UPROPERTY(EditAnywhere)
-	float FireInterval = 0.1f;
+	int RPM = 600;
 
-	FTimerHandle FireTimerHandle;  // Å¸ÀÌ¸Ó ÇÚµé º¯¼ö Ãß°¡
 
-	void Fire();  // ¹ß»ç ±â´É ±¸Çö ÇÔ¼ö
+	FTimerHandle FireTimerHandle;  // Å¸ï¿½Ì¸ï¿½ ï¿½Úµï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½
+
+	void Fire();  // ï¿½ß»ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½
 
 };

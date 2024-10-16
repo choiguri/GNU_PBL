@@ -120,6 +120,14 @@ void AGnuCharacter::UpdateAnimInstance(const FVector2D& MoveVector2D)
 	}
 }
 
+void AGnuCharacter::Aiming(const FInputActionValue& value)
+{
+	if (GetController() != nullptr)
+	{
+			
+	}
+}
+
 void AGnuCharacter::StartFire()
 {
 	if (GetController() != nullptr)
@@ -171,6 +179,7 @@ void AGnuCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Started, this, &AGnuCharacter::StartFire);
 		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Completed, this, &AGnuCharacter::StopFire);
+		EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Triggered, this, &AGnuCharacter::Aiming);
 		EnhancedInputComponent->BindAction(ReroadAction, ETriggerEvent::Started, this, &AGnuCharacter::Reroad);
 	}
 }

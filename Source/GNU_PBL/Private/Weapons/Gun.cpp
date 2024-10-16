@@ -24,7 +24,7 @@ void AGun::PullTrigger()
 {
 	if (!GetWorld()->GetTimerManager().IsTimerActive(FireTimerHandle))
 	{
-		GetWorld()->GetTimerManager().SetTimer(FireTimerHandle, this, &AGun::Fire, FireInterval, true, 0.f);
+		GetWorld()->GetTimerManager().SetTimer(FireTimerHandle, this, &AGun::Fire, 60.0 / RPM, true, 0.f);
 	}
 }
 
