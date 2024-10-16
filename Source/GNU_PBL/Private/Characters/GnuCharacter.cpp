@@ -127,6 +127,9 @@ void AGnuCharacter::Aiming()
 		UE_LOG(LogTemp, Warning, TEXT("Aiming..."));
 		const FRotator ControllerRotation = GetController()->GetControlRotation();
 		float Pitch = ControllerRotation.Pitch;
+		if (Pitch > 90) {
+			Pitch -= 360;
+		}
 		UE_LOG(LogTemp, Warning, TEXT("Pitch : %f"), Pitch);
 		MyAnimInstance->SetAimPitch(Pitch);
 	}
