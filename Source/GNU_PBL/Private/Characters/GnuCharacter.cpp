@@ -8,6 +8,8 @@
 #include "Characters/GnuCharacterAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Weapons/Gun.h"
+#include "Weapons/CrossHair.h"
+#include "Blueprint/UserWidget.h"
 
 // Sets default values
 AGnuCharacter::AGnuCharacter()
@@ -37,6 +39,13 @@ AGnuCharacter::AGnuCharacter()
 	///////////////////////////
 
 	isWaking = false;
+
+	static ConstructorHelpers::FClassFinder<UUserWidget> CrossHairFinder(TEXT("/Game/GNU/weapon/UI_CrossHair.UI_CrossHair_C"));
+	if (CrossHairFinder.Succeeded())
+	{
+		CrossHairWidgetClass = CrossHairFinder.Class;
+	}
+
 }
 
 
@@ -55,6 +64,25 @@ void AGnuCharacter::BeginPlay()
 		if (EnhancedInputSystem != nullptr)
 		{
 			EnhancedInputSystem->AddMappingContext(MappingContext, 0);
+		}
+	}
+
+	if (CrossHairWidgetClass)
+	{
+		// Create and add the CrossHair widget to the viewport
+		pCrossHair = CreateWidget<UCrossHair>(GetWorld(), CrossHairWidgetClass);
+		if (IsValid(pCrossHair))
+		{
+			pCrossHair->AddToViewport();
+
+			// Bind aim rate to CrossHair
+			if (AGnuCharacter* GnuCharacter = Cast<AGnuCharacter>(GetController() ? GetController()->GetPawn() : nullptr))
+			{
+				if (GnuCharacter)
+				{
+					pCrossHair->BindUserAimRate(GnuCharacter);
+				}
+			}
 		}
 	}
 
@@ -172,6 +200,11 @@ void AGnuCharacter::Rotation(const FInputActionValue& value)
 		AddControllerYawInput(RotationValue.X);
 		AddControllerPitchInput(RotationValue.Y);
 	}
+}
+
+void AGnuCharacter::SetAimRate(float Aimrate)
+{
+	func_Player_Aimrate.ExecuteIfBound(Aimrate);
 }
 
 // Called to bind functionality to input

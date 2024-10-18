@@ -8,6 +8,7 @@
 #include "GnuCharacter.generated.h"
 
 
+
 // Input ����
 class UInputMappingContext;
 class UInputAction;
@@ -46,7 +47,7 @@ protected:
 	UInputAction* ReroadAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input")
 	bool isWaking;
-
+	
 
 	
 
@@ -72,7 +73,14 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	
+	DECLARE_DELEGATE_OneParam(FDele_Player_Aimrate, float);
+	FDele_Player_Aimrate func_Player_Aimrate;
+
+	// Function to set the aim rate
+	void SetAimRate(float Aimrate);
+
+	UPROPERTY()
+	class UCrossHair* pCrossHair;
 
 private:
 	UPROPERTY(EditDefaultsOnly)
@@ -81,5 +89,6 @@ private:
 	UPROPERTY()
 	AGun* Gun;
 
-	
+	TSubclassOf<UUserWidget> CrossHairWidgetClass;
+	UUserWidget* CrossHairWidget;
 };
