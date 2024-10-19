@@ -45,6 +45,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input")
 	UInputAction* ReroadAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input")
+	UInputAction* InteractAction; 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input") // 상호작용 인풋
 	bool isWaking;
 	
 
@@ -62,6 +64,8 @@ protected:
 	void StartFire();
 	void StopFire();
 	void Reroad();
+	void Interact(); // 상호작용 함수
+	void SwitchWeapon(TSubclassOf<AGun> NewGunClass);
 
 public:	
 	// Sets default values for this character's properties

@@ -80,6 +80,10 @@ void AGun::Reload()
 		UE_LOG(LogTemp, Warning, TEXT("Reloading..."));
 		RemainAmmo = MaxAmmo; 
 	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Already full of ammo"));
+	}
 }
 
 // Called when the game starts or when spawned

@@ -24,22 +24,22 @@ void UCrossHair::UpdateCrossHair(float aimrate)
 {
     if (UICross_L)
     {
-        UICross_L->SetRenderTranslation(FVector2D(-8.f * aimrate, 0.f));
+        UICross_L->SetRenderTranslation(FVector2D(-16.f * aimrate, 0.f));
     }
 
     if (UICross_R)
     {
-        UICross_R->SetRenderTranslation(FVector2D(8.f * aimrate, 0.f));
+        UICross_R->SetRenderTranslation(FVector2D(16.f * aimrate, 0.f));
     }
 
     if (UICross_T)
     {
-        UICross_T->SetRenderTranslation(FVector2D(0.f, -8.f * aimrate));
+        UICross_T->SetRenderTranslation(FVector2D(0.f, -16.f * aimrate));
     }
 
     if (UICross_B)
     {
-        UICross_B->SetRenderTranslation(FVector2D(0.f, 8.f * aimrate));
+        UICross_B->SetRenderTranslation(FVector2D(0.f, 16.f * aimrate));
     }
 }
 

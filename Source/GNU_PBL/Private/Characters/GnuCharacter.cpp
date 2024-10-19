@@ -9,6 +9,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Weapons/Gun.h"
 #include "Weapons/CrossHair.h"
+#include "Weapons/WeaponSwitch.h"
 #include "Blueprint/UserWidget.h"
 
 // Sets default values
@@ -218,6 +219,71 @@ void AGnuCharacter::Reroad()
 	}
 }
 
+void AGnuCharacter::Interact()
+{
+	if (GetController() != nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Interact"));
+		AController* PlayerController = GetController();
+		if (PlayerController == nullptr)
+		{
+			return;
+		}
+
+		FVector Location;
+		FRotator Rotation;
+		PlayerController->GetPlayerViewPoint(Location, Rotation);
+
+		FVector End = Location + Rotation.Vector() * 1000;
+		// TODO: LineTrace 
+
+		FHitResult Hit;
+		bool bSuccess = GetWorld()->LineTraceSingleByChannel(Hit, Location, End, ECollisionChannel::ECC_GameTraceChannel1);
+		
+
+		if (bSuccess)
+		{
+			// 히트된 액터가 존재하는지 확인
+			AActor* HitActor = Hit.GetActor();
+			if (HitActor)
+			{
+				// 액터에 특정 태그가 있는지 확인 (예: "WeaponSwitch")
+				if (HitActor->ActorHasTag(FName("WeaponSwitch")))
+				{
+					AWeaponSwitch* NewGun = Cast<AWeaponSwitch>(HitActor);
+					if (NewGun)
+					{
+						UE_LOG(LogTemp, Warning, TEXT("Switching Weapon..."));
+						TSubclassOf<AGun> NewGunClass = NewGun->Switching();
+						SwitchWeapon(NewGunClass);
+					}					
+				}
+			}
+		}
+	}
+}
+
+void AGnuCharacter::SwitchWeapon(TSubclassOf<AGun> NewGunClass)
+{
+	if (NewGunClass) 
+	{
+		GunClass = NewGunClass;
+		
+		if (Gun)
+		{
+			Gun->Destroy();
+			Gun = nullptr;
+		}
+		Gun = GetWorld()->SpawnActor<AGun>(GunClass);
+
+		if (Gun)
+		{
+			Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("WeaponSocket"));
+			Gun->SetOwner(this);
+		}
+	}
+}
+
 
 void AGnuCharacter::Rotation(const FInputActionValue& value)
 {
@@ -246,6 +312,7 @@ void AGnuCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Triggered, this, &AGnuCharacter::Aiming);
 		EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Completed, this, &AGnuCharacter::StopAiming);
 		EnhancedInputComponent->BindAction(ReroadAction, ETriggerEvent::Started, this, &AGnuCharacter::Reroad);
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &AGnuCharacter::Interact); //상호작용 
 	}
 }
 
