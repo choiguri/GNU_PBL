@@ -16,7 +16,6 @@ class UGnuCharacterAnimInstance;
 // ��Ʈ�� ����
 class USpringArmComponent;
 class UCameraComponent;
-
 class AGun;
 
 UCLASS()
@@ -59,6 +58,7 @@ protected:
 	void Rotation(const FInputActionValue& value);
 	void UpdateAnimInstance(const FVector2D& MoveVector2D);
 	void Aiming();
+	void StopAiming();
 	void StartFire();
 	void StopFire();
 	void Reroad();
@@ -72,12 +72,10 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
+	
 	DECLARE_DELEGATE_OneParam(FDele_Player_Aimrate, float);
-	FDele_Player_Aimrate func_Player_Aimrate;
 
-	// Function to set the aim rate
-	void SetAimRate(float Aimrate);
+	FDele_Player_Aimrate func_Player_Aimrate;
 
 	UPROPERTY()
 	class UCrossHair* pCrossHair;

@@ -5,21 +5,50 @@
 #include "Characters/GnuCharacter.h"
 #include <Components/Image.h>
 
+
+
+void UCrossHair::NativeConstruct()
+{
+    Super::NativeConstruct();
+
+    UICross_L = Cast<UImage>(GetWidgetFromName(TEXT("Cross_L")));
+    UICross_R = Cast<UImage>(GetWidgetFromName(TEXT("Cross_R")));
+    UICross_T = Cast<UImage>(GetWidgetFromName(TEXT("Cross_T")));
+    UICross_B = Cast<UImage>(GetWidgetFromName(TEXT("Cross_B")));
+    UICross_C = Cast<UImage>(GetWidgetFromName(TEXT("Cross_C")));
+
+    UpdateCrossHair(1);
+}
+
+void UCrossHair::UpdateCrossHair(float aimrate)
+{
+    if (UICross_L)
+    {
+        UICross_L->SetRenderTranslation(FVector2D(-8.f * aimrate, 0.f));
+    }
+
+    if (UICross_R)
+    {
+        UICross_R->SetRenderTranslation(FVector2D(8.f * aimrate, 0.f));
+    }
+
+    if (UICross_T)
+    {
+        UICross_T->SetRenderTranslation(FVector2D(0.f, -8.f * aimrate));
+    }
+
+    if (UICross_B)
+    {
+        UICross_B->SetRenderTranslation(FVector2D(0.f, 8.f * aimrate));
+    }
+}
+
+
 void UCrossHair::SetAimRate(float Aimrate)
 {
-    
     fTarget_Aimrate = Aimrate;
-    Cross_L = Cast<UImage>(GetWidgetFromName(TEXT("Cross_L")));
-    Cross_R = Cast<UImage>(GetWidgetFromName(TEXT("Cross_R")));
-    Cross_T = Cast<UImage>(GetWidgetFromName(TEXT("Cross_T")));
-    Cross_B = Cast<UImage>(GetWidgetFromName(TEXT("Cross_B")));
-
-
-    Cross_L->SetRenderTranslation(FVector2D(-16.f * fTarget_Aimrate, 0.f));
-    Cross_R->SetRenderTranslation(FVector2D(-16.f * fTarget_Aimrate, 0.f));
-    Cross_T->SetRenderTranslation(FVector2D(-16.f * fTarget_Aimrate, 0.f));
-    Cross_B->SetRenderTranslation(FVector2D(-16.f * fTarget_Aimrate, 0.f));
 }
+
 
 void UCrossHair::BindUserAimRate(AGnuCharacter* GnuCharacter)
 {

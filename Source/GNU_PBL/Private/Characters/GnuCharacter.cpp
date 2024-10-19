@@ -74,15 +74,15 @@ void AGnuCharacter::BeginPlay()
 		if (IsValid(pCrossHair))
 		{
 			pCrossHair->AddToViewport();
+		}
+	}
 
-			// Bind aim rate to CrossHair
-			if (AGnuCharacter* GnuCharacter = Cast<AGnuCharacter>(GetController() ? GetController()->GetPawn() : nullptr))
-			{
-				if (GnuCharacter)
-				{
-					pCrossHair->BindUserAimRate(GnuCharacter);
-				}
-			}
+	// Bind aim rate to CrossHair
+	if (AGnuCharacter* GnuCharacter = Cast<AGnuCharacter>(GetController() ? GetController()->GetPawn() : nullptr))
+	{
+		if (GnuCharacter)
+		{
+			pCrossHair->BindUserAimRate(GnuCharacter);
 		}
 	}
 
@@ -153,13 +153,28 @@ void AGnuCharacter::Aiming()
 	if (GetController() != nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Aiming..."));
+		if (pCrossHair)
+		{
+			pCrossHair->UpdateCrossHair(0);
+		}
 		const FRotator ControllerRotation = GetController()->GetControlRotation();
 		float Pitch = ControllerRotation.Pitch;
 		if (Pitch > 90) {
 			Pitch -= 360;
 		}
-		UE_LOG(LogTemp, Warning, TEXT("Pitch : %f"), Pitch);
+		//UE_LOG(LogTemp, Warning, TEXT("Pitch : %f"), Pitch);
 		MyAnimInstance->SetAimPitch(Pitch);
+	}
+}
+
+void AGnuCharacter::StopAiming()
+{
+	if (GetController() != nullptr)
+	{
+		if (pCrossHair)
+		{
+			pCrossHair->UpdateCrossHair(1);
+		}
 	}
 }
 
@@ -168,6 +183,11 @@ void AGnuCharacter::StartFire()
 	if (GetController() != nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("fire!"));
+		if (pCrossHair)
+		{
+			pCrossHair->UpdateCrossHair(2); // 새로운 AimRate로 크로스헤어 업데이트
+
+		}
 		Gun->PullTrigger();
 	}
 }
@@ -176,6 +196,10 @@ void AGnuCharacter::StopFire()
 {
 	if (GetController() != nullptr)
 	{
+		if (pCrossHair)
+		{
+			pCrossHair->UpdateCrossHair(1);
+		}
 		Gun->ReleaseTrigger();
 	}
 }
@@ -186,6 +210,10 @@ void AGnuCharacter::Reroad()
 	if (GetController() != nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Reroad!"));
+		if (pCrossHair)
+		{
+			pCrossHair->UpdateCrossHair(3); // 새로운 AimRate로 크로스헤어 업데이트
+		}
 		Gun->Reload();
 	}
 }
@@ -202,10 +230,6 @@ void AGnuCharacter::Rotation(const FInputActionValue& value)
 	}
 }
 
-void AGnuCharacter::SetAimRate(float Aimrate)
-{
-	func_Player_Aimrate.ExecuteIfBound(Aimrate);
-}
 
 // Called to bind functionality to input
 void AGnuCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -220,6 +244,7 @@ void AGnuCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Started, this, &AGnuCharacter::StartFire);
 		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Completed, this, &AGnuCharacter::StopFire);
 		EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Triggered, this, &AGnuCharacter::Aiming);
+		EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Completed, this, &AGnuCharacter::StopAiming);
 		EnhancedInputComponent->BindAction(ReroadAction, ETriggerEvent::Started, this, &AGnuCharacter::Reroad);
 	}
 }
