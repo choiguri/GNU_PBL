@@ -14,6 +14,7 @@ UCLASS()
 class GNU_PBL_API AGnuCharacterPlayerState : public APlayerState, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
+
 public:
 	AGnuCharacterPlayerState();
 	

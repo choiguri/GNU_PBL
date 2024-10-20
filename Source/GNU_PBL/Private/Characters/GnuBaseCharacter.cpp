@@ -4,6 +4,8 @@
 #include "Characters/GnuBaseCharacter.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystems/GnuAbilitySystemComponent.h"
+#include "GameFramework/SpringArmComponent.h" // SpringArm
+#include "Camera/CameraComponent.h" // TPP, FPP Camera
 
 AGnuBaseCharacter::AGnuBaseCharacter()
 {
@@ -12,7 +14,6 @@ AGnuBaseCharacter::AGnuBaseCharacter()
 	Weapon = CreateDefaultSubobject<USkeletalMeshComponent>("Weapon");
 	Weapon->SetupAttachment(GetMesh(), FName("WeaponHandSocket"));
 	Weapon->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
 }
 
 UAbilitySystemComponent* AGnuBaseCharacter::GetAbilitySystemComponent() const
