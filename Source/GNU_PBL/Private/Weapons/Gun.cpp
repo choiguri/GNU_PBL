@@ -70,6 +70,7 @@ void AGun::Fire()
 		UE_LOG(LogTemp, Warning, TEXT("Out of ammo!"));
 		ReleaseTrigger();
 	}
+	UpdateAmmoDisplay();
 }
 
 
@@ -84,14 +85,43 @@ void AGun::Reload()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Already full of ammo"));
 	}
+	UpdateAmmoDisplay();
 }
+
+void AGun::UpdateAmmoDisplay()
+{
+	if (AmmoDisplay)
+	{
+		AmmoDisplay->UpdateAmmo(RemainAmmo, MaxAmmo);
+	}
+}
+
+void AGun::RemoveAmmoDisplay()
+{
+	if (AmmoDisplay)
+	{
+		AmmoDisplay->RemoveFromParent();  // UI에서 제거
+		AmmoDisplay = nullptr;  // 포인터 초기화
+	}
+}
+
+
 
 // Called when the game starts or when spawned
 void AGun::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (AmmoDisplayClass) // 탄약 표시 UI 유효성 검사
+	{
+		AmmoDisplay = CreateWidget<UAmmoDisplay>(GetWorld(), AmmoDisplayClass);
+
+		if (AmmoDisplay)
+		{
+			AmmoDisplay->AddToViewport(); // 뷰포트 추가
+		}
+	}
 	
-	RemainAmmo = MaxAmmo;
 }
 
 // Called every frame

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Weapons/AmmoDisplay.h"
 #include "Gun.generated.h"
 
 UCLASS()
@@ -27,6 +28,12 @@ public:
 	virtual void ReleaseTrigger();
 	virtual void Reload();
 
+	// 탄약 상태를 UI에 업데이트하는 함수
+	void UpdateAmmoDisplay();
+
+	void RemoveAmmoDisplay();
+	
+
 private:
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* Root;
@@ -41,6 +48,9 @@ private:
 	UParticleSystem* ImpactEffect;
 
 	UPROPERTY(EditAnywhere)
+	int Power = 50;
+
+	UPROPERTY(EditAnywhere)
 	float MaxRange = 1000;
 
 	UPROPERTY(EditAnywhere)
@@ -52,6 +62,14 @@ private:
 	float ReroadingDelay = 3.f;
 	UPROPERTY(EditAnywhere)
 	int RPM = 600;
+
+	// AmmoDisplay 위젯의 클래스 변수
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<class UAmmoDisplay> AmmoDisplayClass;
+
+	// AmmoDisplay 위젯 인스턴스
+	UPROPERTY()
+	UAmmoDisplay* AmmoDisplay;
 
 
 	FTimerHandle FireTimerHandle;  // Ÿ�̸� �ڵ� ���� �߰�

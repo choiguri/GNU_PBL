@@ -81,9 +81,7 @@ public:
 
 	FDele_Player_Aimrate func_Player_Aimrate;
 
-	UPROPERTY()
-	class UCrossHair* pCrossHair;
-
+	
 private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AGun> GunClass;
@@ -91,6 +89,11 @@ private:
 	UPROPERTY()
 	AGun* Gun;
 
+	
 	TSubclassOf<UUserWidget> CrossHairWidgetClass;
-	UUserWidget* CrossHairWidget;
+	//UUserWidget* CrossHairWidget;
+
+	UPROPERTY()
+	class UCrossHair* pCrossHair;
+
 };

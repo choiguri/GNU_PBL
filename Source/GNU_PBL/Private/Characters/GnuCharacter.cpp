@@ -68,13 +68,13 @@ void AGnuCharacter::BeginPlay()
 		}
 	}
 
-	if (CrossHairWidgetClass)
+	if (CrossHairWidgetClass) // 크로스헤어 UI 유효성 검사
 	{
 		// Create and add the CrossHair widget to the viewport
 		pCrossHair = CreateWidget<UCrossHair>(GetWorld(), CrossHairWidgetClass);
 		if (IsValid(pCrossHair))
 		{
-			pCrossHair->AddToViewport();
+			pCrossHair->AddToViewport(); // 뷰포트 추가
 		}
 	}
 
@@ -90,6 +90,7 @@ void AGnuCharacter::BeginPlay()
 	Gun = GetWorld()->SpawnActor<AGun>(GunClass);
 	Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("WeaponSocket"));
 	Gun->SetOwner(this);
+	Gun->UpdateAmmoDisplay();
 }
 
 // Called every frame
@@ -271,6 +272,7 @@ void AGnuCharacter::SwitchWeapon(TSubclassOf<AGun> NewGunClass)
 		
 		if (Gun)
 		{
+			Gun->RemoveAmmoDisplay();
 			Gun->Destroy();
 			Gun = nullptr;
 		}
@@ -280,6 +282,7 @@ void AGnuCharacter::SwitchWeapon(TSubclassOf<AGun> NewGunClass)
 		{
 			Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("WeaponSocket"));
 			Gun->SetOwner(this);
+			Gun->UpdateAmmoDisplay();
 		}
 	}
 }
