@@ -2,6 +2,7 @@
 
 
 #include "Weapons/Gun.h"
+#include "Weapons/DamageTest.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
@@ -60,6 +61,20 @@ void AGun::Fire()
 		{
 			FVector ShotDirection = -Rotation.Vector();
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactEffect, Hit.Location, ShotDirection.Rotation());
+			AActor* HitActor = Hit.GetActor();
+			if (HitActor)
+			{
+				// 액터에 특정 태그가 있는지 확인 (예: "WeaponSwitch")
+				if (HitActor->ActorHasTag(FName("Enemy")))
+				{
+					ADamageTest* Enemy = Cast<ADamageTest>(HitActor);
+					if (Enemy)
+					{
+						UE_LOG(LogTemp, Warning, TEXT("Hit Enemy!"));
+						Enemy->GetDamage(Power);
+					}
+				}
+			}
 		}
 
 		RemainAmmo--;
