@@ -32,7 +32,7 @@ AGnuCharacter::AGnuCharacter()
 	// 카메라
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->SetupAttachment(GetRootComponent());
-	SpringArm->TargetArmLength = 300.0f;
+	SpringArm->TargetArmLength = 400.0f;
 	SpringArm->SetWorldRotation(FRotator(-30.0f, 0.0f, 0.0f));
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
@@ -155,6 +155,10 @@ void AGnuCharacter::Aiming()
 	if (GetController() != nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Aiming..."));
+		if (SpringArm->TargetArmLength > 300.0f)
+		{
+			SpringArm->TargetArmLength -= 10;
+		}
 		if (pCrossHair)
 		{
 			pCrossHair->UpdateCrossHair(0);
@@ -173,6 +177,7 @@ void AGnuCharacter::StopAiming()
 {
 	if (GetController() != nullptr)
 	{
+		SpringArm->TargetArmLength = 400.0f;
 		if (pCrossHair)
 		{
 			pCrossHair->UpdateCrossHair(1);
