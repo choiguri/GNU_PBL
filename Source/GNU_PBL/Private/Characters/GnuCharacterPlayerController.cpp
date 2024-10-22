@@ -3,6 +3,7 @@
 
 #include "Characters/GnuCharacterPlayerController.h"
 #include "Characters/GnuMyCharacter.h" // GnuMyChracter함수 호출위해 사용
+#include "Characters/GnuMyCharacterAnimInstance.h" // GnuMyChracter함수 호출위해 사용
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
 
@@ -54,6 +55,9 @@ void AGnuCharacterPlayerController::SetupInputComponent()
 	EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &AGnuCharacterPlayerController::ToggleSprint);
 	EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &AGnuCharacterPlayerController::ToggleCrouch);
 	EnhancedInputComponent->BindAction(ToggleCameraAction, ETriggerEvent::Triggered, this, &AGnuCharacterPlayerController::ToggleCamera);
+	EnhancedInputComponent->BindAction(ZoomInAction, ETriggerEvent::Triggered, this, &AGnuCharacterPlayerController::ToggleZoomIn);
+	EnhancedInputComponent->BindAction(WeaponChangeAction, ETriggerEvent::Triggered, this, &AGnuCharacterPlayerController::WeaponChange);
+	EnhancedInputComponent->BindAction(PistolChangeAction, ETriggerEvent::Triggered, this, &AGnuCharacterPlayerController::PistolChange);
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AGnuCharacterPlayerController::Jump);
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AGnuCharacterPlayerController::StopJumping);
 }
@@ -115,6 +119,17 @@ void AGnuCharacterPlayerController::Rotation(const FInputActionValue& InputActio
 		// Pitch(상하 회전) 입력 처리
 		AddPitchInput(RotationValue.Y);
 
+		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
+		if (MyCharacter)
+		{
+			UGnuMyCharacterAnimInstance* AnimInstance = Cast<UGnuMyCharacterAnimInstance>(MyCharacter->GetMesh()->GetAnimInstance());
+			if (AnimInstance != nullptr)
+			{
+				// SetTurnRate 함수 호출 (현재 Yaw 값을 전달)
+				AnimInstance->SetTurnRate(RotationValue.X);
+			}
+		}
+
 	}
 }
 
@@ -126,7 +141,7 @@ void AGnuCharacterPlayerController::Dodge(const FInputActionValue& InputActionVa
 		if (MyCharacter)
 		{
 			// DodgeSystem 호출
-			MyCharacter->SetDodge(CurrentMoveDirection.Y, CurrentMoveDirection.X);
+			MyCharacter->ServerMontageOnDodge(CurrentMoveDirection.Y, CurrentMoveDirection.X);
 			// 가만히 있으면 구르기 막기 위함
 			CurrentMoveDirection = { 0.0f, 0.0f };
 		}
@@ -135,12 +150,22 @@ void AGnuCharacterPlayerController::Dodge(const FInputActionValue& InputActionVa
 
 void AGnuCharacterPlayerController::ToggleSprint(const FInputActionValue& InputActionValue)
 {
+
 	if (APawn* ControlledPawn = GetPawn<APawn>())
 	{
 		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
 		if (MyCharacter)
 		{
-			MyCharacter->SetSprintSpeed(); // 스프린트 속도 설정
+			if (MyCharacter->isSprint)
+			{
+				// 서버에서 스프린트 종료 호출
+				MyCharacter->ServerSprintEnd();
+			}
+			else
+			{
+				// 서버에서 스프린트 시작 호출
+				MyCharacter->ServerSprintStart();
+			}
 		}
 	}
 }
@@ -152,7 +177,16 @@ void AGnuCharacterPlayerController::ToggleCrouch(const FInputActionValue& InputA
 		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
 		if (MyCharacter)
 		{
-			MyCharacter->SetCrouch(); // Crouch 설정
+			if (MyCharacter->isCrouch)
+			{
+				// 서버에서 스프린트 종료 호출
+				MyCharacter->ServerCrouchEnd();
+			}
+			else
+			{
+				// 서버에서 스프린트 시작 호출
+				MyCharacter->ServerCrouchStart();
+			}
 		}
 	}
 }
@@ -165,6 +199,40 @@ void AGnuCharacterPlayerController::ToggleCamera(const FInputActionValue& InputA
 		if (MyCharacter)
 		{
 			MyCharacter->SetCamera(); // Crouch 설정
+		}
+	}
+}
+
+void AGnuCharacterPlayerController::ToggleZoomIn(const FInputActionValue& InputActionValue)
+{
+	if (APawn* ControlledPawn = GetPawn<APawn>())
+	{
+		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
+		if (MyCharacter)
+		{
+			MyCharacter->SetZoomIn(); // Crouch 설정
+		}
+	}
+}
+
+void AGnuCharacterPlayerController::PistolChange(const FInputActionValue& InputActionValue)
+{
+
+}
+
+void AGnuCharacterPlayerController::WeaponChange(const FInputActionValue& InputActionValue)
+{
+	if (APawn* ControlledPawn = GetPawn<APawn>())
+	{
+		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
+		if (MyCharacter)
+		{
+			UGnuMyCharacterAnimInstance* AnimInstance = Cast<UGnuMyCharacterAnimInstance>(MyCharacter->GetMesh()->GetAnimInstance());
+			if (AnimInstance != nullptr)
+			{
+				// SetTurnRate 함수 호출 (현재 Yaw 값을 전달)
+				AnimInstance->ServerSetWeapon();
+			}
 		}
 	}
 }

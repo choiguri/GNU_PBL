@@ -25,6 +25,7 @@ UAbilitySystemComponent* AGnuBaseCharacter::GetAbilitySystemComponent() const
 void AGnuBaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
 	
 }
 

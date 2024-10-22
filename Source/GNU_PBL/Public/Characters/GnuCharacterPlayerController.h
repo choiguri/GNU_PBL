@@ -51,7 +51,17 @@ private:
 	UPROPERTY(EditAnywhere, Category = "input")
 	TObjectPtr<UInputAction> ToggleCameraAction;
 
+	UPROPERTY(EditAnywhere, Category = "input")
+	TObjectPtr<UInputAction> WeaponChangeAction;
+	
+	UPROPERTY(EditAnywhere, Category = "input")
+	TObjectPtr<UInputAction> PistolChangeAction;
+
+	UPROPERTY(EditAnywhere, Category = "input")
+	TObjectPtr<UInputAction> ZoomInAction;
+
 	FVector2D CurrentMoveDirection; // Dodge할 때 사용
+
 
 	void Move(const struct FInputActionValue& InputActionValue);
 	void Rotation(const struct FInputActionValue& InputActionValue);
@@ -59,6 +69,9 @@ private:
 	void ToggleSprint(const struct FInputActionValue& InputActionValue);
 	void ToggleCrouch(const struct FInputActionValue& InputActionValue);
 	void ToggleCamera(const struct FInputActionValue& InputActionValue);
+	void ToggleZoomIn(const struct FInputActionValue& InputActionValue);
+	void PistolChange(const struct FInputActionValue& InputActionValue);
+	void WeaponChange(const struct FInputActionValue& InputActionValue);
 	void Jump(const struct FInputActionValue& InputActionValue);
 	void StopJumping(const struct FInputActionValue& InputActionValue);
 };

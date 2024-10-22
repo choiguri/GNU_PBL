@@ -29,6 +29,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	
 
 	// 무기를 나타내는 SkeletalMeshComponent를 설정합니다. (에디터에서 수정 가능)
 	UPROPERTY(EditAnywhere, Category = "Combat")

@@ -18,12 +18,23 @@ enum class EMovementInput : uint8
 	Left     UMETA(DisplayName = "Left")
 };
 
+UENUM(BlueprintType)
+enum class EAnimationState : uint8
+{
+	Unarmed        UMETA(DisplayName = "Unarmed"),
+	Pistol     UMETA(DisplayName = "Pistol"),
+	Rifle     UMETA(DisplayName = "Rifle"),
+};
+
 UCLASS()
 class GNU_PBL_API UGnuMyCharacterAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
 
 protected:	
+	// 네트워크 복제를 위한 함수 선언 : UFUNCTION(Server) 기능 사용하려면 이 함수가 있어야 함
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 	UPROPERTY(BlueprintReadOnly, Category = "Character", meta = (AllowPrivateAccess = "true"))
 	AGnuMyCharacter* MyCharacter;
 
@@ -34,7 +45,10 @@ protected:
 	float GroundSpeed; // 캐릭터의 바닥 속도
 
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	FVector Velocity; // 캐릭터의 바닥 속도
+	FVector CurVelocity; // 
+
+	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	FVector CurAcceleration; //
 
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	bool ShouldMove; // 캐릭터의 움직임 여부
@@ -60,33 +74,49 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	float L_Orientation_Angle; // 왼쪽 방향의 각도
 
+	// ------------ Turn In Place에 사용되는 변수들 (c++로 구현 못해서 애니메이션 블프로 해둠) ---------------
 	UPROPERTY(BlueprintReadWrite, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	float Yaw; // 왼쪽 방향의 각도
+	float Yaw;
 	UPROPERTY(BlueprintReadWrite, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	float YawLastTick; // 왼쪽 방향의 각도
+	float YawLastTick;
 	UPROPERTY(BlueprintReadWrite, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	float YawChangeOver; // 왼쪽 방향의 각도
+	float YawChangeOver;
 	UPROPERTY(BlueprintReadWrite, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	float YawOffset; // 왼쪽 방향의 각도
+	float YawOffset;
 	UPROPERTY(BlueprintReadWrite, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	float CurveValue; // 왼쪽 방향의 각도
+	float CurveValue;
 	UPROPERTY(BlueprintReadWrite, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	float LastCurveValue; // 왼쪽 방향의 각도
+	float LastCurveValue;
+	//--------------------------------------------------------------------------------
+
+	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	float CurPitch;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	float TurnRate;
+	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	float CurDirectionAngle = 0.0f;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	bool isSprinting; // 달리는지 여부
 
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	bool isCrouching; // 앉았는지 여부
+	bool isCrouching; // 앉았는지 여부;
 
-	bool DoOnce;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	EAnimationState EAnimState;
 
 public:
 	virtual void NativeUpdateAnimation(float DeltaTime) override;
 	virtual void NativeInitializeAnimation() override;
 
-	void SwitchSprint();
-	void SwitchCrouch();
-	bool GetIsSprinting();
-	bool GetIsCroucing();
+	void SetTurnRate(float CurYaw);
+	void SetWeapon();
+	
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerSetWeapon(); // 서버에서 구르기 몽타주를 실행하는 함수 (컨트롤러에서 호출)
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiCastSetWeapon(); // 구르기 몽타주 멀티캐스트 (서버가 호출되면 자동으로 호출)
+
 };
