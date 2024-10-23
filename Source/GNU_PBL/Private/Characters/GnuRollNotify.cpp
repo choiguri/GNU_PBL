@@ -13,7 +13,7 @@ void UGnuRollNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase*
         {
             if (GEngine)
             {
-                GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("isDodging : true에서 False"));
+                GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("isDodging : true to False"));
             }
             Character->isDodge = false;
         }
@@ -21,7 +21,7 @@ void UGnuRollNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase*
         {
             if (GEngine)
             {
-                GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("isDodging : false 에서 true"));
+                GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("isDodging : false to true"));
             }
             Character->isDodge = true;
  

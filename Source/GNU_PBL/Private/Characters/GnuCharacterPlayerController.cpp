@@ -52,7 +52,8 @@ void AGnuCharacterPlayerController::SetupInputComponent()
 	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AGnuCharacterPlayerController::Move);
 	EnhancedInputComponent->BindAction(RotationAction, ETriggerEvent::Triggered, this, &AGnuCharacterPlayerController::Rotation);
 	EnhancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Triggered, this, &AGnuCharacterPlayerController::Dodge);
-	EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &AGnuCharacterPlayerController::ToggleSprint);
+	EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &AGnuCharacterPlayerController::Sprint);
+	EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AGnuCharacterPlayerController::SprintStop);
 	EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &AGnuCharacterPlayerController::ToggleCrouch);
 	EnhancedInputComponent->BindAction(ToggleCameraAction, ETriggerEvent::Triggered, this, &AGnuCharacterPlayerController::ToggleCamera);
 	EnhancedInputComponent->BindAction(ZoomInAction, ETriggerEvent::Triggered, this, &AGnuCharacterPlayerController::ToggleZoomIn);
@@ -126,7 +127,7 @@ void AGnuCharacterPlayerController::Rotation(const FInputActionValue& InputActio
 			if (AnimInstance != nullptr)
 			{
 				// SetTurnRate 함수 호출 (현재 Yaw 값을 전달)
-				AnimInstance->SetTurnRate(RotationValue.X);
+				AnimInstance->SetTurnRate(FMath::Clamp(RotationValue.X, -1.0f, 1.0f));
 			}
 		}
 
@@ -142,13 +143,29 @@ void AGnuCharacterPlayerController::Dodge(const FInputActionValue& InputActionVa
 		{
 			// DodgeSystem 호출
 			MyCharacter->ServerMontageOnDodge(CurrentMoveDirection.Y, CurrentMoveDirection.X);
-			// 가만히 있으면 구르기 막기 위함
-			CurrentMoveDirection = { 0.0f, 0.0f };
+
 		}
 	}
 }
 
-void AGnuCharacterPlayerController::ToggleSprint(const FInputActionValue& InputActionValue)
+void AGnuCharacterPlayerController::Sprint(const FInputActionValue& InputActionValue)
+{
+
+	if (APawn* ControlledPawn = GetPawn<APawn>())
+	{
+		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
+		if (MyCharacter)
+		{
+			if (!MyCharacter->isSprint)
+			{
+				// 서버에서 스프린트 시작 호출
+				MyCharacter->ServerSprintStart();
+			}
+		}
+	}
+}
+
+void AGnuCharacterPlayerController::SprintStop(const FInputActionValue& InputActionValue)
 {
 
 	if (APawn* ControlledPawn = GetPawn<APawn>())
@@ -160,11 +177,6 @@ void AGnuCharacterPlayerController::ToggleSprint(const FInputActionValue& InputA
 			{
 				// 서버에서 스프린트 종료 호출
 				MyCharacter->ServerSprintEnd();
-			}
-			else
-			{
-				// 서버에서 스프린트 시작 호출
-				MyCharacter->ServerSprintStart();
 			}
 		}
 	}
@@ -179,12 +191,12 @@ void AGnuCharacterPlayerController::ToggleCrouch(const FInputActionValue& InputA
 		{
 			if (MyCharacter->isCrouch)
 			{
-				// 서버에서 스프린트 종료 호출
+				// 서버에서 앉기 종료 호출
 				MyCharacter->ServerCrouchEnd();
 			}
 			else
 			{
-				// 서버에서 스프린트 시작 호출
+				// 서버에서 앉기 시작 호출
 				MyCharacter->ServerCrouchStart();
 			}
 		}
@@ -198,7 +210,7 @@ void AGnuCharacterPlayerController::ToggleCamera(const FInputActionValue& InputA
 		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
 		if (MyCharacter)
 		{
-			MyCharacter->SetCamera(); // Crouch 설정
+			MyCharacter->SetCamera(); // 카메라 시점 전환
 		}
 	}
 }
@@ -210,14 +222,22 @@ void AGnuCharacterPlayerController::ToggleZoomIn(const FInputActionValue& InputA
 		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
 		if (MyCharacter)
 		{
-			MyCharacter->SetZoomIn(); // Crouch 설정
+			MyCharacter->SetZoomIn(); // 카메라 줌인 설정
 		}
 	}
 }
 
 void AGnuCharacterPlayerController::PistolChange(const FInputActionValue& InputActionValue)
 {
-
+	if (APawn* ControlledPawn = GetPawn<APawn>())
+	{
+		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
+		if (MyCharacter)
+		{
+			// 현재는 q누르면 WeaponChange호출하면서 차례대로 변함.
+			// 무기 교체하는게 필요없으면 WeaponChange, PistolChange 둘다 뺴야함
+		}
+	}
 }
 
 void AGnuCharacterPlayerController::WeaponChange(const FInputActionValue& InputActionValue)
@@ -231,7 +251,7 @@ void AGnuCharacterPlayerController::WeaponChange(const FInputActionValue& InputA
 			if (AnimInstance != nullptr)
 			{
 				// SetTurnRate 함수 호출 (현재 Yaw 값을 전달)
-				AnimInstance->ServerSetWeapon();
+				AnimInstance->ServerSetAnimState_Implementation();
 			}
 		}
 	}
