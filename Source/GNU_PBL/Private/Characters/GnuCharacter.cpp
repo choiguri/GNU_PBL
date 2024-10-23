@@ -161,7 +161,7 @@ void AGnuCharacter::Aiming()
 		}
 		if (pCrossHair)
 		{
-			pCrossHair->UpdateCrossHair(0);
+			pCrossHair->UpdateCrossHair(0.5);
 		}
 		const FRotator ControllerRotation = GetController()->GetControlRotation();
 		float Pitch = ControllerRotation.Pitch;

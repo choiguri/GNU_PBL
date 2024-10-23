@@ -27,6 +27,7 @@ public:
 	virtual void PullTrigger();
 	virtual void ReleaseTrigger();
 	virtual void Reload();
+	float GetRecoilOffset();
 
 	// 탄약 상태를 UI에 업데이트하는 함수
 	void UpdateAmmoDisplay();
@@ -61,6 +62,8 @@ private:
 	UPROPERTY(EditAnywhere)
 	float ReroadingDelay = 3.f;
 	UPROPERTY(EditAnywhere)
+	float Accuracy = 1.f;
+	UPROPERTY(EditAnywhere)
 	int RPM = 600;
 
 	// AmmoDisplay 위젯의 클래스 변수
@@ -75,5 +78,7 @@ private:
 	FTimerHandle FireTimerHandle;  // Ÿ�̸� �ڵ� ���� �߰�
 
 	void Fire();  // �߻� ��� ���� �Լ�
+
+
 
 };

@@ -27,11 +27,11 @@ public:
     void BindUserAimRate(class AGnuCharacter* GnuCharacter);
 
 protected:
-    UWidget* UICross_L; // 왼쪽 조준점
-    UWidget* UICross_R; // 오른쪽 조준점
-    UWidget* UICross_T; // 위쪽 조준점
-    UWidget* UICross_B; // 아래쪽 조준점
-    UWidget* UICross_C; // 중앙 조준점
+    UWidget* UICross_L; // Left
+    UWidget* UICross_R; // Right
+    UWidget* UICross_T; // Top
+    UWidget* UICross_B; // Bottom 
+    UWidget* UICross_C; // Center 
 
 private:
     float fTarget_Aimrate = 15.f;

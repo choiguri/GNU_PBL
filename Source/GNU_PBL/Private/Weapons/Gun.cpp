@@ -6,6 +6,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
+#include <Characters/GnuCharacter.h>
 
 // Sets default values
 AGun::AGun()
@@ -52,6 +53,14 @@ void AGun::Fire()
 		FRotator Rotation;
 		OwnerController->GetPlayerViewPoint(Location, Rotation);
 
+		//Recoil
+		float RecoilOffset = GetRecoilOffset(); // Accuracy + MovementStability;
+		//Rotation.Pitch += BulletRecoil.Y;
+		Rotation.Pitch = FMath::RandRange(Rotation.Pitch, Rotation.Pitch + RecoilOffset);
+		//Rotation.Yaw += BulletRecoil.Z;
+		Rotation.Yaw = FMath::RandRange(Rotation.Yaw - RecoilOffset, Rotation.Yaw + RecoilOffset);
+		//Rotation.Roll += BulletRecoil.X;
+
 		FVector End = Location + Rotation.Vector() * MaxRange;
 		// TODO: LineTrace 
 
@@ -64,7 +73,7 @@ void AGun::Fire()
 			AActor* HitActor = Hit.GetActor();
 			if (HitActor)
 			{
-				// ¾×ÅÍ¿¡ Æ¯Á¤ ÅÂ±×°¡ ÀÖ´ÂÁö È®ÀÎ (¿¹: "WeaponSwitch")
+				// ï¿½ï¿½ï¿½Í¿ï¿½ Æ¯ï¿½ï¿½ ï¿½Â±×°ï¿½ ï¿½Ö´ï¿½ï¿½ï¿½ È®ï¿½ï¿½ (ï¿½ï¿½: "WeaponSwitch")
 				if (HitActor->ActorHasTag(FName("Enemy")))
 				{
 					ADamageTest* Enemy = Cast<ADamageTest>(HitActor);
@@ -86,6 +95,16 @@ void AGun::Fire()
 		ReleaseTrigger();
 	}
 	UpdateAmmoDisplay();
+}
+
+float AGun::GetRecoilOffset()
+{
+	AGnuCharacter* GnuCharacter = Cast<AGnuCharacter>(GetOwner());
+	if (!IsValid(GnuCharacter)) return 0.f;
+
+	float CharacterSpeed = GnuCharacter->GetVelocity().Size();
+	UCharacterMovementComponent* MovementComponent = GnuCharacter->GetCharacterMovement();
+	return Accuracy; //* (CurrentRecoilRecoveryTime / RecoilRecoveryTime);// +MovementStability * (CharacterSpeed / MovementComponent->MaxWalkSpeed);
 }
 
 
@@ -115,8 +134,8 @@ void AGun::RemoveAmmoDisplay()
 {
 	if (AmmoDisplay)
 	{
-		AmmoDisplay->RemoveFromParent();  // UI¿¡¼­ Á¦°Å
-		AmmoDisplay = nullptr;  // Æ÷ÀÎÅÍ ÃÊ±âÈ­
+		AmmoDisplay->RemoveFromParent();  // UIï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+		AmmoDisplay = nullptr;  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
 	}
 }
 
@@ -127,13 +146,13 @@ void AGun::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (AmmoDisplayClass) // Åº¾à Ç¥½Ã UI À¯È¿¼º °Ë»ç
+	if (AmmoDisplayClass) // Åºï¿½ï¿½ Ç¥ï¿½ï¿½ UI ï¿½ï¿½È¿ï¿½ï¿½ ï¿½Ë»ï¿½
 	{
 		AmmoDisplay = CreateWidget<UAmmoDisplay>(GetWorld(), AmmoDisplayClass);
 
 		if (AmmoDisplay)
 		{
-			AmmoDisplay->AddToViewport(); // ºäÆ÷Æ® Ãß°¡
+			AmmoDisplay->AddToViewport(); // ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ß°ï¿½
 		}
 	}
 	
