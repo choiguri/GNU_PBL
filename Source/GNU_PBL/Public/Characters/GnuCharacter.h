@@ -1,5 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+//GnuCharacter.h
+
+
 #pragma once
 
 #include "CoreMinimal.h"
@@ -38,8 +41,16 @@ protected:
 	UInputAction* JumpAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input")
+	UInputAction* RollAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input")
 	bool isWaking;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Montage")
+	UAnimMontage* RollMontage;
+
+	void PlayRollMontage();
+	
 
 protected:
 	// Called when the game starts or when spawned
@@ -48,6 +59,8 @@ protected:
 	void Move(const FInputActionValue& value);
 	void Rotation(const FInputActionValue& value);
 	void UpdateAnimInstance(const FVector2D& MoveVector2D);
+
+	void Roll();
 
 public:	
 	// Sets default values for this character's properties
@@ -58,5 +71,7 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	
 
 };

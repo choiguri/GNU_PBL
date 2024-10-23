@@ -1,5 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+//GnuCharacterAnimInstance.h
+
+
 #pragma once
 
 #include "CoreMinimal.h"
@@ -31,6 +34,12 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = Movement)
 	bool isRightMove = false;
 
+	UPROPERTY(BlueprintReadOnly, Category = Movement)
+	bool isRoll = false;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation")
+	UAnimMontage* RollMontage;
+
 public:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaTime) override;
@@ -40,4 +49,11 @@ public:
 	void SetIsLeftMove(bool Value);
 	void SetIsRightMove(bool Value);
 	bool isWalking();
+	bool isRolling();
+
+	// 구르기 애니메이션 재생 함수 추가
+	void PlayRollMontage();
+
+	// 구르기 몽타주가 현재 재생 중인지 확인하는 함수 추가
+	bool IsPlayingAnyMontage() const;
 };
