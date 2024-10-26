@@ -5,9 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Weapons/AmmoDisplay.h"
-#include <Components/TimelineComponent.h>
 #include "Gun.generated.h"
-
 
 UCLASS()
 class GNU_PBL_API AGun : public AActor
@@ -35,19 +33,7 @@ public:
 	void UpdateAmmoDisplay();
 
 	void RemoveAmmoDisplay();
-
-	/*	// Recoil Function
-
-	void InitializeRecoilTimeline();
-	UFUNCTION()
-	void OnCameraRecoilProgress(FVector CameraRecoil);
-
-	UFUNCTION()
-	void OnBulletRecoilProgress(FVector BulletRecoil);
-
-	UFUNCTION()
-	void OnRecoilTimelineFinish();
-	*/
+	
 
 private:
 	UPROPERTY(VisibleAnywhere)
@@ -56,43 +42,29 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	USkeletalMeshComponent* Mesh;
 
-	UPROPERTY(EditAnywhere, Category = "Particle")
+	UPROPERTY(EditAnywhere)
 	UParticleSystem* MuzzleFlash;
 	
-	UPROPERTY(EditAnywhere, Category = "Particle")
+	UPROPERTY(EditAnywhere)
 	UParticleSystem* ImpactEffect;
 
-	UPROPERTY(EditAnywhere, Category = "Spec")
+	UPROPERTY(EditAnywhere)
 	int Power = 50;
 
-	UPROPERTY(EditAnywhere, Category = "Spec")
+	UPROPERTY(EditAnywhere)
 	float MaxRange = 1000;
 
-	UPROPERTY(EditAnywhere, Category = "Spec")
+	UPROPERTY(EditAnywhere)
 	int MaxAmmo = 30;
 
-	UPROPERTY(EditAnywhere, Category = "Spec")
+	UPROPERTY(EditAnywhere)
 	int RemainAmmo = MaxAmmo;
 	UPROPERTY(EditAnywhere)
 	float ReroadingDelay = 3.f;
-	UPROPERTY(EditAnywhere, Category = "Spec")
+	UPROPERTY(EditAnywhere)
 	float Accuracy = 1.f;
-	UPROPERTY(EditAnywhere, Category = "Spec")
+	UPROPERTY(EditAnywhere)
 	int RPM = 600;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Spec")
-	float RecoilRecoveryTime;
-
-	float CurrentRecoilRecoveryTime;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Timeline", Meta = (AllowPrivateAccess = "true"))
-	UCurveVector* CameraRecoilCurve;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Timeline", Meta = (AllowPrivateAccess = "true"))
-	UCurveVector* BulletRecoilCurve;
-
-	FTimeline RecoilTimeline;
-
 
 	// AmmoDisplay 위젯의 클래스 변수
 	UPROPERTY(EditAnywhere, Category = "UI")

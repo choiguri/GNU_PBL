@@ -22,43 +22,6 @@ AGun::AGun()
 
 }
 
-
-// Called when the game starts or when spawned
-void AGun::BeginPlay()
-{
-	Super::BeginPlay();
-
-	if (AmmoDisplayClass) // ź�� ǥ�� UI ��ȿ�� �˻�
-	{
-		AmmoDisplay = CreateWidget<UAmmoDisplay>(GetWorld(), AmmoDisplayClass);
-
-		if (AmmoDisplay)
-		{
-			AmmoDisplay->AddToViewport(); // ����Ʈ �߰�
-		}
-	}
-
-	//InitializeRecoilTimeline();
-}
-
-void AGun::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-	RecoilTimeline.TickTimeline(DeltaTime);
-
-	/* //Recover recoil
-	if (!RecoilTimeline.IsPlaying() && 0.f <= CurrentRecoilRecoveryTime)
-	{
-		CurrentRecoilRecoveryTime -= DeltaTime;
-		float ReducedTimelinePlayback = RecoilTimeline.GetPlaybackPosition() * (CurrentRecoilRecoveryTime / RecoilRecoveryTime);
-		RecoilTimeline.SetPlaybackPosition(ReducedTimelinePlayback, false);
-	}
-	*/
-}
-
-
-
 void AGun::PullTrigger()
 {
 	if (!GetWorld()->GetTimerManager().IsTimerActive(FireTimerHandle))
@@ -176,44 +139,29 @@ void AGun::RemoveAmmoDisplay()
 	}
 }
 
-/*
-void AGun::InitializeRecoilTimeline()
+
+
+// Called when the game starts or when spawned
+void AGun::BeginPlay()
 {
-	if (CameraRecoilCurve == nullptr || BulletRecoilCurve == nullptr)
+	Super::BeginPlay();
+
+	if (AmmoDisplayClass) // ź�� ǥ�� UI ��ȿ�� �˻�
 	{
-		return;
+		AmmoDisplay = CreateWidget<UAmmoDisplay>(GetWorld(), AmmoDisplayClass);
+
+		if (AmmoDisplay)
+		{
+			AmmoDisplay->AddToViewport(); // ����Ʈ �߰�
+		}
 	}
-
-	FOnTimelineVector CameraRecoilCallback;
-	FOnTimelineVector BulletRecoilCallback;
-
-	FOnTimelineEventStatic TimelineFinishCallback;
-
-	// `FName("함수 이름")` 함수 이름에 해당하는 함수가 실행됨
-	CameraRecoilCallback.BindUFunction(this, FName("OnCameraRecoilProgress"));
-	BulletRecoilCallback.BindUFunction(this, FName("OnBulletRecoilProgress"));
-	TimelineFinishCallback.BindUFunction(this, FName("OnRecoilTimelineFinish"));
-
-	RecoilTimeline.AddInterpVector(CameraRecoilCurve, CameraRecoilCallback);
-	RecoilTimeline.AddInterpVector(BulletRecoilCurve, BulletRecoilCallback);
-	RecoilTimeline.SetTimelineFinishedFunc(TimelineFinishCallback);
+	
 }
 
-void AGun::OnCameraRecoilProgress(FVector CameraRecoil)
+// Called every frame
+void AGun::Tick(float DeltaTime)
 {
+	Super::Tick(DeltaTime);
+
 }
-
-void AGun::OnBulletRecoilProgress(FVector BulletRecoil)
-{
-}
-
-
-void AGun::OnRecoilTimelineFinish()
-{
-	CurrentRecoilRecoveryTime = RecoilRecoveryTime;
-}
-*/
-
-
-
 

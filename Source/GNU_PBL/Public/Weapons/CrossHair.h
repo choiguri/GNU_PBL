@@ -25,12 +25,12 @@ public:
     void SetAimRate(float Aimrate);
 
     void BindUserAimRate(class AGnuCharacter* GnuCharacter);
-        
+
 protected:
     UWidget* UICross_L; // Left
     UWidget* UICross_R; // Right
     UWidget* UICross_T; // Top
-    UWidget* UICross_B; // Bottom
+    UWidget* UICross_B; // Bottom 
     UWidget* UICross_C; // Center 
 
 private:
