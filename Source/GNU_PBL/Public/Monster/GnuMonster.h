@@ -4,12 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "GnuFireballActor.h"
 #include "Animation/AnimNotifies/AnimNotify.h"
+#include "GnuMonsterAnimInstance.h"
 #include "GnuMonster.generated.h"
 
-class UCapsuleComponent;
-class USphereComponent;
 
 UCLASS()
 class GNU_PBL_API AGnuMonster : public ACharacter
@@ -24,9 +22,18 @@ public:
 
 	void SpawnFiretornado(); // 파이어토네이도 소환 함수
 
+	void SpawnFirebreath(); // 파이어브레스 소환 함수
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	// 몬스터 애님인스턴스 설정
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	TSubclassOf<UGnuMonsterAnimInstance> MonsterAnimInstanceClass;
+
+	UFUNCTION()
+	void InitializeAnimInstance();
 
 private:
 
@@ -41,6 +48,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Montage")
 	UAnimMontage* FlyingAttackMontage;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Montage")
+	UAnimMontage* FirebreathAttackMontage;
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
 	TSubclassOf<class AGnuFireballActor> FireballClass;
@@ -48,10 +58,19 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
 	TSubclassOf<class AGnuFiretornadoActor> FiretornadoClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	TSubclassOf<class AGnuFirebreathActor> FirebreathClass;
+
+	UPROPERTY()
+	AGnuFirebreathActor* FirebreathActor;
+
 
 	UFUNCTION()
 	void PlayDefaultAttackMontage();
 
 	UFUNCTION()
 	void PlayFlyingAttackMontage();
+
+	UFUNCTION()
+	void PlayFirebreathAttackMontage();
 };

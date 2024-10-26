@@ -10,7 +10,8 @@
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
 				"Engine",
-				"AIModule"
+				"AIModule",
+				"GameplayAbilities"
 			]
 		}
 	],
@@ -24,6 +25,10 @@
 		},
 		{
 			"Name": "GameplayBehaviors",
+			"Enabled": true
+		},
+		{
+			"Name": "SkeletalMeshModelingTools",
 			"Enabled": true
 		}
 	]
