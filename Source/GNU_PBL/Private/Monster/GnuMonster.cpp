@@ -3,7 +3,7 @@
 
 #include "Monster/GnuMonster.h"
 #include "Components/SphereComponent.h"
-#include "Characters/GnuCharacter.h"
+//#include "Characters/GnuCharacter.h"
 
 
 AGnuMonster::AGnuMonster()
@@ -42,15 +42,15 @@ void AGnuMonster::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 // Target BeginOverlap Function
 void AGnuMonster::OnPlayerEnterRange(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor && (OtherActor != this) && OtherComp)
-	{
-		AGnuCharacter* Target = Cast<AGnuCharacter>(OtherActor);
-		if (Target && GetWorld())
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Blue, TEXT("BeginOverlap"));
-			PlayAttackMontage();
-		}
-	}
+	//if (OtherActor && (OtherActor != this) && OtherComp)
+	//{
+	//	AGnuCharacter* Target = Cast<AGnuCharacter>(OtherActor);
+	//	if (Target && GetWorld())
+	//	{
+	//		GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Blue, TEXT("BeginOverlap"));
+	//		PlayAttackMontage();
+	//	}
+	//}
 }
 
 // Target EndOverlap Function
