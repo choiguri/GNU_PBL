@@ -16,7 +16,7 @@ UGNUMultiplayerSessionsSubsystem::UGNUMultiplayerSessionsSubsystem():
 	IOnlineSubsystem* Subsystem = IOnlineSubsystem::Get();
 
 	if (Subsystem)
-	{
+	{	
 		SessionInterface = Subsystem->GetSessionInterface();
 		/*if (GEngine)
 		{

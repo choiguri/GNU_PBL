@@ -7,10 +7,12 @@
 #include "EnhancedInputComponent.h"
 #include "Characters/GnuCharacterAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
+// 내가 추가한 헤더들
 #include "Components/WidgetComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "HUD/GNUOverHeadWidget.h"
 #include "PlayerController/GNUPlayerController.h"
+#include "GameModes/GNUGameMode.h"
 
 // Sets default values
 AGnuCharacter::AGnuCharacter()
@@ -85,7 +87,7 @@ void AGnuCharacter::BeginPlay()
 void AGnuCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	isWaking = MyAnimInstance->isWalking();
+
 }
 
 void AGnuCharacter::Move(const FInputActionValue& value)
@@ -171,6 +173,11 @@ void AGnuCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AGnuCharacter, Health);
+
+}
+
+void AGnuCharacter::Elim()
+{
 
 }
 

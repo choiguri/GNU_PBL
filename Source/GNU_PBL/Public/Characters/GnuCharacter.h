@@ -95,4 +95,9 @@ public:
 
 	UFUNCTION(Server, Reliable)
 	void ServerSetPlayerName(const FString& PlayerName);
+
+	//
+	// GNUGameMode와 관련
+	//
+	void Elim();
 };
