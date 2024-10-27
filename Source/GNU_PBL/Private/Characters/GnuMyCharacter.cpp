@@ -7,7 +7,7 @@
 #include "Components/CapsuleComponent.h" // SetCapsuleHalfHeight()
 #include "GameFramework/SpringArmComponent.h" // SpringArm
 #include "Camera/CameraComponent.h" // TPP, FPP Camera
-//#include "Characters/GnuMyCharacterAnimInstance.h" // MultiCastMontage_Dodge_Implementation 함수의 몇가지 함수들 
+#include "Characters/GnuMyCharacterAnimInstance.h" // MultiCastMontage_Dodge_Implementation 함수의 몇가지 함수들 
 #include "Animation/AnimMontage.h" // class UAnimMontage
 #include "Net/UnrealNetwork.h" // ~_Implementation(), ~_Validate(), GetLifetimeReplicatedProps()
 #include "Kismet/KismetSystemLibrary.h"
