@@ -3,6 +3,7 @@
 
 #include "Weapons/Gun.h"
 #include "Weapons/DamageTest.h"
+#include "Weapons/Bullet.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
@@ -39,52 +40,69 @@ void AGun::ReleaseTrigger()
 
 
 void AGun::Fire()
-{
+{	
 	if (RemainAmmo > 0)
 	{
-		UGameplayStatics::SpawnEmitterAttached(MuzzleFlash, Mesh, TEXT("MuzzleFlashSocket"));
-
-		APawn* OwnerPawn = Cast<APawn>(GetOwner());
-		if (OwnerPawn == nullptr) return;
-		AController* OwnerController = OwnerPawn->GetController();
-		if (OwnerController == nullptr) return;
-
-		FVector Location;
-		FRotator Rotation;
-		OwnerController->GetPlayerViewPoint(Location, Rotation);
-
-		//Recoil
-		float RecoilOffset = GetRecoilOffset(); // Accuracy + MovementStability;
-		//Rotation.Pitch += BulletRecoil.Y;
-		Rotation.Pitch = FMath::RandRange(Rotation.Pitch, Rotation.Pitch + RecoilOffset);
-		//Rotation.Yaw += BulletRecoil.Z;
-		Rotation.Yaw = FMath::RandRange(Rotation.Yaw - RecoilOffset, Rotation.Yaw + RecoilOffset);
-		//Rotation.Roll += BulletRecoil.X;
-
-		FVector End = Location + Rotation.Vector() * MaxRange;
-		// TODO: LineTrace 
-
-		FHitResult Hit;
-		bool bSuccess = GetWorld()->LineTraceSingleByChannel(Hit, Location, End, ECollisionChannel::ECC_GameTraceChannel1);
-		if (bSuccess)
+		
+		if (1) //Projectile
 		{
-			FVector ShotDirection = -Rotation.Vector();
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactEffect, Hit.Location, ShotDirection.Rotation());
-			AActor* HitActor = Hit.GetActor();
-			if (HitActor)
+			UGameplayStatics::SpawnEmitterAttached(MuzzleFlash, Mesh, TEXT("MuzzleFlashSocket"));
+
+			FTransform fireposition = Mesh->GetSocketTransform(TEXT("FirePosition"), RTS_World);
+			ABullet* Bullet = GetWorld()->SpawnActor<ABullet>(bulletFactory, fireposition);
+			if (Bullet)
 			{
-				// ���Ϳ� Ư�� �±װ� �ִ��� Ȯ�� (��: "WeaponSwitch")
-				if (HitActor->ActorHasTag(FName("Enemy")))
+				Bullet->SetPower(Power);
+			}
+		}
+		else // hitscan
+		{
+			UGameplayStatics::SpawnEmitterAttached(MuzzleFlash, Mesh, TEXT("MuzzleFlashSocket"));
+
+			APawn* OwnerPawn = Cast<APawn>(GetOwner());
+			if (OwnerPawn == nullptr) return;
+			AController* OwnerController = OwnerPawn->GetController();
+			if (OwnerController == nullptr) return;
+
+			FVector Location;
+			FRotator Rotation;
+			OwnerController->GetPlayerViewPoint(Location, Rotation);
+
+			//Recoil
+			float RecoilOffset = GetRecoilOffset(); // Accuracy + MovementStability;
+			//Rotation.Pitch += BulletRecoil.Y;
+			Rotation.Pitch = FMath::RandRange(Rotation.Pitch, Rotation.Pitch + RecoilOffset);
+			//Rotation.Yaw += BulletRecoil.Z;
+			Rotation.Yaw = FMath::RandRange(Rotation.Yaw - RecoilOffset, Rotation.Yaw + RecoilOffset);
+			//Rotation.Roll += BulletRecoil.X;
+
+
+			FVector End = Location + Rotation.Vector() * MaxRange;
+			// TODO: LineTrace 
+
+			FHitResult Hit;
+			bool bSuccess = GetWorld()->LineTraceSingleByChannel(Hit, Location, End, ECollisionChannel::ECC_GameTraceChannel1);
+			if (bSuccess)
+			{
+				FVector ShotDirection = -Rotation.Vector();
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactEffect, Hit.Location, ShotDirection.Rotation());
+				AActor* HitActor = Hit.GetActor();
+				if (HitActor)
 				{
-					ADamageTest* Enemy = Cast<ADamageTest>(HitActor);
-					if (Enemy)
+					// ���Ϳ� Ư�� �±װ� �ִ��� Ȯ�� (��: "WeaponSwitch")
+					if (HitActor->ActorHasTag(FName("Enemy")))
 					{
-						UE_LOG(LogTemp, Warning, TEXT("Hit Enemy!"));
-						Enemy->GetDamage(Power);
+						ADamageTest* Enemy = Cast<ADamageTest>(HitActor);
+						if (Enemy)
+						{
+							UE_LOG(LogTemp, Warning, TEXT("Hit Enemy!"));
+							Enemy->GetDamage(Power);
+						}
 					}
 				}
 			}
 		}
+		
 
 		RemainAmmo--;
 		UE_LOG(LogTemp, Warning, TEXT("Remaining Ammo: %d"), RemainAmmo);

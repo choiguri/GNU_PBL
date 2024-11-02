@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Weapons/AmmoDisplay.h"
+#include "Weapons/Bullet.h"
 #include "Gun.generated.h"
 
 UCLASS()
@@ -47,6 +48,9 @@ private:
 	
 	UPROPERTY(EditAnywhere)
 	UParticleSystem* ImpactEffect;
+
+	UPROPERTY(EditAnywhere, Category = BulletFactory)
+	TSubclassOf<class ABullet> bulletFactory;
 
 	UPROPERTY(EditAnywhere)
 	int Power = 50;

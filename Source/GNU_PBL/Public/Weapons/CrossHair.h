@@ -24,6 +24,8 @@ public:
 
     void SetAimRate(float Aimrate);
 
+    void BindUserAimRate(class AGnuMyCharacter* GnuMyCharacter);
+
     void BindUserAimRate(class AGnuCharacter* GnuCharacter);
 
 protected:

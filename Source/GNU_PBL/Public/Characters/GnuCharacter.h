@@ -45,8 +45,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input")
 	UInputAction* ReroadAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input")
-	UInputAction* InteractAction; 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input") // 상호작용 인풋
+	UInputAction* InteractAction; // 상호작용 인풋
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input") 
 	bool isWaking;
 	
 

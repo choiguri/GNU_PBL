@@ -2,8 +2,9 @@
 
 
 #include "Weapons/CrossHair.h"
-#include "Characters/GnuCharacter.h"
+#include "Characters/GnuMyCharacter.h"
 #include <Components/Image.h>
+#include <Characters/GnuCharacter.h>
 
 
 
@@ -49,6 +50,14 @@ void UCrossHair::SetAimRate(float Aimrate)
     fTarget_Aimrate = Aimrate;
 }
 
+
+void UCrossHair::BindUserAimRate(AGnuMyCharacter* GnuMyCharacter)
+{
+    if (GnuMyCharacter == nullptr) return;
+
+    // Bind the delegate function to CrossHair's SetAimRate function
+    GnuMyCharacter->func_Player_Aimrate.BindUObject(this, &UCrossHair::SetAimRate);
+}
 
 void UCrossHair::BindUserAimRate(AGnuCharacter* GnuCharacter)
 {
