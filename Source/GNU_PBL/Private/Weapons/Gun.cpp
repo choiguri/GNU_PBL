@@ -5,6 +5,9 @@
 #include "Weapons/DamageTest.h"
 #include "Weapons/Bullet.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Animation/AnimInstance.h"
+#include "Animation/AnimMontage.h" // class UAnimMontage
+#include "Net/UnrealNetwork.h" // ~_Implementation(), ~_Validate(), GetLifetimeReplicatedProps()
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
 #include <Characters/GnuCharacter.h>
@@ -21,6 +24,12 @@ AGun::AGun()
 	Mesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Mesh"));
 	Mesh->SetupAttachment(Root);
 
+
+	static ConstructorHelpers::FObjectFinder<UAnimBlueprint> AnimBP(TEXT("/Script/Engine.AnimBlueprint'/Game/GNU/Weapons/Rifle/Animation/ABP_Weap_Rifle.ABP_Weap_Rifle'"));
+	if (AnimBP.Succeeded())
+	{
+		Mesh->SetAnimInstanceClass(AnimBP.Object->GeneratedClass);
+	}
 }
 
 void AGun::PullTrigger()
@@ -48,6 +57,7 @@ void AGun::Fire()
 		{
 			UGameplayStatics::SpawnEmitterAttached(MuzzleFlash, Mesh, TEXT("MuzzleFlashSocket"));
 
+			ServerMontageOnFire();
 			FTransform fireposition = Mesh->GetSocketTransform(TEXT("FirePosition"), RTS_World);
 			ABullet* Bullet = GetWorld()->SpawnActor<ABullet>(bulletFactory, fireposition);
 			if (Bullet)
@@ -157,6 +167,71 @@ void AGun::RemoveAmmoDisplay()
 	}
 }
 
+// ------------------ Fire Animation -------------------------------------
+void AGun::ServerMontageOnFire_Implementation() // �������� ������ �ִϸ��̼��� ó���ϴ� �Լ�
+{
+	if (Fire_Montage)
+	{
+		if (Mesh && Mesh->GetAnimInstance())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("find AnimInstance"));
+			Mesh->GetAnimInstance()->Montage_Play(Fire_Montage);
+		}
+		else {
+			UE_LOG(LogTemp, Warning, TEXT("find not AnimInstance"));
+		}
+		MultiCastMontage_Fire();
+	}
+}
+
+bool AGun::ServerMontageOnFire_Validate()
+{
+	return true; 
+}
+
+void AGun::MultiCastMontage_Fire_Implementation() // ��� Ŭ���̾�Ʈ���� ������ ������ �ִϸ��̼��� ����ϵ��� �ϴ� ��Ƽĳ��Ʈ �Լ�. Ŭ���̾�Ʈ�� ���� ���� ����ȭ�� ���� ���
+{
+	if (Fire_Montage)
+	{
+		if (Mesh && Mesh->GetAnimInstance())
+		{
+			Mesh->GetAnimInstance()->Montage_Play(Fire_Montage);
+		}
+	}
+}
+
+// ------------------------------- Reload Animation -----------------------------
+void AGun::ServerMontageOnReload_Implementation() // �������� ������ �ִϸ��̼��� ó���ϴ� �Լ�
+{
+	if (Reload_Montage)
+	{
+		if (Mesh && Mesh->GetAnimInstance())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("find AnimInstance"));
+			Mesh->GetAnimInstance()->Montage_Play(Reload_Montage);
+		}
+		else {
+			UE_LOG(LogTemp, Warning, TEXT("find not AnimInstance"));
+		}
+		MultiCastMontage_Reload();
+	}
+}
+
+bool AGun::ServerMontageOnReload_Validate()
+{
+	return true;
+}
+
+void AGun::MultiCastMontage_Reload_Implementation() // ��� Ŭ���̾�Ʈ���� ������ ������ �ִϸ��̼��� ����ϵ��� �ϴ� ��Ƽĳ��Ʈ �Լ�. Ŭ���̾�Ʈ�� ���� ���� ����ȭ�� ���� ���
+{
+	if (Reload_Montage)
+	{
+		if (Mesh && Mesh->GetAnimInstance())
+		{
+			Mesh->GetAnimInstance()->Montage_Play(Reload_Montage);
+		}
+	}
+}
 
 
 // Called when the game starts or when spawned

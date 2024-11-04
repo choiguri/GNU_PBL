@@ -29,7 +29,7 @@ public:
 
 	// --------------------------------------------- Sprint ��� -----------------------------------
 	// ReplicatedUsing = OnRep_IsSprinting : �̷��� �����ϸ� ���� ������ ������ �ڵ����� OnRep_IsSprinting�Լ��� ȣ��ȴ�.
-	UPROPERTY(ReplicatedUsing = OnRep_IsSprinting, BlueprintReadWrite, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(ReplicatedUsing = OnRep_IsSprinting, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	bool isSprint;  // �޸����� ���� (GnuMyCharacterAnimInstance���� ��� ��)
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerSprintStart(); // ���� �޸��� ���� (��Ʈ�ѷ����� ȣ��)
@@ -46,7 +46,7 @@ public:
 
 
 	// --------------------------------------------- Crouch ��� ------------------------------------
-	UPROPERTY(ReplicatedUsing = OnRep_IsCrouching, BlueprintReadWrite, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(ReplicatedUsing = OnRep_IsCrouching, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	bool isCrouch;  // �޸����� ����
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerCrouchStart(); // ���� �ɱ� ���� (��Ʈ�ѷ����� ȣ��)
@@ -89,13 +89,28 @@ public:
 	void SetCamera(); // ī�޶� ���� ��ȯ : 1��Ī <--> 3��Ī (��Ʈ�ѷ����� ȣ��)
 
 	//------------------ Weapon Funtion ---------------------------------------
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
+	bool isReload;
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerMontageOnReload(); // �������� ������ ��Ÿ�ָ� �����ϴ� �Լ� (��Ʈ�ѷ����� ȣ��)
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiCastMontage_Reload(); // ������ ��Ÿ�� ��Ƽĳ��Ʈ (������ ȣ��Ǹ� �ڵ����� ȣ��)
+	void FinishReload();
+	//---------------------------------------------------------------------
+
+	
+
+	//------------------ Weapon Funtion ---------------------------------------
 	void Aiming();
 	void StopAiming();
-	void StartFire();
+	void Fire();
 	void StopFire();
-	void Reroad();
+	void Reload();
 	void Interact(); // 상호작용 함수
 	void SwitchWeapon(TSubclassOf<AGun> NewGunClass);
+
+	bool GetIsCrouching() const;
+	bool GetIsSprinting() const;
 
 	DECLARE_DELEGATE_OneParam(FDele_Player_Aimrate, float);
 	FDele_Player_Aimrate func_Player_Aimrate;
@@ -137,6 +152,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	UAnimMontage* DiveRoll_L_Montage; // �������� ������ ��Ÿ��
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	UAnimMontage* Reload_Montage;
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AGun> GunClass;

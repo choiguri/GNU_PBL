@@ -34,6 +34,24 @@ public:
 	void UpdateAmmoDisplay();
 
 	void RemoveAmmoDisplay();
+
+	// 총기 애니메이션
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerMontageOnFire(); // �������� ������ ��Ÿ�ָ� �����ϴ� �Լ� (��Ʈ�ѷ����� ȣ��)
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiCastMontage_Fire();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerMontageOnReload(); // �������� ������ ��Ÿ�ָ� �����ϴ� �Լ� (��Ʈ�ѷ����� ȣ��)
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiCastMontage_Reload();
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	UAnimMontage* Fire_Montage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	UAnimMontage* Reload_Montage;
 	
 
 private:

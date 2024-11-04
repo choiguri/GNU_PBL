@@ -374,6 +374,66 @@ void AGnuMyCharacter::SetDodgeMontage(float Forward, float Right)
 }
 // -------------------------------------------------------------------------
 
+// --------------------------------- Reload Replicate ------------------------------------
+
+void AGnuMyCharacter::Reload()
+{
+	if (GetController() != nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Reload!"));
+		if (pCrossHair)
+		{
+			pCrossHair->UpdateCrossHair(3); // 새로운 AimRate로 크로스헤어 업데이트
+		}
+		Gun->Reload();
+		isReload = false;
+	}
+}
+
+void AGnuMyCharacter::ServerMontageOnReload_Implementation() // �������� ������ �ִϸ��̼��� ó���ϴ� �Լ�
+{
+	if (isReload)
+	{
+		return;
+	}
+
+	isReload = true;
+	StopFire();
+	Gun->ServerMontageOnReload();
+	if (Reload_Montage)
+	{
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+		PlayAnimMontage(Reload_Montage);
+
+		MultiCastMontage_Reload();
+	}
+}
+
+
+bool AGnuMyCharacter::ServerMontageOnReload_Validate()
+{
+	return true; // ���� ������ �ʿ��ϸ� �߰�
+}
+
+void AGnuMyCharacter::MultiCastMontage_Reload_Implementation() // ��� Ŭ���̾�Ʈ���� ������ ������ �ִϸ��̼��� ����ϵ��� �ϴ� ��Ƽĳ��Ʈ �Լ�. Ŭ���̾�Ʈ�� ���� ���� ����ȭ�� ���� ���
+{
+	if (isReload)
+	{
+		// ������ �߿� �ٽ� ȣ���ϸ� ����
+		return;
+	}
+
+	// ��Ÿ�ְ� ��ȿ�� ��� ���
+	if (Reload_Montage)
+	{
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+		PlayAnimMontage(Reload_Montage);
+	}
+}
+// -------------------------------------------------------------------------
+
 void AGnuMyCharacter::Aiming()
 {
 	if (GetController() != nullptr)
@@ -402,17 +462,20 @@ void AGnuMyCharacter::StopAiming()
 	}
 }
 
-void AGnuMyCharacter::StartFire()
+void AGnuMyCharacter::Fire()
 {
 	if (GetController() != nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("fire!"));
-		if (pCrossHair)
+		if (isReload != true) 
 		{
-			pCrossHair->UpdateCrossHair(2); // 새로운 AimRate로 크로스헤어 업데이트
+			UE_LOG(LogTemp, Warning, TEXT("fire!"));
+			if (pCrossHair)
+			{
+				pCrossHair->UpdateCrossHair(2); // 새로운 AimRate로 크로스헤어 업데이트
 
+			}
+			Gun->PullTrigger();
 		}
-		Gun->PullTrigger();
 	}
 }
 
@@ -429,18 +492,6 @@ void AGnuMyCharacter::StopFire()
 }
 
 
-void AGnuMyCharacter::Reroad()
-{
-	if (GetController() != nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Reroad!"));
-		if (pCrossHair)
-		{
-			pCrossHair->UpdateCrossHair(3); // 새로운 AimRate로 크로스헤어 업데이트
-		}
-		Gun->Reload();
-	}
-}
 
 void AGnuMyCharacter::Interact()
 {
@@ -507,6 +558,16 @@ void AGnuMyCharacter::SwitchWeapon(TSubclassOf<AGun> NewGunClass)
 			Gun->UpdateAmmoDisplay();
 		}
 	}
+}
+
+bool AGnuMyCharacter::GetIsCrouching() const
+{
+	return isCrouch;
+}
+
+bool AGnuMyCharacter::GetIsSprinting() const
+{
+	return isSprint;
 }
 
 /* ----------- ���� - Ŭ���̾�Ʈ ����ȭ ���� -------------------

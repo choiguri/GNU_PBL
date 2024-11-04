@@ -84,6 +84,12 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	bool IsFalling; // ĳ���Ͱ� ���߿� �� �ִ��� ���θ� �����ϴ� ����
 
+	UPROPERTY(BlueprintReadOnly, Category = "Movement")
+	bool bIsCrouching;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Movement")
+	bool bIsSprinting;
+
 public:
 	virtual void NativeUpdateAnimation(float DeltaTime) override;
 	virtual void NativeInitializeAnimation() override;

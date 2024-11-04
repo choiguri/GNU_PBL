@@ -30,22 +30,27 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION()
+	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
+
 private:
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* Root;
 
-	UPROPERTY(VisibleAnywhere)
-	UStaticMeshComponent* bodyMeshComp;
+	UPROPERTY(VisibleAnywhere, Category = Collision)
+	class USphereComponent* CollisionComp;
 
 	UPROPERTY(VisibleAnywhere, Category = Movement)
 	class UProjectileMovementComponent* movementComp;
 
-	UPROPERTY(VisibleAnywhere, Category = Collision)
-	class USphereComponent* collisionComp;
+	UPROPERTY(VisibleAnywhere, Category = "Effects")
+	UParticleSystemComponent* TrailParticle;
 
-	UPROPERTY(EditAnywhere)
-	UParticleSystem* BulletTrail;
+	UPROPERTY(EditAnywhere, Category = "Effects")
+	UParticleSystem* TrailParticleSystem;
 
+	UPROPERTY(EditAnywhere, Category = "Effects")
+	UParticleSystem* ImpactParticle;
 
 	int Power = 10;
 	

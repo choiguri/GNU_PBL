@@ -54,11 +54,11 @@ void AGnuMyPlayerController::SetupInputComponent()
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::Jump);
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AGnuMyPlayerController::StopJumping);
 
-	EnhancedInputComponent->BindAction(ShotAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::StartFire);
+	EnhancedInputComponent->BindAction(ShotAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::Fire);
 	EnhancedInputComponent->BindAction(ShotAction, ETriggerEvent::Completed, this, &AGnuMyPlayerController::StopFire);
 	EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::Aiming);
 	EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Completed, this, &AGnuMyPlayerController::StopAiming);
-	EnhancedInputComponent->BindAction(ReroadAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::Reroad);
+	EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::Reload);
 	EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::Interact);
 }
 
@@ -291,14 +291,14 @@ void AGnuMyPlayerController::StopAiming()
 	}
 }
 
-void AGnuMyPlayerController::StartFire()
+void AGnuMyPlayerController::Fire()
 {
 	if (APawn* ControlledPawn = GetPawn<APawn>())
 	{
 		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
 		if (MyCharacter)
 		{
-			MyCharacter->StartFire();
+			MyCharacter->Fire();
 		}
 	}
 }
@@ -316,14 +316,14 @@ void AGnuMyPlayerController::StopFire()
 }
 
 
-void AGnuMyPlayerController::Reroad()
+void AGnuMyPlayerController::Reload()
 {
 	if (APawn* ControlledPawn = GetPawn<APawn>())
 	{
 		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
 		if (MyCharacter)
 		{
-			MyCharacter->Reroad();
+			MyCharacter->ServerMontageOnReload();
 		}
 	}
 }

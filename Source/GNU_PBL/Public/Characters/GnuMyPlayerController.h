@@ -62,7 +62,7 @@ private:
 	UPROPERTY(EditAnywhere, Category = "input")
 	TObjectPtr<UInputAction> ShotAction;
 	UPROPERTY(EditAnywhere, Category = "input")
-	TObjectPtr<UInputAction> ReroadAction;
+	TObjectPtr<UInputAction> ReloadAction;
 	UPROPERTY(EditAnywhere, Category = "input")
 	TObjectPtr<UInputAction> InteractAction; // 상호작용 인풋
 	
@@ -86,9 +86,9 @@ private:
 	// ------------------ Weapon funtion -------------
 	void Aiming();
 	void StopAiming();
-	void StartFire();
+	void Fire();
 	void StopFire();
-	void Reroad();
+	void Reload();
 	void Interact(); // 상호작용 함수
 	// -----------------------------------------------
 };

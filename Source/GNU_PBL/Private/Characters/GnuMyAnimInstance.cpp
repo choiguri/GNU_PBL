@@ -35,7 +35,9 @@ void UGnuMyAnimInstance::NativeInitializeAnimation()
 	CurDirectionAngle = 0.0f;
 	CurVelocity = FVector::Zero();
 	CurAcceleration = FVector::Zero();
-	EAnimState = EAnimationState::Unarmed; // �� ������ �ʱ�ȭ
+	EAnimState = EAnimationState::Rifle; // �� ������ �ʱ�ȭ
+	bIsCrouching = false;
+	bIsSprinting = false;
 }
 
 void UGnuMyAnimInstance::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -55,7 +57,10 @@ void UGnuMyAnimInstance::NativeUpdateAnimation(float DeltaTime)
 		IsFalling = MyCharacterMovement->IsFalling();
 		UpdateMovementState();
 		UpdateDirectionAndMovementInput();
+		bIsCrouching = MyCharacter->GetIsCrouching();
+		bIsSprinting = MyCharacter->GetIsSprinting();
 	}
+
 }
 
 void UGnuMyAnimInstance::UpdateMovementState()
