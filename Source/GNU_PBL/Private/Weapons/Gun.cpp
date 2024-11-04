@@ -10,7 +10,7 @@
 #include "Net/UnrealNetwork.h" // ~_Implementation(), ~_Validate(), GetLifetimeReplicatedProps()
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
-#include <Characters/GnuCharacter.h>
+#include <Characters/GnuMyCharacter.h>
 
 // Sets default values
 AGun::AGun()
@@ -52,17 +52,51 @@ void AGun::Fire()
 {	
 	if (RemainAmmo > 0)
 	{
-		
 		if (1) //Projectile
 		{
 			UGameplayStatics::SpawnEmitterAttached(MuzzleFlash, Mesh, TEXT("MuzzleFlashSocket"));
 
 			ServerMontageOnFire();
+
 			FTransform fireposition = Mesh->GetSocketTransform(TEXT("FirePosition"), RTS_World);
+			FVector spawnLocation = fireposition.GetLocation();
+
+			APawn* OwnerPawn = Cast<APawn>(GetOwner());
+			if (OwnerPawn == nullptr) return;
+			AController* OwnerController = OwnerPawn->GetController();
+			if (OwnerController == nullptr) return;
+
+			FVector Location;
+			FRotator Rotation;
+			OwnerController->GetPlayerViewPoint(Location, Rotation);
+
+			FVector traceEnd = Location + (Rotation.Vector() * 10000.0f);
+			FHitResult hitResult;
+			FCollisionQueryParams traceParams(FName(TEXT("ProjectileTrace")), true, this);
+			traceParams.bTraceComplex = true;
+			traceParams.bReturnPhysicalMaterial = false;
+
+			// 라인트레이스 실행
+			bool bHit = GetWorld()->LineTraceSingleByChannel(hitResult, Location, traceEnd, ECC_Visibility, traceParams);
+
+			// 히트 판정이 발생한 경우 해당 지점으로 투사체 발사 방향 설정
+			FVector targetLocation = bHit ? hitResult.Location : traceEnd;
+			FVector shootDirection = (targetLocation - spawnLocation).GetSafeNormal();
+
+			//Recoil
+			float RecoilOffset = GetRecoilOffset(); // Accuracy + MovementStability;
+			FRotator recoilRotation = shootDirection.Rotation();
+			recoilRotation.Pitch = FMath::RandRange(recoilRotation.Pitch, recoilRotation.Pitch + RecoilOffset);
+			recoilRotation.Yaw = FMath::RandRange(recoilRotation.Yaw - RecoilOffset, recoilRotation.Yaw + RecoilOffset);
+
+			shootDirection = recoilRotation.Vector();
+
+
 			ABullet* Bullet = GetWorld()->SpawnActor<ABullet>(bulletFactory, fireposition);
 			if (Bullet)
 			{
 				Bullet->SetPower(Power);
+				Bullet->SetDirection(shootDirection);  // 탄환에 발사 방향 설정
 			}
 		}
 		else // hitscan
@@ -127,11 +161,11 @@ void AGun::Fire()
 
 float AGun::GetRecoilOffset()
 {
-	AGnuCharacter* GnuCharacter = Cast<AGnuCharacter>(GetOwner());
-	if (!IsValid(GnuCharacter)) return 0.f;
+	AGnuMyCharacter* GnuMyCharacter = Cast<AGnuMyCharacter>(GetOwner());
+	if (!IsValid(GnuMyCharacter)) return 0.f;
 
-	float CharacterSpeed = GnuCharacter->GetVelocity().Size();
-	UCharacterMovementComponent* MovementComponent = GnuCharacter->GetCharacterMovement();
+	float CharacterSpeed = GnuMyCharacter->GetVelocity().Size();
+	UCharacterMovementComponent* MovementComponent = GnuMyCharacter->GetCharacterMovement();
 	return Accuracy; //* (CurrentRecoilRecoveryTime / RecoilRecoveryTime);// +MovementStability * (CharacterSpeed / MovementComponent->MaxWalkSpeed);
 }
 

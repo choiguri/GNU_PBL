@@ -93,3 +93,16 @@ void ABullet::SetPower(int power)
 {
 	Power = power;
 }
+
+void ABullet::SetDirection(const FVector& Direction)
+{
+	if (movementComp)
+	{
+		// 입력된 방향을 기준으로 초기 속도 설정
+		movementComp->Velocity = Direction * movementComp->InitialSpeed;
+		movementComp->Activate();  // 이동 시작
+
+		FRotator Rotation = Direction.Rotation();
+		SetActorRotation(Rotation);
+	}
+}
