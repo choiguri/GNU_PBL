@@ -19,14 +19,14 @@ class GNU_PBL_API AGnu_MonsterAiController : public AAIController
 public:
 	AGnu_MonsterAiController(const FObjectInitializer& ObjectInitializer);
 
+
 	virtual void Tick(float DeltaSecond) override;
 
-	//~ Begin IGenericTeamAgentInterface Interface.
-	virtual ETeamAttitude::Type GetTeamAttitudeTowards(const AActor& Other) const override;
-	//~ End IGenericTeamAgentInterface Interface.
 protected:
 	virtual void BeginPlay() override;
 
+
+	// GAS 따라 한 코드
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UAIPerceptionComponent* EnemyPerceptionComponent;
 
@@ -34,18 +34,10 @@ protected:
 	UAISenseConfig_Sight* AISenseConfig_Sight;
 
 	UFUNCTION()
-	virtual void OnEnemyPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
+	void OnEnemyPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
+
 
 private:
-
-	UPROPERTY(EditDefaultsOnly, Category = "Detour Crowd Avoidance Config")
-	bool bEnableDetourCrowdAvoidance = true;
-	
-	// bEnableDetourCrowdAvoidance의 타입이 ture 여야만 조정가능
-	// min = 1, max = 4 설정
-	UPROPERTY(EditDefaultsOnly, Category = "Detour Crowd Avoidance Config", meta = (EditCondition = "bEnableDetourCrowdAvoidance", UIMin = "1", UIMax = "4"))
-	int32 DetourCrowdAvoidanceQuality = 4;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Detour Crowd Avoidance Config", meta = (EditCondition = "bEnableDetourCrowdAvoidance"))
-	float CollisionQueryRange = 600.f;
+	UPROPERTY(EditAnywhere, Category = "AI")
+	UBehaviorTree* AIBehavior;
 };

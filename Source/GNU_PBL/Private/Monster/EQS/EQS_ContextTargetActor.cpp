@@ -12,29 +12,27 @@
 
 void UEQS_ContextTargetActor::ProvideContext(FEnvQueryInstance& QueryInstance, FEnvQueryContextData& ContextData) const
 {
-    // Querier를 가져옵니다 (EQS 쿼리를 요청한 객체)
-    UObject* QueryOwner = QueryInstance.Owner.Get();
+    // Querier 객체와 Actor를 가져옵니다.
+    UObject* QuerierObject = QueryInstance.Owner.Get();
+    AActor* QuerierActor = Cast<AActor>(QuerierObject);
 
-    // Querier가 AIController로부터 블랙보드를 사용할 수 있는지 확인
-    AAIController* AIController = Cast<AAIController>(QueryOwner);
-    if (AIController)
+    if (!QuerierActor)
     {
-        UBlackboardComponent* BlackboardComp = AIController->GetBlackboardComponent();
-        if (BlackboardComp)
-        {
-            // 블랙보드에서 TargetActor(또는 원하는 오브젝트)를 가져오기
-            UObject* TargetObject = BlackboardComp->GetValue<UBlackboardKeyType_Object>(BlackboardComp->GetKeyID("TargetActor"));
+        return;
+    }
 
-            if (TargetObject)
-            {
-                // TargetActor의 위치를 EQS 쿼리에 컨텍스트로 추가
-                AActor* TargetActor = Cast<AActor>(TargetObject);
-                if (TargetActor)
-                {
-                    // 결과로 추가하여 EQS 쿼리에서 사용
-                    UEnvQueryItemType_Actor::SetContextHelper(ContextData, TargetActor);
-                }
-            }
+    // Querier의 AIController와 BlackboardComponent를 확인합니다.
+    AAIController* AIController = Cast<AAIController>(QuerierActor->GetInstigatorController());
+    if (AIController && AIController->GetBlackboardComponent())
+    {
+        // Blackboard에서 TargetActor를 가져옵니다.
+        UObject* TargetObject = AIController->GetBlackboardComponent()->GetValueAsObject(FName("TargetActor"));
+        AActor* TargetActor = Cast<AActor>(TargetObject);
+
+        if (TargetActor)
+        {
+            // ContextData에 TargetActor 추가
+            UEnvQueryItemType_Actor::SetContextHelper(ContextData, TargetActor);
         }
     }
 }

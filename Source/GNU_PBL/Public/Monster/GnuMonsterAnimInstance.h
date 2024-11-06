@@ -6,6 +6,7 @@
 #include "Animation/AnimInstance.h"
 #include "GnuMonsterAnimInstance.generated.h"
 
+
 /**
  * 
  */
@@ -15,15 +16,67 @@ class GNU_PBL_API UGnuMonsterAnimInstance : public UAnimInstance
 	GENERATED_BODY()
 	
 public:
-    // 파이어볼 스폰 함수를 AnimInstance에 추가
-    UFUNCTION(BlueprintCallable, Category = "Attack")
-    void SpawnFireballNotify();  // Notify에서 호출될 함수 선언
+    virtual void NativeInitializeAnimation() override;
 
-    UFUNCTION()
-    void AnimNotify_SpawnFireball(UAnimNotify* Notify);  // AnimNotify 이벤트 처리 함수
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
+    void OnAttackNotifyEvent(FName NotifyName);
 
+
+    // 현재 몬스터를 참조하기 위한 변수
+    UPROPERTY(BlueprintReadOnly, Category = "Monster")
+    class AGnuMonster* MonsterOwner;
+
+    // 애니메이션 몽타주 시작
+    UFUNCTION(BlueprintCallable, Category = "Animation")
+    void PlayAttackMontage(UAnimMontage* MontageToPlay);
+
+    // 현재 재생 중인 애니메이션 몽타주 가져오기
+    UFUNCTION(BlueprintCallable, Category = "Animation")
+    UAnimMontage* GetCurrentMontage() const;
+
+
+    // 애니메이션 몽타주 공격 지정
+    UPROPERTY(EditDefaultsOnly, Category = "Montage")
+    UAnimMontage* FireballAttackMontage;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Montage")
+    UAnimMontage* FlyingAttackMontage;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Montage")
+    UAnimMontage* FirebreathAttackMontage;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Montage")
+    UAnimMontage* ClawAttackMontage;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Montage")
+    UAnimMontage* TailAttackMontage;
+    
+
+protected:
+    // 몽타주 애니메이션을 재생하기 위한 변수
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+    UAnimMontage* AttackMontage;
+    
 
 private:
-    // 몬스터를 참조하기 위한 변수
-    class AGnuMonster* MonsterOwner;
+    // 공격 몽타주 실행 중에 특정 로직을 실행하는 함수
+    void HandleAttackNotify(FName NotifyName);
+
+public:
+
+    // 공격 몽타주 실행 함수
+    UFUNCTION(BlueprintCallable)
+    void PlayFireballAttackMontage();
+
+    UFUNCTION(BlueprintCallable)
+    void PlayFlyingAttackMontage();
+
+    UFUNCTION(BlueprintCallable)
+    void PlayFirebreathAttackMontage();
+
+    UFUNCTION(BlueprintCallable)
+    void PlayClawAttackMontage();
+
+    UFUNCTION(BlueprintCallable)
+    void PlayTailAttackMontage();
 };

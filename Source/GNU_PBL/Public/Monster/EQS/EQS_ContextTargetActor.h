@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "EnvironmentQuery/EnvQueryContext.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "EQS_ContextTargetActor.generated.h"
 
 /**
@@ -15,6 +16,6 @@ class GNU_PBL_API UEQS_ContextTargetActor : public UEnvQueryContext
 	GENERATED_BODY()
 	
 public:
-	// 블랙보드에서 오브젝트를 가져와 EQS 쿼리에서 사용할 수 있도록 하는 메서드
+	// ProvideSingleActor 함수를 통해 TargetActor를 반환
 	virtual void ProvideContext(FEnvQueryInstance& QueryInstance, FEnvQueryContextData& ContextData) const override;
 };

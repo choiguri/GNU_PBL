@@ -14,6 +14,7 @@ AGnuCharacter::AGnuCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+
 	///////////////////////////
 	// 캐릭터 회전
 	bUseControllerRotationPitch = false;
@@ -21,6 +22,7 @@ AGnuCharacter::AGnuCharacter()
 	bUseControllerRotationRoll = false;
 
 	UCharacterMovementComponent* MovementComponent = GetCharacterMovement();
+	MovementComponent->bEnablePhysicsInteraction = false; // 물리 상호작용 비활성화
 	MovementComponent->bOrientRotationToMovement = true;
 	MovementComponent->RotationRate = FRotator(0.f, 720.f, 0.f);
 	//////////////////////////
@@ -139,4 +141,3 @@ void AGnuCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 	}
 }
-

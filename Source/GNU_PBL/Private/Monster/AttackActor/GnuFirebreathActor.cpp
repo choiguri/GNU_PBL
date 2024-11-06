@@ -30,6 +30,7 @@ void AGnuFirebreathActor::DestroyFirebreath()
     {
         NiagaraComponent->Deactivate(); // 파티클 시스템 비활성화
     }
+
     Destroy(); // 액터 삭제
 }
 

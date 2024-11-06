@@ -3,12 +3,13 @@
 
 #include "Monster/BTTask/BTTask_MonsterAttack.h"
 #include "Monster/GnuMonster.h"
+#include "Monster/GnuMonsterAnimInstance.h"
 #include "AIController.h"
 
 
 UBTTask_MonsterAttack::UBTTask_MonsterAttack()
 {
-	NodeName = TEXT("DefaultAttack");
+	NodeName = TEXT("FireballAttack");
 }
 
 EBTNodeResult::Type UBTTask_MonsterAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -26,7 +27,16 @@ EBTNodeResult::Type UBTTask_MonsterAttack::ExecuteTask(UBehaviorTreeComponent& O
 		return EBTNodeResult::Failed;
 	}
 
-	Monster->PlayDefaultAttackMontage();
+	// 몬스터의 애니메이션 인스턴스를 가져오기
+	UGnuMonsterAnimInstance* AnimInstance = Cast<UGnuMonsterAnimInstance>(Monster->GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->PlayFireballAttackMontage();
+	}
+	else
+	{
+		return EBTNodeResult::Failed;
+	}
 
 	
 	return EBTNodeResult::Succeeded;

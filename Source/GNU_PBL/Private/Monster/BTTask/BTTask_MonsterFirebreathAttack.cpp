@@ -25,7 +25,16 @@ EBTNodeResult::Type UBTTask_MonsterFirebreathAttack::ExecuteTask(UBehaviorTreeCo
 		return EBTNodeResult::Failed;
 	}
 
-	Monster->PlayFirebreathAttackMontage();
+	// 몬스터의 애니메이션 인스턴스를 가져오기
+	UGnuMonsterAnimInstance* AnimInstance = Cast<UGnuMonsterAnimInstance>(Monster->GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->PlayFirebreathAttackMontage();
+	}
+	else
+	{
+		return EBTNodeResult::Failed;
+	}
 
 
 	return EBTNodeResult::Succeeded;

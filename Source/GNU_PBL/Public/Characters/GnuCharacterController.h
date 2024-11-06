@@ -15,11 +15,13 @@ class GNU_PBL_API AGnuCharacterController : public APlayerController, public IGe
 {
 	GENERATED_BODY()
 	
+
 public:
 	AGnuCharacterController();
 
+
 	//~ Begin IGenericTeamAgentInterface Interface.
-	virtual FGenericTeamId GetGenericTeamId() const override;
+	virtual FGenericTeamId GetGenericTeamId() const;
 	//~ End IGenericTeamAgentInterface Interface
 
 
