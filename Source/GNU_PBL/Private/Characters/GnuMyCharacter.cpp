@@ -206,6 +206,7 @@ void AGnuMyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 // ----------------------------------------- Sprint Replicate-----------------------------------
 void AGnuMyCharacter::ServerSprintStart_Implementation() // Ŭ���̾�Ʈ���� ������Ʈ ���� ��û�� ������ �������� ServerSprintStart_Implementation�� ����
 {
+	StopFire();
 	UpdateSprintState(true); //  �� �Լ��� ���������� ����
 }
 
@@ -383,7 +384,7 @@ void AGnuMyCharacter::Reload()
 		UE_LOG(LogTemp, Warning, TEXT("Reload!"));
 		if (pCrossHair)
 		{
-			pCrossHair->UpdateCrossHair(3); // 새로운 AimRate로 크로스헤어 업데이트
+			pCrossHair->UpdateCrossHair(1); // 새로운 AimRate로 크로스헤어 업데이트
 		}
 		Gun->Reload();
 		isReload = false;
@@ -400,6 +401,9 @@ void AGnuMyCharacter::ServerMontageOnReload_Implementation() // ������
 	isReload = true;
 	StopFire();
 	Gun->ServerMontageOnReload();
+	{
+		pCrossHair->UpdateCrossHair(3); // 새로운 AimRate로 크로스헤어 업데이트
+	}
 	if (Reload_Montage)
 	{
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
@@ -439,7 +443,7 @@ void AGnuMyCharacter::Aiming()
 	if (GetController() != nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Aiming..."));
-		if (CameraBoom->TargetArmLength > 250.0f)
+		if (CameraBoom->TargetArmLength > 100.0f)
 		{
 			CameraBoom->TargetArmLength -= 10;
 		}
@@ -468,6 +472,10 @@ void AGnuMyCharacter::Fire()
 	{
 		if (isReload != true) 
 		{
+			if (isSprint) {
+				UpdateSprintState(false);
+			}
+			isFire = true;
 			UE_LOG(LogTemp, Warning, TEXT("fire!"));
 			if (pCrossHair)
 			{
@@ -483,10 +491,13 @@ void AGnuMyCharacter::StopFire()
 {
 	if (GetController() != nullptr)
 	{
-		if (pCrossHair)
-		{
-			pCrossHair->UpdateCrossHair(1);
+		if (isReload != true) {
+			if (pCrossHair)
+			{
+				pCrossHair->UpdateCrossHair(1);
+			}
 		}
+		isFire = false;
 		Gun->ReleaseTrigger();
 	}
 }

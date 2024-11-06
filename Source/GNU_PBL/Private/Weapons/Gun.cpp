@@ -184,6 +184,16 @@ void AGun::Reload()
 	UpdateAmmoDisplay();
 }
 
+void AGun::Aiming()
+{
+	Accuracy /= 2;
+}
+
+void AGun::StopAiming()
+{
+	Accuracy *= 2;
+}
+
 void AGun::UpdateAmmoDisplay()
 {
 	if (AmmoDisplay)

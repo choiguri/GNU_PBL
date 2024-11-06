@@ -28,6 +28,10 @@ public:
 	virtual void PullTrigger();
 	virtual void ReleaseTrigger();
 	virtual void Reload();
+	virtual void Aiming();
+	virtual void StopAiming();
+
+
 	float GetRecoilOffset();
 
 	// 탄약 상태를 UI에 업데이트하는 함수

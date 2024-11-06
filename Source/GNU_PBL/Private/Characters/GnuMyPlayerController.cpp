@@ -45,7 +45,7 @@ void AGnuMyPlayerController::SetupInputComponent()
 	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::Move);
 	EnhancedInputComponent->BindAction(RotationAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::Rotation);
 	EnhancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::Dodge);
-	EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::Sprint);
+	EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::Sprint);
 	EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AGnuMyPlayerController::SprintStop);
 	EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::ToggleCrouch);
 	EnhancedInputComponent->BindAction(ToggleCameraAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::ToggleCamera);

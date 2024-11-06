@@ -103,6 +103,10 @@ public:
 	//------------------ Weapon Funtion ---------------------------------------
 	void Aiming();
 	void StopAiming();
+
+	UPROPERTY(ReplicatedUsing = OnRep_IsCrouching, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	bool isFire = false;
+
 	void Fire();
 	void StopFire();
 	void Reload();

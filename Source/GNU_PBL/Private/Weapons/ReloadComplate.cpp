@@ -2,14 +2,14 @@
 
 
 #include "Weapons/ReloadComplate.h"
-#include "Characters/GnuMyCharacter.h" // ´ç½ÅÀÇ Ä³¸¯ÅÍ Å¬·¡½º¸¦ Æ÷ÇÔÇÕ´Ï´Ù.
+#include "Characters/GnuMyCharacter.h" // ï¿½ï¿½ï¿½ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
 
 void UReloadComplate::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {
 	AGnuMyCharacter* Character = Cast<AGnuMyCharacter>(MeshComp->GetOwner());
 	if (Character)
 	{
-		// Æ¯Á¤ µ¿ÀÛÀ» ½ÇÇàÇÕ´Ï´Ù.
-		Character->Reload(); // È£ÃâÇÏ°íÀÚ ÇÏ´Â ÇÔ¼ö·Î º¯°æÇÏ¼¼¿ä.
+		// Æ¯ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
+		Character->Reload(); // È£ï¿½ï¿½ï¿½Ï°ï¿½ï¿½ï¿½ ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¼ï¿½ï¿½ï¿½.
 	}
 }
