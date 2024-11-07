@@ -13,6 +13,10 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
 
+#include "Characters/Actor/GnuProjectileActor.h"
+#include "GameFramework/PlayerController.h" // IsLocalPlayerController
+#include "Characters/Widget/GnuCharacterBaseWidget.h"
+
 AGnuMyCharacter::AGnuMyCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -56,6 +60,9 @@ AGnuMyCharacter::AGnuMyCharacter()
 	isZoomIn = false;
 	DodgeMontage = nullptr;
 	// ---------------------------------------------------------------
+
+	CurHP = 50.f;
+	MaxHP = 100.f;
 }
 
 void AGnuMyCharacter::BeginPlay()
@@ -81,12 +88,26 @@ void AGnuMyCharacter::BeginPlay()
 	// SetTimelineLength : 타임라인 길이 설정
 	ZoomInTimeline.SetTimelineLength(0.3f);
 	// -------------------------------------------------------------------------------
+
+	  // 위젯을 초기화하는 부분
+	if (CharacterHealthWidgetClass)
+	{
+		CharacterHealthWidget = CreateWidget<UGnuCharacterBaseWidget>(GetWorld(), CharacterHealthWidgetClass);
+		if (CharacterHealthWidget && CharacterWidget)
+		{
+			CharacterWidget->AddToViewport();
+			CharacterHealthWidget->UpdateHealthBar(CurHP, MaxHP); // 시작 시 HP 업데이트
+		}
+	}
+
 }
 
 void AGnuMyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	ZoomInTimeline.TickTimeline(DeltaTime);
+	// 매 프레임마다 UI 업데이트
+	UpdateUIHealthAndStamina();
 }
 
 void AGnuMyCharacter::SetCamera()
@@ -166,6 +187,7 @@ void AGnuMyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	// 변수를 네트워크에서 복제할 수 있도록 설정
 	DOREPLIFETIME(AGnuMyCharacter, isSprint);
 	DOREPLIFETIME(AGnuMyCharacter, isCrouch);
+	DOREPLIFETIME(AGnuMyCharacter, CurHP);
 }
 
 // ----------------------------------------- Sprint Replicate-----------------------------------
@@ -338,6 +360,51 @@ void AGnuMyCharacter::SetDodgeMontage(float Forward, float Right)
 	}
 }
 // -------------------------------------------------------------------------
+
+
+//--------------------------- Arrow Skill --------------------------------
+void AGnuMyCharacter::SpawnArrow()
+{
+	if (ArrowClass)
+	{
+		FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 100.0f;
+		FRotator SpawnRotation = GetActorRotation();
+
+		AGnuProjectileActor* Arrow = GetWorld()->SpawnActor<AGnuProjectileActor>(ArrowClass, SpawnLocation, SpawnRotation);
+		if (Arrow)
+		{
+			Arrow->LaunchProjectile(this);
+		}
+	}
+}
+// -------------------------------------------------------------------------
+
+void AGnuMyCharacter::OnRep_CurHP()
+{
+	// HP가 변경되면 UI에 반영
+	UpdateUIHealthAndStamina();
+}
+
+void AGnuMyCharacter::UpdateHealth(float NewHP)
+{
+	CurHP = FMath::Clamp(CurHP + NewHP, 0.0f, MaxHP); // HP를 0과 MaxHP 사이로 클램핑
+
+	// 서버에서 HP 업데이트 시 UI 업데이트
+	if (HasAuthority())
+	{
+		OnRep_CurHP();
+	}
+}
+
+void AGnuMyCharacter::UpdateUIHealthAndStamina()
+{
+	// UI 위젯에서 호출될 함수로, Health와 Stamina 바를 업데이트
+	// 여기에 UGnuCharacterBaseWidget을 연결하는 코드를 넣으면 됩니다.
+	if (CharacterHealthWidget)
+	{
+		CharacterHealthWidget->UpdateHealthBar(CurHP, MaxHP);
+	}
+}
 
 
 

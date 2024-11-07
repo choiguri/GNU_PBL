@@ -59,6 +59,7 @@ void AGnuMyPlayerController::SetupInputComponent()
 	EnhancedInputComponent->BindAction(PistolChangeAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::PistolChange);
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::Jump);
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AGnuMyPlayerController::StopJumping);
+	EnhancedInputComponent->BindAction(ArrowSkillAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::ArrowSkill);
 }
 
 
@@ -275,6 +276,18 @@ void AGnuMyPlayerController::StopJumping(const FInputActionValue& InputActionVal
 		if (MyCharacter)
 		{
 			MyCharacter->StopJumping(); // 캐릭터의 StopJumping 메서드 호출
+		}
+	}
+}
+
+void AGnuMyPlayerController::ArrowSkill(const FInputActionValue& InputActionValue)
+{
+	if (APawn* ControlledPawn = GetPawn<APawn>())
+	{
+		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
+		if (MyCharacter)
+		{
+			MyCharacter->SpawnArrow(); // 캐릭터의 StopJumping 메서드 호출
 		}
 	}
 }

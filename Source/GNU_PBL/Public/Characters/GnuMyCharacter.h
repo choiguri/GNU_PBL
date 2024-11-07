@@ -5,12 +5,16 @@
 #include "CoreMinimal.h"
 #include "Characters/GnuBaseCharacter.h"
 #include "Components/TimelineComponent.h" // FTimeline
+
 #include "GnuMyCharacter.generated.h"
 
 class USpringArmComponent;
 class UCameraComponent;
 class UFTimeline;
 class UCurveFloat;
+
+class AGnuProjectileActor;
+class UGnuCharacterBaseWidget;
 
 UCLASS()
 class GNU_PBL_API AGnuMyCharacter : public AGnuBaseCharacter
@@ -89,6 +93,41 @@ public:
 
 	void SetCamera(); // 카메라 시점 전환 : 1인칭 <--> 3인칭 (컨트롤러에서 호출)
 
+	// ------------------------------------- Arrow Skill ----------------------------------------
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	TSubclassOf<class AGnuProjectileActor> ArrowClass;
+
+	void SpawnArrow();
+	// -----------------------------------------------------------------------------------------
+
+	// ------------------------------------- HP, Stamina ----------------------------------------
+	UPROPERTY(ReplicatedUsing = OnRep_CurHP, BlueprintReadWrite, Category = "Status")
+	float CurHP;
+	UPROPERTY(BlueprintReadWrite, Category = "Status")
+	float MaxHP;
+
+	UFUNCTION()
+	void OnRep_CurHP();
+
+	// Update functions
+	void UpdateHealth(float NewHP);
+
+	// UI Update function (called in BeginPlay)
+	void UpdateUIHealthAndStamina();
+
+	// 블루프린트 위젯 넣는 곳
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<UGnuCharacterBaseWidget> CharacterHealthWidgetClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	UUserWidget* CharacterWidget;
+
+	UGnuCharacterBaseWidget* CharacterHealthWidget;
+
+	// ------------------------------------------------------------------------
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	//TSubclassOf<class AGnuHPActor> HPClass;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
@@ -126,5 +165,4 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	UAnimMontage* DiveRoll_L_Montage; // 왼쪽으로 구르기 몽타주
-	
 };

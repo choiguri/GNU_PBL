@@ -29,7 +29,6 @@ void UGnuMyCharacterAnimInstance::NativeInitializeAnimation()
 	L_Orientation_Angle = 0.0f;
 	CurPitch = 0.0f;
 	TurnRate = 0.0f;
-	CurDirectionAngle = 0.0f;
 	CurVelocity = FVector::Zero();
 	CurAcceleration = FVector::Zero();
 	EAnimState = EAnimationState::Unarmed; // 맨 손으로 초기화

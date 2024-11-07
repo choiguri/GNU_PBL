@@ -56,6 +56,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = "input")
 	TObjectPtr<UInputAction> ZoomInAction; // 카메라 줌
 
+	UPROPERTY(EditAnywhere, Category = "input")
+	TObjectPtr<UInputAction> ArrowSkillAction; // 카메라 줌
+
 	FVector2D CurrentMoveDirection; // 현재 이동 방향 Dodge할 때 사용
 
 
@@ -71,4 +74,5 @@ private:
 	void WeaponChange(const struct FInputActionValue& InputActionValue); // 무기 체인지 (PistolChange, RifleChange이 것들 만들어서 할꺼면 삭제 해야함)
 	void Jump(const struct FInputActionValue& InputActionValue); // 점프
 	void StopJumping(const struct FInputActionValue& InputActionValue); // 점프 끝
+	void ArrowSkill(const struct FInputActionValue& InputActionValue); // 에로우 스킬
 };
