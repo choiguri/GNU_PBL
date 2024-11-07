@@ -23,4 +23,10 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* CombatTimeText;
+
+	UPROPERTY(meta = (BindWidget))
+	class UImage* HighPingImage;
+
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* HighPingAnimation;
 };

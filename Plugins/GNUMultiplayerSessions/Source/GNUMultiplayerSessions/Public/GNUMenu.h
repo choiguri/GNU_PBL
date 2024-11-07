@@ -5,11 +5,13 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Interfaces/OnlineSessionInterface.h"
+#include "OnlineSessionSettings.h"
 #include "GNUMenu.generated.h"
 
 /**
  * 
  */
+
 UCLASS()
 class GNUMULTIPLAYERSESSIONS_API UGNUMenu : public UUserWidget
 {
@@ -18,6 +20,13 @@ class GNUMULTIPLAYERSESSIONS_API UGNUMenu : public UUserWidget
 public:
 	UFUNCTION(BlueprintCallable)
 	void MenuSetup(int32 NumberOfPublicConnections = 4, FString TypeOfMatch = FString(TEXT("FreeForAll")), FString LobbyPath = FString(TEXT("/Game/GNU/Maps/Lobby")));
+
+	UPROPERTY(EditAnywhere, Category = "Player Stats")
+	TSubclassOf<class UUserWidget> FoundListClass;
+
+	class UGNUFoundList* FoundList;
+
+
 
 protected:
 
@@ -43,14 +52,32 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	class UButton* HostButton;
 
+	//UPROPERTY(meta = (BindWidget))
+	//UButton* JoinButton;
+
 	UPROPERTY(meta = (BindWidget))
-	UButton* JoinButton;
+	UButton* FindButton;
+
+	UPROPERTY(meta = (BindWidget))
+	UButton* CloseButton;
+
+	UPROPERTY(meta = (BindWidget))
+	class UScrollBox* FoundGameList;
+
+	UPROPERTY(meta = (BindWidget))
+	class UBorder* ListBorder;
 
 	UFUNCTION()
 	void HostButtonClicked();
 
+	//UFUNCTION()
+	//void JoinButtonClicked();
+
 	UFUNCTION()
-	void JoinButtonClicked();
+	void FindButtonClicked();
+
+	UFUNCTION()
+	void CloseButtonClicked();
 
 	void MenuTearDown();
 	

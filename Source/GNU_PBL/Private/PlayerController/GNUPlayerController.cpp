@@ -7,6 +7,7 @@
 #include "HUD/GNUOverHeadWidget.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
+#include "Components/Image.h"
 #include "HUD/GNUReturnToMainMenu.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
@@ -36,6 +37,12 @@ void AGNUPlayerController::Tick(float DeltaTime)
 
 	SetHUDTime();
 	CheckTimeSync(DeltaTime);
+
+	HighPingRunningTime += DeltaTime;
+	if (HighPingRunningTime > CheckPingFrequency)
+	{
+		
+	}
 	
 }
 
@@ -144,6 +151,40 @@ void AGNUPlayerController::CheckTimeSync(float DeltaTime)
 		ServerRequestServerTime(GetWorld()->GetTimeSeconds());
 		TimeSyncRunningTime = 0.f;
 
+	}
+}
+
+void AGNUPlayerController::HighPingWarning()
+{
+	GNUHUD = GNUHUD == nullptr ? Cast<AGNUHUD>(GetHUD()) : GNUHUD;
+
+	bool bHUDValid = GNUHUD &&
+		GNUHUD->CharacterOverlay &&
+		GNUHUD->CharacterOverlay->HighPingImage &&
+		GNUHUD->CharacterOverlay->HighPingAnimation;
+	if (bHUDValid)
+	{
+		GNUHUD->CharacterOverlay->HighPingImage->SetOpacity(1.f);
+		GNUHUD->CharacterOverlay->PlayAnimation(GNUHUD->CharacterOverlay->HighPingAnimation);
+	}
+}
+
+void AGNUPlayerController::StopHighPingWarning()
+{
+	GNUHUD = GNUHUD == nullptr ? Cast<AGNUHUD>(GetHUD()) : GNUHUD;
+
+	bool bHUDValid = GNUHUD &&
+		GNUHUD->CharacterOverlay &&
+		GNUHUD->CharacterOverlay->HighPingImage &&
+		GNUHUD->CharacterOverlay->HighPingAnimation;
+	if (bHUDValid)
+	{
+		GNUHUD->CharacterOverlay->HighPingImage->SetOpacity(0.f);
+		if (GNUHUD->CharacterOverlay->IsAnimationPlaying(GNUHUD->CharacterOverlay->HighPingAnimation))
+		{
+			GNUHUD->CharacterOverlay->StopAnimation(GNUHUD->CharacterOverlay->HighPingAnimation);
+		}
+		
 	}
 }
 

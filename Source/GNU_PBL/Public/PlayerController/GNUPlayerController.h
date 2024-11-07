@@ -58,6 +58,9 @@ protected:
 	float TimeSyncRunningTime = 0.0f;
 	void CheckTimeSync(float DeltaTime);
 
+	void HighPingWarning();
+	void StopHighPingWarning();
+
 
 private:
 	UPROPERTY()
@@ -73,4 +76,12 @@ private:
 
 	float TotalTime = 120.f;
 	uint32 CountdownInt = 0;
+
+	float HighPingRunningTime = 0.f;
+
+	UPROPERTY(EditAnywhere)
+	float HighPingDuration = 5.f;
+
+	UPROPERTY(EditAnywhere)
+	float CheckPingFrequency = 20.f;
 };

@@ -3,10 +3,15 @@
 
 #include "GNUMenu.h"
 #include "Components/Button.h"
+#include "Components/ScrollBox.h"
 #include "GNUMultiplayerSessionsSubsystem.h"
 #include "OnlineSessionSettings.h"
 #include "Interfaces/OnlineSessionInterface.h"
 #include "OnlineSubsystem.h"
+#include "GNUFoundList.h"
+#include "Components/TextBlock.h"
+#include "Components/Border.h"
+
 
 void UGNUMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch, FString LobbyPath)
 {
@@ -17,6 +22,8 @@ void UGNUMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch, F
 	SetVisibility(ESlateVisibility::Visible);
 	//bIsFocusable = true;
 	SetIsFocusable(true);
+
+	ListBorder->SetVisibility(ESlateVisibility::Hidden);
 
 	UWorld* World = GetWorld();
 	if (World)
@@ -60,9 +67,18 @@ bool UGNUMenu::Initialize()
 	{
 		HostButton->OnClicked.AddDynamic(this, &ThisClass::HostButtonClicked);
 	}
-	if (JoinButton)
+	/*if (JoinButton)
 	{
 		JoinButton->OnClicked.AddDynamic(this, &ThisClass::JoinButtonClicked);
+	}*/
+	if (FindButton)
+	{
+		FindButton->OnClicked.AddDynamic(this, &ThisClass::FindButtonClicked);
+	}
+
+	if (CloseButton)
+	{
+		CloseButton->OnClicked.AddDynamic(this, &ThisClass::CloseButtonClicked);
 	}
 
 	return true;
@@ -111,21 +127,60 @@ void UGNUMenu::OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionR
 	}
 
 	// Session Results 중에서 설정한 MatchType과 SettingsValue 값이 같은 세션을 찾으면 JoinSession 실행
-	for (auto Result : SessionResults)
+	/*for (auto Result : SessionResults)
 	{
 		FString SettingsValue;
 		Result.Session.SessionSettings.Get(FName("MatchType"), SettingsValue);
 		if (SettingsValue == MatchType)
 		{
 			MultiplayerSessionsSubsystem->JoinSession(Result);
+			
 			return;
 		}
 	}
-	if (!bWasSuccessful || SessionResults.Num() == 0)
+	*/
+	ListBorder->SetVisibility(ESlateVisibility::Visible);
+	for (int32 i = 0; i < SessionResults.Num(); i++)
+	{
+		auto Result = SessionResults[i];
+
+		FString ServerName = Result.Session.OwningUserName;
+		int32 CurrentPlayer = NumPublicConnections - Result.Session.NumOpenPublicConnections;
+		FString PlayerNum = FString::FromInt(CurrentPlayer) + " / " + FString::FromInt(NumPublicConnections);
+
+
+		if (FoundListClass)
+		{
+			FoundList = CreateWidget<UGNUFoundList>(GetWorld(), FoundListClass);
+		}
+		FoundList->SetDisplayText(FoundList->ServerNameText, ServerName);
+		FoundList->SetDisplayText(FoundList->PlayerText, PlayerNum);
+
+		FoundList->OnJoinButtonClickedFunc = [this, Result]()
+			{
+				if (MultiplayerSessionsSubsystem)
+				{
+					MultiplayerSessionsSubsystem->JoinSession(Result);
+				}
+			};
+
+		FoundList->JoinButton->OnClicked.AddDynamic(FoundList, &UGNUFoundList::OnJoinButtonClicked);
+
+		if (FoundGameList)
+		{
+			FoundGameList->SetVisibility(ESlateVisibility::Visible);
+			FoundGameList->AddChild(FoundList);
+		}
+		
+	}
+	
+
+	/*if (!bWasSuccessful || SessionResults.Num() == 0)
 	{
 		JoinButton->SetIsEnabled(true);
-	}
+	}*/
 }
+
 void UGNUMenu::OnJoinSession(EOnJoinSessionCompleteResult::Type Result)
 {
 	IOnlineSubsystem* Subsystem = IOnlineSubsystem::Get();
@@ -147,14 +202,15 @@ void UGNUMenu::OnJoinSession(EOnJoinSessionCompleteResult::Type Result)
 		}
 		
 	}
-	if (Result != EOnJoinSessionCompleteResult::Success)
+	/*if (Result != EOnJoinSessionCompleteResult::Success)
 	{
 		JoinButton->SetIsEnabled(true);
-	}
+	}*/
 }
 void UGNUMenu::OnDestroySession(bool bWasSuccessful)
 {
-
+	FoundGameList->ClearChildren();
+	ListBorder->SetVisibility(ESlateVisibility::Hidden);
 }
 void UGNUMenu::OnStartSession(bool bWasSuccessful)
 {
@@ -175,14 +231,29 @@ void UGNUMenu::HostButtonClicked()
 	}
 }
 
-void UGNUMenu::JoinButtonClicked()
+//void UGNUMenu::JoinButtonClicked()
+//{
+//	/*JoinButton->SetIsEnabled(false);
+//	if (MultiplayerSessionsSubsystem)
+//	{
+//		MultiplayerSessionsSubsystem->FindSessions(10000);
+//	}*/
+//}
+
+void UGNUMenu::FindButtonClicked()
 {
-	JoinButton->SetIsEnabled(false);
+	FoundGameList->ClearChildren();
 	if (MultiplayerSessionsSubsystem)
 	{
 		MultiplayerSessionsSubsystem->FindSessions(10000);
 	}
 }
+
+void UGNUMenu::CloseButtonClicked()
+{
+	ListBorder->SetVisibility(ESlateVisibility::Hidden);
+}
+
 
 void UGNUMenu::MenuTearDown()
 {
