@@ -111,6 +111,9 @@ void AGnuProjectileActor::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor
         if (MyCharacter != nullptr)
         {
             MyCharacter->UpdateHealth(Damage);
+            FString HPMessage = FString::Printf(TEXT("Current HP: %f"), MyCharacter->CurHP);
+            GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, HPMessage);
+
         }
         GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, TEXT("Overlap with: ") + OtherActor->GetName());
         Destroy();
