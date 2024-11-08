@@ -10,9 +10,12 @@
 class USpringArmComponent;
 class UCameraComponent;
 class USkeletalMeshComponent;
+class AGun;
 class UFTimeline;
 class UCurveFloat;
-class AGun;
+class AGnuProjectileActor;
+class AGnuHealActor;
+class UGnuCharacterBaseWidget;
 
 UCLASS()
 class GNU_PBL_API AGnuMyCharacter : public AGnuBaseCharacter
@@ -25,7 +28,6 @@ private:
 
 public:
 	AGnuMyCharacter();
-
 
 	// --------------------------------------------- Sprint ��� -----------------------------------
 	// ReplicatedUsing = OnRep_IsSprinting : �̷��� �����ϸ� ���� ������ ������ �ڵ����� OnRep_IsSprinting�Լ��� ȣ��ȴ�.
@@ -59,7 +61,7 @@ public:
 	UFUNCTION()
 	void OnRep_IsCrouching(); // isCrouch ������ ����Ǹ� ȣ��Ǵ� �Լ� (�� �Լ����� ����Ǵ� �͵��� Ŭ���̾�Ʈ �ʿ��� ����Ǵ� �͵�)
 	// --------------------------------------------------------------------------------------------
-	
+
 
 	//------------------------------------------- Roll ��Ÿ�� ��� ---------------------------------
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
@@ -118,6 +120,51 @@ public:
 
 	DECLARE_DELEGATE_OneParam(FDele_Player_Aimrate, float);
 	FDele_Player_Aimrate func_Player_Aimrate;
+
+	// ------------------------------------- Arrow Skill ----------------------------------------
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	TSubclassOf<class AGnuProjectileActor> ArrowClass;
+	void SpawnArrow();
+	// -----------------------------------------------------------------------------------------
+	
+
+	// ------------------------------------- Arrow Skill ----------------------------------------
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	TSubclassOf<class AGnuHealActor> HealClass;
+	void SpawnHeal();
+	// -----------------------------------------------------------------------------------------
+
+
+	// ------------------------------------- HP, Stamina ----------------------------------------
+	UPROPERTY(ReplicatedUsing = OnRep_CurHP, BlueprintReadWrite, Category = "Status")
+	float CurHP;
+	UPROPERTY(BlueprintReadWrite, Category = "Status")
+	float MaxHP;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Status")
+	float CurStamina;
+	UPROPERTY(BlueprintReadWrite, Category = "Status")
+	float MaxStamina;
+
+	UFUNCTION()
+	void OnRep_CurHP();
+	void UpdateHealth(float NewHP);
+	void UpdateStamina(float NewStamina);
+	void UpdateUIHealthAndStamina();
+
+	// ��������Ʈ ���� �ִ� ��
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<UGnuCharacterBaseWidget> CharacterHealthWidgetClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	UUserWidget* CharacterWidget;
+
+	UGnuCharacterBaseWidget* CharacterHealthWidget;
+
+	// ------------------------------------------------------------------------
+
+
+	void SetCamera(); // ī�޶� ���� ��ȯ : 1��Ī <--> 3��Ī (��Ʈ�ѷ����� ȣ��)
 
 protected:
 	virtual void BeginPlay() override;

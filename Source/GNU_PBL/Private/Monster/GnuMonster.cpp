@@ -41,7 +41,6 @@ void AGnuMonster::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 // Target BeginOverlap Function
 void AGnuMonster::OnPlayerEnterRange(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-
 }
 
 // Target EndOverlap Function

@@ -7,13 +7,20 @@
 #include "GameFramework/SpringArmComponent.h" // SpringArm
 #include "Camera/CameraComponent.h" // TPP, FPP Camera
 #include "Characters/GnuMyAnimInstance.h" // MultiCastMontage_Dodge_Implementation �Լ��� ��� �Լ���
-#include "Animation/AnimMontage.h" // class UAnimMontage
-#include "Net/UnrealNetwork.h" // ~_Implementation(), ~_Validate(), GetLifetimeReplicatedProps()
+
 #include "Weapons/Gun.h"
 #include "Weapons/CrossHair.h"
 #include "Weapons/WeaponSwitch.h"
+
+#include "Animation/AnimMontage.h" // class UAnimMontage
+#include "Net/UnrealNetwork.h" // ~_Implementation(), ~_Validate(), GetLifetimeReplicatedProps()
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
+
+#include "Characters/Actor/GnuProjectileActor.h"
+#include "Characters/Actor/GnuHealActor.h"
+
+#include "Characters/Widget/GnuCharacterBaseWidget.h"
 
 AGnuMyCharacter::AGnuMyCharacter()
 {
@@ -59,12 +66,10 @@ AGnuMyCharacter::AGnuMyCharacter()
 	DodgeMontage = nullptr;
 	// ---------------------------------------------------------------
 
-	// -------------------- CrossHair create -----------------
-	static ConstructorHelpers::FClassFinder<UUserWidget> CrossHairFinder(TEXT("/Game/GNU/weapon/UI_CrossHair.UI_CrossHair_C"));
-	if (CrossHairFinder.Succeeded())
-	{
-		CrossHairWidgetClass = CrossHairFinder.Class;
-	}
+	CurHP = 50.f;
+	MaxHP = 100.f;
+	CurStamina = 50.f;
+	MaxStamina = 100.f;
 }
 
 void AGnuMyCharacter::BeginPlay()
@@ -116,12 +121,26 @@ void AGnuMyCharacter::BeginPlay()
 	Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("WeaponSocket"));
 	Gun->SetOwner(this);
 	Gun->UpdateAmmoDisplay();
+	
+	  // ������ �ʱ�ȭ�ϴ� �κ�
+	if (CharacterHealthWidgetClass)
+	{
+		CharacterHealthWidget = CreateWidget<UGnuCharacterBaseWidget>(GetWorld(), CharacterHealthWidgetClass);
+		if (CharacterHealthWidget && CharacterWidget)
+		{
+			CharacterWidget->AddToViewport();
+			CharacterHealthWidget->UpdateHealthBar(CurHP, MaxHP); // ���� �� HP ������Ʈ
+		}
+	}
+
 }
 
 void AGnuMyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	ZoomInTimeline.TickTimeline(DeltaTime);
+	// �� �����Ӹ��� UI ������Ʈ
+	UpdateUIHealthAndStamina();
 }
 
 void AGnuMyCharacter::SetCamera()
@@ -201,12 +220,20 @@ void AGnuMyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	// ������ ��Ʈ��ũ���� ������ �� �ֵ��� ����
 	DOREPLIFETIME(AGnuMyCharacter, isSprint);
 	DOREPLIFETIME(AGnuMyCharacter, isCrouch);
+	DOREPLIFETIME(AGnuMyCharacter, CurHP);
 }
 
 // ----------------------------------------- Sprint Replicate-----------------------------------
 void AGnuMyCharacter::ServerSprintStart_Implementation() // Ŭ���̾�Ʈ���� ������Ʈ ���� ��û�� ������ �������� ServerSprintStart_Implementation�� ����
 {
 	StopFire();
+	UpdateSprintState(true); //  �� �Լ��� ���������� ����
+	// ������ ��Ʈ��ũ���� ������ �� �ֵ��� ����
+}
+
+// ----------------------------------------- Sprint Replicate-----------------------------------
+void AGnuMyCharacter::ServerSprintStart_Implementation() // Ŭ���̾�Ʈ���� ������Ʈ ���� ��û�� ������ �������� ServerSprintStart_Implementation�� ����
+{
 	UpdateSprintState(true); //  �� �Լ��� ���������� ����
 }
 
@@ -227,7 +254,7 @@ bool AGnuMyCharacter::ServerSprintEnd_Validate()
 
 void AGnuMyCharacter::ClientSprintStart_Implementation() // Ŭ���̾�Ʈ�� ��� �ݿ��ϴ� ��������� ���� - Ŭ���̾�Ʈ �ϰ����� ������
 {
-	// �ּ��� Ǯ�� Ŭ���̾�Ʈ���� ������Ʈ ���¸� ������ �ݿ��� �� ������, �� ����� ������ ����� ��ٸ��� �ʱ� ������ ������ Ŭ���̾�Ʈ�� �ϰ����� ������ �� ����
+	// �ּ��� Ǯ�� Ŭ���̾�Ʈ���� ������Ʈ ���¸� ������ �ݿ��� �� ������, �� ����� ������ ������ ��ٸ��� �ʱ� ������ ������ Ŭ���̾�Ʈ�� �ϰ����� ������ �� ����
 	// UpdateSprintState(true);
 }
 
@@ -323,7 +350,7 @@ void AGnuMyCharacter::ServerMontageOnDodge_Implementation(float Forward, float R
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 
 		PlayAnimMontage(DodgeMontage);
-
+		UpdateStamina(-10.f);
 		// ��Ƽĳ��Ʈ ȣ��
 		MultiCastMontage_Dodge(Forward, Right);
 	}
@@ -434,6 +461,22 @@ void AGnuMyCharacter::MultiCastMontage_Reload_Implementation() // ��� Ŭ�
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 
 		PlayAnimMontage(Reload_Montage);
+	}
+}
+
+//--------------------------- Arrow Skill --------------------------------
+void AGnuMyCharacter::SpawnArrow()
+{
+	if (ArrowClass)
+	{
+		FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 100.0f;
+		FRotator SpawnRotation = GetActorRotation();
+
+		AGnuProjectileActor* Arrow = GetWorld()->SpawnActor<AGnuProjectileActor>(ArrowClass, SpawnLocation, SpawnRotation);
+		if (Arrow)
+		{
+			Arrow->LaunchProjectile(this);
+		}
 	}
 }
 // -------------------------------------------------------------------------
@@ -589,4 +632,86 @@ bool AGnuMyCharacter::GetIsSprinting() const
 < �Լ� ȣ�� ��� >
 ������Ʈ: Ŭ���̾�Ʈ�� ������ ��û�� ������, ������ ���� Ŭ���̾�Ʈ���� �ٽ� ���¸� �����ϴ� ����� ��� ���
 ������ : Ŭ���̾�Ʈ�� ������ ��û�ϸ�, ������ ��� Ŭ���̾�Ʈ�� ���ÿ� ����� �����ϴ� �� ���� ���� ���
+*/
+//--------------------------- Arrow Skill --------------------------------
+void AGnuMyCharacter::SpawnHeal()
+{
+	if (HealClass)
+	{
+	
+		// ĳ������ ��ġ�� �������� �������� 100 ���� ������ ��ġ�� SpawnLocation ����
+		FVector SpawnLocation = GetActorLocation() + FVector(0, 0, 100.0f); // ���÷� ĳ������ 100 ���� ���� ����
+		FRotator SpawnRotation = GetActorRotation();
+
+		// FTransform�� ����Ͽ� ��ġ�� ȸ�� ����
+		FTransform SpawnTransform(SpawnRotation, SpawnLocation);
+
+		// HealActor ����
+		AGnuHealActor* Heal = GetWorld()->SpawnActor<AGnuHealActor>(HealClass, SpawnTransform);
+
+		if (Heal)
+		{
+			Heal->HealOverTime();
+		}
+		else
+		{
+			FString HPMessage = FString::Printf(TEXT("Hp Heal Spawn Error"));
+		}
+	}
+	else
+	{
+		FString HPMessage = FString::Printf(TEXT("Not Heal Class!!"));
+	}
+}
+// -------------------------------------------------------------------------
+
+
+//--------------------------- HP Update --------------------------------
+void AGnuMyCharacter::OnRep_CurHP()
+{
+	// HP�� ����Ǹ� UI�� �ݿ�
+	UpdateUIHealthAndStamina();
+}
+
+void AGnuMyCharacter::UpdateHealth(float NewHP)
+{
+	CurHP = FMath::Clamp(CurHP + NewHP, 0.0f, MaxHP); // HP�� 0�� MaxHP ���̷� Ŭ����
+	FString HPMessage = FString::Printf(TEXT("Current HP: %f"), CurHP);
+	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, HPMessage);
+	// �������� HP ������Ʈ �� UI ������Ʈ
+	if (HasAuthority())
+	{
+		OnRep_CurHP();
+	}
+}
+
+void AGnuMyCharacter::UpdateStamina(float NewStamina)
+{
+	CurStamina = FMath::Clamp(CurStamina + NewStamina, 0.0f, MaxStamina);
+
+	FString StaminaMessage = FString::Printf(TEXT("Current Stamina: %f"), CurStamina);
+	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, StaminaMessage);
+}
+
+void AGnuMyCharacter::UpdateUIHealthAndStamina()
+{
+	// UI �������� ȣ��� �Լ���, Health�� Stamina �ٸ� ������Ʈ
+	// ���⿡ UGnuCharacterBaseWidget�� �����ϴ� �ڵ带 ������ �˴ϴ�.
+	if (CharacterHealthWidget)
+	{
+		CharacterHealthWidget->UpdateHealthBar(CurHP, MaxHP);
+		CharacterHealthWidget->UpdateStaminaBar(CurStamina, MaxStamina);
+	}
+}
+// -------------------------------------------------------------------------
+
+
+/* ----------- ���� - Ŭ���̾�Ʈ ����ȭ ���� -------------------
+< ���ø����̼� ��� >
+������Ʈ: isSprint ������ �������� �����ϰ�, �� ���� ������ OnRep_IsSprinting�� ���� Ŭ���̾�Ʈ�� �˸��� ����. �� Ŭ���̾�Ʈ�� �����κ��� ���������� ���¸� ����ȭ����
+������ : isDodge ������ �ܼ� ���� ǥ�ÿ��̰�, ������ �ִϸ��̼��� ������ �� �� ó���ϰ� ��� Ŭ���̾�Ʈ���� ���� ����ǰԲ� ��Ƽĳ��Ʈ�� ���ĵ�
+
+< �Լ� ȣ�� ��� >
+������Ʈ: Ŭ���̾�Ʈ�� ������ ��û�� ������, ������ ���� Ŭ���̾�Ʈ���� �ٽ� ���¸� �����ϴ� ����� ��� ���
+������ : Ŭ���̾�Ʈ�� ������ ��û�ϸ�, ������ ��� Ŭ���̾�Ʈ�� ���ÿ� ������ �����ϴ� �� ���� ���� ���
 ------------------------------------------------------------- */

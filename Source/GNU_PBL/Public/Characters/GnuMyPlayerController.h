@@ -50,9 +50,6 @@ private:
 	UPROPERTY(EditAnywhere, Category = "input")
 	TObjectPtr<UInputAction> WeaponChangeAction; // ���� ��ȯ (���� q�� ���ʴ�� �ٲ�� �����ص�)
 
-	//UPROPERTY(EditAnywhere, Category = "input")
-	//TObjectPtr<UInputAction> PistolChangeAction; // ���� ��ȯ�� 1,2,3�� ������ �ٲ�� �Ϸ��� �̰ɷ� �ٲ�� �� ��
-
 	UPROPERTY(EditAnywhere, Category = "input")
 	TObjectPtr<UInputAction> ZoomInAction; // ī�޶� ��
 
@@ -66,7 +63,12 @@ private:
 	UPROPERTY(EditAnywhere, Category = "input")
 	TObjectPtr<UInputAction> InteractAction; // 상호작용 인풋
 	
+	UPROPERTY(EditAnywhere, Category = "input")
+	TObjectPtr<UInputAction> ArrowSkillAction; // ȭ�� ��ų
 
+
+	UPROPERTY(EditAnywhere, Category = "input")
+	TObjectPtr<UInputAction> HealSkillAction; // �� ��ų
 	FVector2D CurrentMoveDirection; // ���� �̵� ���� Dodge�� �� ���
 
 
@@ -82,6 +84,9 @@ private:
 	void WeaponChange(const struct FInputActionValue& InputActionValue); // ���� ü���� (PistolChange, RifleChange�� �͵� ���� �Ҳ��� ���� �ؾ���)
 	void Jump(const struct FInputActionValue& InputActionValue); // ����
 	void StopJumping(const struct FInputActionValue& InputActionValue); // ���� ��
+	
+	void ArrowSkill(const struct FInputActionValue& InputActionValue); // ���ο� ��ų
+	void HealSkill(const struct FInputActionValue& InputActionValue); // �� ��ų
 
 	// ------------------ Weapon funtion -------------
 	void Aiming();
