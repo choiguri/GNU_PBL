@@ -5,7 +5,7 @@
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
-#include "Characters/GnuCharacterAnimInstance.h"
+#include "Characters/GnuMyAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
 // 내가 추가한 헤더들
 #include "Components/WidgetComponent.h"
@@ -57,7 +57,7 @@ void AGnuCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	MyAnimInstance = Cast<UGnuCharacterAnimInstance>(GetMesh()->GetAnimInstance());
+	MyAnimInstance = Cast<UGnuMyAnimInstance>(GetMesh()->GetAnimInstance());
 
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 	{
@@ -114,29 +114,29 @@ void AGnuCharacter::UpdateAnimInstance(const FVector2D& MoveVector2D)
 	if (MyAnimInstance)
 	{
 		// Set all movement direction variables to false initially
-		MyAnimInstance->SetIsStraightMove(false);
-		MyAnimInstance->SetIsBackMove(false);
-		MyAnimInstance->SetIsLeftMove(false);
-		MyAnimInstance->SetIsRightMove(false);
+		//MyAnimInstance->SetIsStraightMove(false);
+		//MyAnimInstance->SetIsBackMove(false);
+		//MyAnimInstance->SetIsLeftMove(false);
+		//MyAnimInstance->SetIsRightMove(false);
 
-		// Determine which direction key is being pressed
-		if (MoveVector2D.X > 0.0f)  // Moving forward
-		{
-			MyAnimInstance->SetIsStraightMove(true);
-		}
-		else if (MoveVector2D.X < 0.0f)  // Moving backward
-		{
-			MyAnimInstance->SetIsBackMove(true);
-		}
+		//// Determine which direction key is being pressed
+		//if (MoveVector2D.X > 0.0f)  // Moving forward
+		//{
+		//	MyAnimInstance->SetIsStraightMove(true);
+		//}
+		//else if (MoveVector2D.X < 0.0f)  // Moving backward
+		//{
+		//	MyAnimInstance->SetIsBackMove(true);
+		//}
 
-		if (MoveVector2D.Y < 0.0f)  // Moving left
-		{
-			MyAnimInstance->SetIsLeftMove(true);
-		}
-		else if (MoveVector2D.Y > 0.0f)  // Moving right
-		{
-			MyAnimInstance->SetIsRightMove(true);
-		}
+		//if (MoveVector2D.Y < 0.0f)  // Moving left
+		//{
+		//	MyAnimInstance->SetIsLeftMove(true);
+		//}
+		//else if (MoveVector2D.Y > 0.0f)  // Moving right
+		//{
+		//	MyAnimInstance->SetIsRightMove(true);
+		//}
 	}
 }
 

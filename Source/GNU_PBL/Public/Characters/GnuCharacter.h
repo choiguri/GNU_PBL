@@ -11,7 +11,7 @@
 // Input ����
 class UInputMappingContext;
 class UInputAction;
-class UGnuCharacterAnimInstance;
+class UGnuMyAnimInstance;
 // ��Ʈ�� ����
 class USpringArmComponent;
 class UCameraComponent;
@@ -24,7 +24,7 @@ class GNU_PBL_API AGnuCharacter : public ACharacter
 
 protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Animation")
-	UGnuCharacterAnimInstance* MyAnimInstance;
+	UGnuMyAnimInstance* MyAnimInstance;
 	UPROPERTY(VisibleAnywhere)
 	USpringArmComponent* SpringArm;
 	UPROPERTY(VisibleAnywhere)

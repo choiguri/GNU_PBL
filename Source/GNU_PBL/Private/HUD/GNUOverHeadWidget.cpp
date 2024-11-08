@@ -60,7 +60,7 @@ void UGNUOverHeadWidget::ShowPlayerName(APawn* InPawn)
 
 void UGNUOverHeadWidget::NativeDestruct()
 {
-	RemoveFromViewport();
+	RemoveFromParent();
 
 	Super::NativeDestruct();
 }
