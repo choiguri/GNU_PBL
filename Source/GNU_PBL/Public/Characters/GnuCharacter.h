@@ -7,6 +7,8 @@
 #include "InputActionValue.h"
 #include "GnuCharacter.generated.h"
 
+
+
 // Input ����
 class UInputMappingContext;
 class UInputAction;
@@ -14,7 +16,7 @@ class UGnuCharacterAnimInstance;
 // ��Ʈ�� ����
 class USpringArmComponent;
 class UCameraComponent;
-
+class AGun;
 
 UCLASS()
 class GNU_PBL_API AGnuCharacter : public ACharacter
@@ -35,11 +37,20 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input")
 	UInputAction* RotationAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input")
-	UInputAction* JumpAction;
-
+	UInputAction* AimingAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input")
+	UInputAction* JumpAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input")
+	UInputAction* ShootAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input")
+	UInputAction* ReroadAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input")
+	UInputAction* InteractAction; // 상호작용 인풋
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input") 
 	bool isWaking;
+	
 
+	
 
 protected:
 	// Called when the game starts or when spawned
@@ -48,6 +59,13 @@ protected:
 	void Move(const FInputActionValue& value);
 	void Rotation(const FInputActionValue& value);
 	void UpdateAnimInstance(const FVector2D& MoveVector2D);
+	void Aiming();
+	void StopAiming();
+	void StartFire();
+	void StopFire();
+	void Reroad();
+	void Interact(); // 상호작용 함수
+	void SwitchWeapon(TSubclassOf<AGun> NewGunClass);
 
 public:	
 	// Sets default values for this character's properties
@@ -58,5 +76,24 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	
+	DECLARE_DELEGATE_OneParam(FDele_Player_Aimrate, float);
+
+	FDele_Player_Aimrate func_Player_Aimrate;
+
+	
+private:
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AGun> GunClass;
+
+	UPROPERTY()
+	AGun* Gun;
+
+	
+	TSubclassOf<UUserWidget> CrossHairWidgetClass;
+	//UUserWidget* CrossHairWidget;
+
+	UPROPERTY()
+	class UCrossHair* pCrossHair;
 
 };

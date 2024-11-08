@@ -30,6 +30,9 @@ protected:
 	bool isLeftMove = false;
 	UPROPERTY(BlueprintReadOnly, Category = Movement)
 	bool isRightMove = false;
+	UPROPERTY(BlueprintReadOnly, Category = Movement)
+	float AimPitch;
+
 
 public:
 	virtual void NativeInitializeAnimation() override;
@@ -39,5 +42,6 @@ public:
 	void SetIsBackMove(bool Value);
 	void SetIsLeftMove(bool Value);
 	void SetIsRightMove(bool Value);
+	void SetAimPitch(float Value);
 	bool isWalking();
 };

@@ -47,6 +47,11 @@ void UGnuCharacterAnimInstance::SetIsRightMove(bool Value)
 	isRightMove = Value;
 }
 
+void UGnuCharacterAnimInstance::SetAimPitch(float Value)
+{
+	AimPitch = Value;
+}
+
 bool UGnuCharacterAnimInstance::isWalking()
 {
 	if (MoveLength == 0)

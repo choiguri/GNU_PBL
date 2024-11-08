@@ -7,6 +7,10 @@
 #include "EnhancedInputComponent.h"
 #include "Characters/GnuCharacterAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Weapons/Gun.h"
+#include "Weapons/CrossHair.h"
+#include "Weapons/WeaponSwitch.h"
+#include "Blueprint/UserWidget.h"
 
 // Sets default values
 AGnuCharacter::AGnuCharacter()
@@ -17,7 +21,7 @@ AGnuCharacter::AGnuCharacter()
 	///////////////////////////
 	// 캐릭터 회전
 	bUseControllerRotationPitch = false;
-	bUseControllerRotationYaw = false;
+	bUseControllerRotationYaw = true;
 	bUseControllerRotationRoll = false;
 
 	UCharacterMovementComponent* MovementComponent = GetCharacterMovement();
@@ -28,7 +32,7 @@ AGnuCharacter::AGnuCharacter()
 	// 카메라
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->SetupAttachment(GetRootComponent());
-	SpringArm->TargetArmLength = 300.0f;
+	SpringArm->TargetArmLength = 400.0f;
 	SpringArm->SetWorldRotation(FRotator(-30.0f, 0.0f, 0.0f));
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
@@ -36,7 +40,16 @@ AGnuCharacter::AGnuCharacter()
 	///////////////////////////
 
 	isWaking = false;
+
+	static ConstructorHelpers::FClassFinder<UUserWidget> CrossHairFinder(TEXT("/Game/GNU/weapon/UI_CrossHair.UI_CrossHair_C"));
+	if (CrossHairFinder.Succeeded())
+	{
+		CrossHairWidgetClass = CrossHairFinder.Class;
+	}
+
 }
+
+
 
 // Called when the game starts or when spawned
 void AGnuCharacter::BeginPlay()
@@ -54,6 +67,30 @@ void AGnuCharacter::BeginPlay()
 			EnhancedInputSystem->AddMappingContext(MappingContext, 0);
 		}
 	}
+
+	if (CrossHairWidgetClass) // 크로스헤어 UI 유효성 검사
+	{
+		// Create and add the CrossHair widget to the viewport
+		pCrossHair = CreateWidget<UCrossHair>(GetWorld(), CrossHairWidgetClass);
+		if (IsValid(pCrossHair))
+		{
+			pCrossHair->AddToViewport(); // 뷰포트 추가
+		}
+	}
+
+	// Bind aim rate to CrossHair
+	if (AGnuCharacter* GnuCharacter = Cast<AGnuCharacter>(GetController() ? GetController()->GetPawn() : nullptr))
+	{
+		if (GnuCharacter)
+		{
+			pCrossHair->BindUserAimRate(GnuCharacter);
+		}
+	}
+
+	Gun = GetWorld()->SpawnActor<AGun>(GunClass);
+	Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("WeaponSocket"));
+	Gun->SetOwner(this);
+	Gun->UpdateAmmoDisplay();
 }
 
 // Called every frame
@@ -113,6 +150,148 @@ void AGnuCharacter::UpdateAnimInstance(const FVector2D& MoveVector2D)
 	}
 }
 
+void AGnuCharacter::Aiming()
+{
+	if (GetController() != nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Aiming..."));
+		if (SpringArm->TargetArmLength > 300.0f)
+		{
+			SpringArm->TargetArmLength -= 10;
+		}
+		if (pCrossHair)
+		{
+			pCrossHair->UpdateCrossHair(0.5);
+		}
+		const FRotator ControllerRotation = GetController()->GetControlRotation();
+		float Pitch = ControllerRotation.Pitch;
+		if (Pitch > 90) {
+			Pitch -= 360;
+		}
+		//UE_LOG(LogTemp, Warning, TEXT("Pitch : %f"), Pitch);
+		MyAnimInstance->SetAimPitch(Pitch);
+	}
+}
+
+void AGnuCharacter::StopAiming()
+{
+	if (GetController() != nullptr)
+	{
+		SpringArm->TargetArmLength = 400.0f;
+		if (pCrossHair)
+		{
+			pCrossHair->UpdateCrossHair(1);
+		}
+	}
+}
+
+void AGnuCharacter::StartFire()
+{
+	if (GetController() != nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("fire!"));
+		if (pCrossHair)
+		{
+			pCrossHair->UpdateCrossHair(2); // 새로운 AimRate로 크로스헤어 업데이트
+
+		}
+		Gun->PullTrigger();
+	}
+}
+
+void AGnuCharacter::StopFire()
+{
+	if (GetController() != nullptr)
+	{
+		if (pCrossHair)
+		{
+			pCrossHair->UpdateCrossHair(1);
+		}
+		Gun->ReleaseTrigger();
+	}
+}
+
+
+void AGnuCharacter::Reroad()
+{
+	if (GetController() != nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Reroad!"));
+		if (pCrossHair)
+		{
+			pCrossHair->UpdateCrossHair(3); // 새로운 AimRate로 크로스헤어 업데이트
+		}
+		Gun->Reload();
+	}
+}
+
+void AGnuCharacter::Interact()
+{
+	if (GetController() != nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Interact"));
+		AController* PlayerController = GetController();
+		if (PlayerController == nullptr)
+		{
+			return;
+		}
+
+		FVector Location;
+		FRotator Rotation;
+		PlayerController->GetPlayerViewPoint(Location, Rotation);
+
+		FVector End = Location + Rotation.Vector() * 1000;
+		// TODO: LineTrace 
+
+		FHitResult Hit;
+		bool bSuccess = GetWorld()->LineTraceSingleByChannel(Hit, Location, End, ECollisionChannel::ECC_GameTraceChannel1);
+		
+
+		if (bSuccess)
+		{
+			// 히트된 액터가 존재하는지 확인
+			AActor* HitActor = Hit.GetActor();
+			if (HitActor)
+			{
+				// 액터에 특정 태그가 있는지 확인 (예: "WeaponSwitch")
+				if (HitActor->ActorHasTag(FName("WeaponSwitch")))
+				{
+					AWeaponSwitch* NewGun = Cast<AWeaponSwitch>(HitActor);
+					if (NewGun)
+					{
+						UE_LOG(LogTemp, Warning, TEXT("Switching Weapon..."));
+						TSubclassOf<AGun> NewGunClass = NewGun->Switching();
+						SwitchWeapon(NewGunClass);
+					}					
+				}
+			}
+		}
+	}
+}
+
+void AGnuCharacter::SwitchWeapon(TSubclassOf<AGun> NewGunClass)
+{
+	if (NewGunClass) 
+	{
+		GunClass = NewGunClass;
+		
+		if (Gun)
+		{
+			Gun->RemoveAmmoDisplay();
+			Gun->Destroy();
+			Gun = nullptr;
+		}
+		Gun = GetWorld()->SpawnActor<AGun>(GunClass);
+
+		if (Gun)
+		{
+			Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("WeaponSocket"));
+			Gun->SetOwner(this);
+			Gun->UpdateAmmoDisplay();
+		}
+	}
+}
+
 
 void AGnuCharacter::Rotation(const FInputActionValue& value)
 {
@@ -125,6 +304,7 @@ void AGnuCharacter::Rotation(const FInputActionValue& value)
 	}
 }
 
+
 // Called to bind functionality to input
 void AGnuCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -135,7 +315,12 @@ void AGnuCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		EnhancedInputComponent->BindAction(RotationAction, ETriggerEvent::Triggered, this, &AGnuCharacter::Rotation);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-
+		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Started, this, &AGnuCharacter::StartFire);
+		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Completed, this, &AGnuCharacter::StopFire);
+		EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Triggered, this, &AGnuCharacter::Aiming);
+		EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Completed, this, &AGnuCharacter::StopAiming);
+		EnhancedInputComponent->BindAction(ReroadAction, ETriggerEvent::Started, this, &AGnuCharacter::Reroad);
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &AGnuCharacter::Interact); //상호작용 
 	}
 }
 
