@@ -16,7 +16,10 @@ public class GNU_PBL : ModuleRules
 			"AnimGraphRuntime",
 			"EnhancedInput", 
 			"Niagara",
-            "AIModule", 
+            "AIModule",
+			"GNUMultiplayerSessions", 
+			"OnlineSubsystem", 
+			"OnlineSubsystemSteam" 
         });
 	}
 }

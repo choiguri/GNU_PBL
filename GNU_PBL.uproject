@@ -25,6 +25,10 @@
 			]
 		},
 		{
+			"Name": "AnimationLocomotionLibrary",
+			"Enabled": true
+		},
+		{
 			"Name": "AnimationWarping",
 			"Enabled": true
 		},
@@ -34,6 +38,10 @@
 		},
 		{
 			"Name": "SkeletalMeshModelingTools",
+			"Enabled": true
+		},
+		{
+			"Name": "OnlineSubsystemSteam",
 			"Enabled": true
 		}
 	]
