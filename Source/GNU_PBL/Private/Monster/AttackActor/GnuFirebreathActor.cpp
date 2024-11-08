@@ -36,6 +36,10 @@ void AGnuFirebreathActor::DestroyFirebreath()
 
 void AGnuFirebreathActor::BeginPlay()
 {
+
+    Super::BeginPlay();
+
+
     // 충돌을 위해 이벤트 바인딩
     if (BoxComponent)
     {

@@ -10,6 +10,7 @@
 #include "Animation/AnimNotifies/AnimNotify.h"
 #include "Animation/AnimMontage.h"
 #include "Animation/AnimInstance.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 
 AGnuMonster::AGnuMonster()
@@ -177,7 +178,7 @@ void AGnuMonster::OnTailOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor
 			// 데미지 처리
 			float DamageAmount = 30.0f; // 데미지 양
 			/*TargetCharacter->TakeDamage(DamageAmount, FDamageEvent(), nullptr, this);*/
-			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Claw Attack Overlap"));
+			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Tail Attack Overlap"));
 
 			// 플레이어에게 넉백 적용
 			KnockbackStrength = 10000.f;

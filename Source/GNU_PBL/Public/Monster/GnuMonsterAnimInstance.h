@@ -18,6 +18,10 @@ class GNU_PBL_API UGnuMonsterAnimInstance : public UAnimInstance
 public:
     virtual void NativeInitializeAnimation() override;
 
+
+    // 몽타주 실행 중인 노티파이 이벤트를 처리할 함수
+    // cpp는 BlueprintNativeEvent 라고 설정되면 블루프린트에서 재정의 가능하도록 하려는 목적
+    // 이 함수의 기본 구현을 C++에서 찾을 때는 _Implementation이 붙은 함수 이름을 기준으로 호출
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
     void OnAttackNotifyEvent(FName NotifyName);
 
@@ -50,6 +54,9 @@ public:
 
     UPROPERTY(EditDefaultsOnly, Category = "Montage")
     UAnimMontage* TailAttackMontage;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Montage")
+    UAnimMontage* ExampleAttackMontage;
     
 
 protected:
@@ -79,4 +86,7 @@ public:
 
     UFUNCTION(BlueprintCallable)
     void PlayTailAttackMontage();
+
+    UFUNCTION(BlueprintCallable)
+    void PlayExampleMontage();
 };

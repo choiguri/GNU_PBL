@@ -114,6 +114,7 @@ public:
 	// 원거리 공격 Actor 소환 class 설정
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
 	TSubclassOf<class AGnuFireballActor> FireballClass;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
 	TSubclassOf<class AGnuFiretornadoActor> FiretornadoClass;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")

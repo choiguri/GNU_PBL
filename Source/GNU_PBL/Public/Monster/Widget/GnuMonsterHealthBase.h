@@ -18,7 +18,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void UpdateBossHP(float CurrentHP, float MaxHP);
 
-
 protected:
 	virtual void NativeConstruct() override;
 

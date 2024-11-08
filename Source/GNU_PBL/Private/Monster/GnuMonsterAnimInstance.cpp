@@ -33,7 +33,7 @@ void UGnuMonsterAnimInstance::HandleAttackNotify(FName NotifyName)
     if (NotifyName == "Attack_Start")
     {
         UE_LOG(LogTemp, Log, TEXT("Attack Start Notify triggered."));
-
+        GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, TEXT("Attack Start Notify trggered"));
         if (MonsterOwner)
         {
             MonsterOwner->ActivateClawCollision();
@@ -42,6 +42,7 @@ void UGnuMonsterAnimInstance::HandleAttackNotify(FName NotifyName)
     else if (NotifyName == "Attack_End")
     {
         UE_LOG(LogTemp, Log, TEXT("Attack End Notify triggered."));
+        GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, TEXT("Attack End Notify trggered"));
         if (MonsterOwner)
         {
             MonsterOwner->DeactivateClawCollision();
@@ -98,6 +99,11 @@ void UGnuMonsterAnimInstance::PlayClawAttackMontage()
 void UGnuMonsterAnimInstance::PlayTailAttackMontage()
 {
     PlayAttackMontage(TailAttackMontage);
+}
+
+void UGnuMonsterAnimInstance::PlayExampleMontage()
+{
+    PlayAttackMontage(ExampleAttackMontage);
 }
 
 
