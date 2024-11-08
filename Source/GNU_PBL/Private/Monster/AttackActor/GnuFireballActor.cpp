@@ -13,11 +13,11 @@ AGnuFireballActor::AGnuFireballActor()
 
     // ProjectileMovementComponent 생성 및 기본값 설정
     ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
-    ProjectileMovement->InitialSpeed = 1500.f;  // 발사 속도
+    ProjectileMovement->InitialSpeed = 1500.f;                  // 발사 속도
     ProjectileMovement->MaxSpeed = 2000.f;
-    ProjectileMovement->bRotationFollowsVelocity = true;  // 발사체가 이동 방향으로 회전
-    ProjectileMovement->bShouldBounce = false;  // 바운스 설정 (필요시 true)
-    ProjectileMovement->ProjectileGravityScale = 0.f; // 중력 비활성화
+    ProjectileMovement->bRotationFollowsVelocity = true;        // 발사체가 이동 방향으로 회전
+    ProjectileMovement->bShouldBounce = false;                  // 바운스 설정
+    ProjectileMovement->ProjectileGravityScale = 0.f;           // 중력 비활성화
 
     // 부모 클래스에서 상속받은 BoxComponent를 초기화
     if (BoxComponent)
