@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Monster/AttackActor/GnuAttackCollisionActor.h"
-#include "Characters/GnuCharacter.h"
+#include "Characters/GnuMyCharacter.h"
 #include "Components/BoxComponent.h"
 #include "Components/ArrowComponent.h"
 #include "Particles/ParticleSystemComponent.h"
@@ -35,7 +35,7 @@ AGnuAttackCollisionActor::AGnuAttackCollisionActor()
 
 void AGnuAttackCollisionActor::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	AGnuCharacter* Character = Cast<AGnuCharacter>(OtherActor);
+	AGnuMyCharacter* Character = Cast<AGnuMyCharacter>(OtherActor);
 	if (Character != nullptr)
 	{
 		Character->SetOverlapItem(this);
@@ -49,7 +49,7 @@ void AGnuAttackCollisionActor::BeginOverlap(UPrimitiveComponent* OverlappedCompo
 
 void AGnuAttackCollisionActor::EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	AGnuCharacter* Character = Cast<AGnuCharacter>(OtherActor);
+	AGnuMyCharacter* Character = Cast<AGnuMyCharacter>(OtherActor);
 	if (Character != nullptr)
 	{
 		Character->SetOverlapItem(this);

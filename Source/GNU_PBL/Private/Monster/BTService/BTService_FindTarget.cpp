@@ -5,7 +5,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "AIController.h"
 #include "Perception/AIPerceptionComponent.h"
-#include "Characters/GnuCharacter.h"                // GnuCharacter 헤더 포함
+#include "Characters/GnuMyCharacter.h"                // GnuCharacter 헤더 포함
 
 UBTService_FindTarget::UBTService_FindTarget()
 {
@@ -34,7 +34,7 @@ void UBTService_FindTarget::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* N
     AActor* TargetActor = nullptr;
     for (AActor* Actor : PerceivedActors)
     {
-        AGnuCharacter* GnuCharacter = Cast<AGnuCharacter>(Actor);
+        AGnuMyCharacter* GnuCharacter = Cast<AGnuMyCharacter>(Actor);
         if (GnuCharacter)
         {
             TargetActor = GnuCharacter;

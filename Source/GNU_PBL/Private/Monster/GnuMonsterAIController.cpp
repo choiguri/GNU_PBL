@@ -7,7 +7,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Character.h"
-#include "Characters/GnuCharacter.h"
+#include "Characters/GnuMyCharacter.h"
 #include "Monster/GnuMonster.h"
 #include "TimerManager.h"
 
@@ -132,7 +132,7 @@ void AGnuMonsterAIController::OnTargetDetected(AActor* Actor, FAIStimulus const 
     {
         // SensedCharacter가 특정 클래스인지 확인
         ACharacter* SensedCharacter = Cast<ACharacter>(Actor);
-        if (SensedCharacter != nullptr && SensedCharacter->IsA(AGnuCharacter::StaticClass()))
+        if (SensedCharacter != nullptr && SensedCharacter->IsA(AGnuMyCharacter::StaticClass()))
         {
             // 기존 타겟 가져오기
             ACharacter* CurrentTarget = Cast<ACharacter>(GetBlackboardComponent()->GetValueAsObject(FName("TargetActor")));
@@ -178,8 +178,8 @@ void AGnuMonsterAIController::UpdateTarget()
     for (AActor* Actor : DetectedActors)
     {
         ACharacter* PlayerCharacter = Cast<ACharacter>(Actor);
-        // PlayerCharacter가 GnuCharacter인지 확인
-        if (PlayerCharacter && PlayerCharacter->IsA(AGnuCharacter::StaticClass())) // GnuCharacter로 대체
+        // PlayerCharacter가 GnuMyCharacter인지 확인
+        if (PlayerCharacter && PlayerCharacter->IsA(AGnuMyCharacter::StaticClass())) // GnuMyCharacter로 대체
         {
             float Distance = FVector::Dist(PlayerCharacter->GetActorLocation(), GetPawn()->GetActorLocation());
 

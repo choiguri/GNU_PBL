@@ -17,6 +17,9 @@ class AGnuProjectileActor;
 class AGnuHealActor;
 class UGnuCharacterBaseWidget;
 
+// Monster class
+class AGnuAttackCollisionActor;
+
 UCLASS()
 class GNU_PBL_API AGnuMyCharacter : public AGnuBaseCharacter
 {
@@ -28,6 +31,8 @@ private:
 
 public:
 	AGnuMyCharacter();
+
+	void SetOverlapItem(AGnuAttackCollisionActor* _overlapItem) { OverlapItem = _overlapItem; }
 
 	// --------------------------------------------- Sprint ��� -----------------------------------
 	// ReplicatedUsing = OnRep_IsSprinting : �̷��� �����ϸ� ���� ������ ������ �ڵ����� OnRep_IsSprinting�Լ��� ȣ��ȴ�.
@@ -215,4 +220,8 @@ protected:
 
 	UPROPERTY()
 	class UCrossHair* pCrossHair; // CrossHair UI
+
+	// 공격 맞았는지 체크
+	UPROPERTY(VisibleInstanceOnly)
+	AGnuAttackCollisionActor* OverlapItem;
 };

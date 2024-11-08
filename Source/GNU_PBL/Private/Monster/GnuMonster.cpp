@@ -5,7 +5,7 @@
 #include "Monster/AttackActor/GnuFireballActor.h"
 #include "Monster/AttackActor/GnuFiretornadoActor.h"
 #include "Monster/AttackActor/GnuFirebreathActor.h"
-#include "Characters/GnuCharacter.h"
+#include "Characters/GnuMyCharacter.h"
 #include "Components/BoxComponent.h"
 #include "Animation/AnimNotifies/AnimNotify.h"
 #include "Animation/AnimMontage.h"
@@ -151,7 +151,7 @@ void AGnuMonster::OnClawOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor
 	if (OtherActor && OtherActor != this)
 	{
 		// 캐릭터 확인
-		AGnuCharacter* TargetCharacter = Cast<AGnuCharacter>(OtherActor);
+		AGnuMyCharacter* TargetCharacter = Cast<AGnuMyCharacter>(OtherActor);
 		if (TargetCharacter)
 		{
 			// 데미지 처리
@@ -172,7 +172,7 @@ void AGnuMonster::OnTailOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor
 	if (OtherActor && OtherActor != this)
 	{
 		// 캐릭터 확인
-		AGnuCharacter* TargetCharacter = Cast<AGnuCharacter>(OtherActor);
+		AGnuMyCharacter* TargetCharacter = Cast<AGnuMyCharacter>(OtherActor);
 		if (TargetCharacter)
 		{
 			// 데미지 처리
@@ -188,7 +188,7 @@ void AGnuMonster::OnTailOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor
 }
 
 
-void AGnuMonster::KnockbackPlayer(AGnuCharacter* PlayerCharacter)
+void AGnuMonster::KnockbackPlayer(AGnuMyCharacter* PlayerCharacter)
 {
 	// 넉백 방향 계산
 	FVector KnockbackDirection = (PlayerCharacter->GetActorLocation() - GetActorLocation()).GetSafeNormal(); // 적으로부터 플레이어 방향

@@ -70,6 +70,8 @@ AGnuMyCharacter::AGnuMyCharacter()
 	MaxHP = 100.f;
 	CurStamina = 50.f;
 	MaxStamina = 100.f;
+
+	OverlapItem = nullptr;	// 공격이 맞았는지 확인
 }
 
 void AGnuMyCharacter::BeginPlay()
