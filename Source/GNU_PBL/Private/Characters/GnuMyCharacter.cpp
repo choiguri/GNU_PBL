@@ -64,6 +64,13 @@ AGnuMyCharacter::AGnuMyCharacter()
 	isCrouch = false;
 	isZoomIn = false;
 	DodgeMontage = nullptr;
+	
+	// -------------------- CrossHair create -----------------
+	static ConstructorHelpers::FClassFinder<UUserWidget> CrossHairFinder(TEXT("/Game/GNU/weapon/UI_CrossHair.UI_CrossHair_C"));
+	if (CrossHairFinder.Succeeded())
+	{
+		CrossHairWidgetClass = CrossHairFinder.Class;
+	}
 	// ---------------------------------------------------------------
 
 	CurHP = 50.f;
@@ -424,6 +431,7 @@ void AGnuMyCharacter::ServerMontageOnReload_Implementation() // ������
 	isReload = true;
 	StopFire();
 	Gun->ServerMontageOnReload();
+	if (pCrossHair)
 	{
 		pCrossHair->UpdateCrossHair(3); // 새로운 AimRate로 크로스헤어 업데이트
 	}
