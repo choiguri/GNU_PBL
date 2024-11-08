@@ -14,8 +14,8 @@ class GNU_PBL_API UGnuCharacterBaseWidget : public UUserWidget
 public:
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void UpdateHealthBar(float CurrentHP, float MaxHP);
-	//UFUNCTION(BlueprintCallable, Category = "UI")
-	//void UpdateStaminaBar(float CurrentStamina, float MaxStamina);
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void UpdateStaminaBar(float CurrentStamina, float MaxStamina);
 
 protected:
 	virtual void NativeConstruct() override;
@@ -23,8 +23,8 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "UI", meta = (BindWidget))
 	class UProgressBar* ProgressBar_Health;
 
-	//UPROPERTY(BlueprintReadOnly, Category = "UI", meta = (BindWidget))
-	//class UProgressBar* ProgressBar_Stamina;
+	UPROPERTY(BlueprintReadOnly, Category = "UI", meta = (BindWidget))
+	class UProgressBar* ProgressBar_Stamina;
 	
 };
 

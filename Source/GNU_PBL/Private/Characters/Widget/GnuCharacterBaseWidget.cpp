@@ -14,10 +14,10 @@ void UGnuCharacterBaseWidget::NativeConstruct()
     {
         ProgressBar_Health->SetPercent(1.0f);  // 처음에 Max 상태로 설정
     }
-    //if (ProgressBar_Stamina)
-    //{
-    //    ProgressBar_Stamina->SetPercent(1.0f);  // 처음에 Max 상태로 설정
-    //}
+    if (ProgressBar_Stamina)
+    {
+        ProgressBar_Stamina->SetPercent(1.0f);  // 처음에 Max 상태로 설정
+    }
 }
 
 // 체력 바 업데이트 함수
@@ -31,13 +31,13 @@ void UGnuCharacterBaseWidget::UpdateHealthBar(float CurrentHP, float MaxHP)
     }
 }
 
-//// 스태미너 바 업데이트 함수
-//void UGnuCharacterBaseWidget::UpdateStaminaBar(float CurrentStamina, float MaxStamina)
-//{
-//    if (ProgressBar_Stamina && MaxStamina > 0.0f)
-//    {
-//        // 현재 스태미너 비율을 계산하여 스태미너 바 업데이트
-//        float StaminaPercent = FMath::Clamp(CurrentStamina / MaxStamina, 0.0f, 1.0f);
-//        ProgressBar_Stamina->SetPercent(StaminaPercent);
-//    }
-//}
+// 스태미너 바 업데이트 함수
+void UGnuCharacterBaseWidget::UpdateStaminaBar(float CurrentStamina, float MaxStamina)
+{
+    if (ProgressBar_Stamina && MaxStamina > 0.0f)
+    {
+        // 현재 스태미너 비율을 계산하여 스태미너 바 업데이트
+        float StaminaPercent = FMath::Clamp(CurrentStamina / MaxStamina, 0.0f, 1.0f);
+        ProgressBar_Stamina->SetPercent(StaminaPercent);
+    }
+}

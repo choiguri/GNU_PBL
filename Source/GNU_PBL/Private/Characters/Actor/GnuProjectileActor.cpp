@@ -28,10 +28,15 @@ AGnuProjectileActor::AGnuProjectileActor()
         BoxComponent->SetCollisionResponseToAllChannels(ECR_Block); // 모든 채널에 대해 충돌 허용
         BoxComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap); // 캐릭터에 대해 오버랩 허용
     }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ProjectileBoxError"));
+    }
 
 
-    NiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraSystem"));
-    NiagaraComponent->SetupAttachment(BoxComponent);
+     NiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraSystem"));
+     NiagaraComponent->SetupAttachment(BoxComponent);
+
 
     Damage = -10.0f;
 }
@@ -40,7 +45,7 @@ void AGnuProjectileActor::LaunchProjectile(AActor* IgnoredActor)
 {
     if (ProjectileMovementComponent)
     {
-        BoxComponent->IgnoreActorWhenMoving(IgnoredActor, true); // 몬스터와 충돌 무시
+        BoxComponent->IgnoreActorWhenMoving(IgnoredActor, true);
 
         FVector ForwardVector = ArrowComponent->GetForwardVector();
         GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Blue, FString::Printf(TEXT("ForwardVector: %s"), *ForwardVector.ToString()));
@@ -110,10 +115,7 @@ void AGnuProjectileActor::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor
         AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(OtherActor);
         if (MyCharacter != nullptr)
         {
-            MyCharacter->UpdateHealth(Damage);
-            FString HPMessage = FString::Printf(TEXT("Current HP: %f"), MyCharacter->CurHP);
-            GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, HPMessage);
-
+            MyCharacter->UpdateHealth(Damage);;
         }
         GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, TEXT("Overlap with: ") + OtherActor->GetName());
         Destroy();

@@ -14,7 +14,8 @@
 #include "Kismet/KismetMathLibrary.h"
 
 #include "Characters/Actor/GnuProjectileActor.h"
-#include "GameFramework/PlayerController.h" // IsLocalPlayerController
+#include "Characters/Actor/GnuHealActor.h"
+
 #include "Characters/Widget/GnuCharacterBaseWidget.h"
 
 AGnuMyCharacter::AGnuMyCharacter()
@@ -63,6 +64,8 @@ AGnuMyCharacter::AGnuMyCharacter()
 
 	CurHP = 50.f;
 	MaxHP = 100.f;
+	CurStamina = 50.f;
+	MaxStamina = 100.f;
 }
 
 void AGnuMyCharacter::BeginPlay()
@@ -309,7 +312,7 @@ void AGnuMyCharacter::ServerMontageOnDodge_Implementation(float Forward, float R
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 
 		PlayAnimMontage(DodgeMontage);
-
+		UpdateStamina(-10.f);
 		// 멀티캐스트 호출
 		MultiCastMontage_Dodge(Forward, Right);
 	}
@@ -379,6 +382,41 @@ void AGnuMyCharacter::SpawnArrow()
 }
 // -------------------------------------------------------------------------
 
+
+//--------------------------- Arrow Skill --------------------------------
+void AGnuMyCharacter::SpawnHeal()
+{
+	if (HealClass)
+	{
+	
+		// 캐릭터의 위치를 기준으로 위쪽으로 100 유닛 떨어진 위치로 SpawnLocation 설정
+		FVector SpawnLocation = GetActorLocation() + FVector(0, 0, 100.0f); // 예시로 캐릭터의 100 유닛 위에 생성
+		FRotator SpawnRotation = GetActorRotation();
+
+		// FTransform을 사용하여 위치와 회전 전달
+		FTransform SpawnTransform(SpawnRotation, SpawnLocation);
+
+		// HealActor 생성
+		AGnuHealActor* Heal = GetWorld()->SpawnActor<AGnuHealActor>(HealClass, SpawnTransform);
+
+		if (Heal)
+		{
+			Heal->HealOverTime();
+		}
+		else
+		{
+			FString HPMessage = FString::Printf(TEXT("Hp Heal Spawn Error"));
+		}
+	}
+	else
+	{
+		FString HPMessage = FString::Printf(TEXT("Not Heal Class!!"));
+	}
+}
+// -------------------------------------------------------------------------
+
+
+//--------------------------- HP Update --------------------------------
 void AGnuMyCharacter::OnRep_CurHP()
 {
 	// HP가 변경되면 UI에 반영
@@ -388,12 +426,21 @@ void AGnuMyCharacter::OnRep_CurHP()
 void AGnuMyCharacter::UpdateHealth(float NewHP)
 {
 	CurHP = FMath::Clamp(CurHP + NewHP, 0.0f, MaxHP); // HP를 0과 MaxHP 사이로 클램핑
-
+	FString HPMessage = FString::Printf(TEXT("Current HP: %f"), CurHP);
+	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, HPMessage);
 	// 서버에서 HP 업데이트 시 UI 업데이트
 	if (HasAuthority())
 	{
 		OnRep_CurHP();
 	}
+}
+
+void AGnuMyCharacter::UpdateStamina(float NewStamina)
+{
+	CurStamina = FMath::Clamp(CurStamina + NewStamina, 0.0f, MaxStamina);
+
+	FString StaminaMessage = FString::Printf(TEXT("Current Stamina: %f"), CurStamina);
+	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, StaminaMessage);
 }
 
 void AGnuMyCharacter::UpdateUIHealthAndStamina()
@@ -403,9 +450,10 @@ void AGnuMyCharacter::UpdateUIHealthAndStamina()
 	if (CharacterHealthWidget)
 	{
 		CharacterHealthWidget->UpdateHealthBar(CurHP, MaxHP);
+		CharacterHealthWidget->UpdateStaminaBar(CurStamina, MaxStamina);
 	}
 }
-
+// -------------------------------------------------------------------------
 
 
 /* ----------- 서버 - 클라이언트 동기화 설명 -------------------

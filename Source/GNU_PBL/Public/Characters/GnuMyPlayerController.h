@@ -57,7 +57,11 @@ private:
 	TObjectPtr<UInputAction> ZoomInAction; // 카메라 줌
 
 	UPROPERTY(EditAnywhere, Category = "input")
-	TObjectPtr<UInputAction> ArrowSkillAction; // 카메라 줌
+	TObjectPtr<UInputAction> ArrowSkillAction; // 화살 스킬
+
+
+	UPROPERTY(EditAnywhere, Category = "input")
+	TObjectPtr<UInputAction> HealSkillAction; // 힐 스킬
 
 	FVector2D CurrentMoveDirection; // 현재 이동 방향 Dodge할 때 사용
 
@@ -75,4 +79,5 @@ private:
 	void Jump(const struct FInputActionValue& InputActionValue); // 점프
 	void StopJumping(const struct FInputActionValue& InputActionValue); // 점프 끝
 	void ArrowSkill(const struct FInputActionValue& InputActionValue); // 에로우 스킬
+	void HealSkill(const struct FInputActionValue& InputActionValue); // 힐 스킬
 };

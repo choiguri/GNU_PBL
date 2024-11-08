@@ -60,6 +60,7 @@ void AGnuMyPlayerController::SetupInputComponent()
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::Jump);
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AGnuMyPlayerController::StopJumping);
 	EnhancedInputComponent->BindAction(ArrowSkillAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::ArrowSkill);
+	EnhancedInputComponent->BindAction(HealSkillAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::HealSkill);
 }
 
 
@@ -288,6 +289,20 @@ void AGnuMyPlayerController::ArrowSkill(const FInputActionValue& InputActionValu
 		if (MyCharacter)
 		{
 			MyCharacter->SpawnArrow(); // 캐릭터의 StopJumping 메서드 호출
+		}
+	}
+}
+
+void AGnuMyPlayerController::HealSkill(const FInputActionValue& InputActionValue)
+{
+	FString HPMessage2 = FString::Printf(TEXT("SpawnHeal Call!"));
+	if (APawn* ControlledPawn = GetPawn<APawn>())
+	{
+		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
+		if (MyCharacter)
+		{
+			FString HPMessage = FString::Printf(TEXT("SpawnHeal Call!"));
+			MyCharacter->SpawnHeal(); // 캐릭터의 StopJumping 메서드 호출
 		}
 	}
 }

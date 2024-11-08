@@ -17,6 +17,10 @@ void UGnuMyCharacterAnimInstance::NativeInitializeAnimation()
 	{
 		MyCharacterMovement = MyCharacter->GetCharacterMovement();
 	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AnimMyCharacterInitError"));
+	}
 
 	ShouldMove = false;
 	IsFalling = false;

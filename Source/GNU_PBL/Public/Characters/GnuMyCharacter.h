@@ -5,15 +5,14 @@
 #include "CoreMinimal.h"
 #include "Characters/GnuBaseCharacter.h"
 #include "Components/TimelineComponent.h" // FTimeline
-
 #include "GnuMyCharacter.generated.h"
 
 class USpringArmComponent;
 class UCameraComponent;
 class UFTimeline;
 class UCurveFloat;
-
 class AGnuProjectileActor;
+class AGnuHealActor;
 class UGnuCharacterBaseWidget;
 
 UCLASS()
@@ -90,15 +89,19 @@ public:
 	void ZoomInFinished(); // 타임라인이 끝났을 때 호출될 함수
 	//---------------------------------------------------------------------------------------------
 
-
-	void SetCamera(); // 카메라 시점 전환 : 1인칭 <--> 3인칭 (컨트롤러에서 호출)
-
 	// ------------------------------------- Arrow Skill ----------------------------------------
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
 	TSubclassOf<class AGnuProjectileActor> ArrowClass;
-
 	void SpawnArrow();
 	// -----------------------------------------------------------------------------------------
+	
+
+	// ------------------------------------- Arrow Skill ----------------------------------------
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	TSubclassOf<class AGnuHealActor> HealClass;
+	void SpawnHeal();
+	// -----------------------------------------------------------------------------------------
+
 
 	// ------------------------------------- HP, Stamina ----------------------------------------
 	UPROPERTY(ReplicatedUsing = OnRep_CurHP, BlueprintReadWrite, Category = "Status")
@@ -106,13 +109,15 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Status")
 	float MaxHP;
 
+	UPROPERTY(BlueprintReadWrite, Category = "Status")
+	float CurStamina;
+	UPROPERTY(BlueprintReadWrite, Category = "Status")
+	float MaxStamina;
+
 	UFUNCTION()
 	void OnRep_CurHP();
-
-	// Update functions
 	void UpdateHealth(float NewHP);
-
-	// UI Update function (called in BeginPlay)
+	void UpdateStamina(float NewStamina);
 	void UpdateUIHealthAndStamina();
 
 	// 블루프린트 위젯 넣는 곳
@@ -125,8 +130,9 @@ public:
 	UGnuCharacterBaseWidget* CharacterHealthWidget;
 
 	// ------------------------------------------------------------------------
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	//TSubclassOf<class AGnuHPActor> HPClass;
+
+
+	void SetCamera(); // 카메라 시점 전환 : 1인칭 <--> 3인칭 (컨트롤러에서 호출)
 
 protected:
 	virtual void BeginPlay() override;
