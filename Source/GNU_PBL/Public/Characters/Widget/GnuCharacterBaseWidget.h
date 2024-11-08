@@ -23,8 +23,8 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "UI", meta = (BindWidget))
 	class UProgressBar* ProgressBar_Health;
 
-	UPROPERTY(BlueprintReadOnly, Category = "UI", meta = (BindWidget))
-	class UProgressBar* ProgressBar_Stamina;
+	//UPROPERTY(BlueprintReadOnly, Category = "UI", meta = (BindWidget))
+	//class UProgressBar* ProgressBar_Stamina;
 	
 };
 
