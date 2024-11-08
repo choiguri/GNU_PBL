@@ -80,7 +80,6 @@ private:
 	void ToggleCrouch(const struct FInputActionValue& InputActionValue); // �ɱ�
 	void ToggleCamera(const struct FInputActionValue& InputActionValue); // ī�޶� ��Ī ��ȯ
 	void ToggleZoomIn(const struct FInputActionValue& InputActionValue); // ī�޶� ����
-	//void PistolChange(const struct FInputActionValue& InputActionValue); // �������� ü����
 	void WeaponChange(const struct FInputActionValue& InputActionValue); // ���� ü���� (PistolChange, RifleChange�� �͵� ���� �Ҳ��� ���� �ؾ���)
 	void Jump(const struct FInputActionValue& InputActionValue); // ����
 	void StopJumping(const struct FInputActionValue& InputActionValue); // ���� ��

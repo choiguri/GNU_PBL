@@ -231,12 +231,6 @@ void AGnuMyCharacter::ServerSprintStart_Implementation() // Ŭ���̾�Ʈ�
 	// ������ ��Ʈ��ũ���� ������ �� �ֵ��� ����
 }
 
-// ----------------------------------------- Sprint Replicate-----------------------------------
-void AGnuMyCharacter::ServerSprintStart_Implementation() // Ŭ���̾�Ʈ���� ������Ʈ ���� ��û�� ������ �������� ServerSprintStart_Implementation�� ����
-{
-	UpdateSprintState(true); //  �� �Լ��� ���������� ����
-}
-
 bool AGnuMyCharacter::ServerSprintStart_Validate()
 {
 	return true; // �ʿ��� ��ȿ�� �˻� ������ ���⿡ �߰�

@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "Characters/GnuMyPlayerController.h"
 #include "Characters/GnuMyCharacter.h" // GnuMyChracter�Լ� ȣ������ ���
 #include "Characters/GnuMyAnimInstance.h"
@@ -8,14 +7,14 @@
 #include "EnhancedInputComponent.h"
 
 
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
 AGnuMyPlayerController::AGnuMyPlayerController()
 {
 	bReplicates = true;
 
 	CurrentMoveDirection = { 0.0f, 0.0f }; // 구르기 방향 결정에 사용
+	// 생성자 정의
 }
+
 
 void AGnuMyPlayerController::BeginPlay()
 {
@@ -60,8 +59,6 @@ void AGnuMyPlayerController::SetupInputComponent()
 	EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::Aiming);
 	EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Completed, this, &AGnuMyPlayerController::StopAiming);
 	EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::Reload);
-	EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::Interact);
-	EnhancedInputComponent->BindAction(PistolChangeAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::PistolChange);
 	EnhancedInputComponent->BindAction(ArrowSkillAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::ArrowSkill);
 	EnhancedInputComponent->BindAction(HealSkillAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::HealSkill);
 }

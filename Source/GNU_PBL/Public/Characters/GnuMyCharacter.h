@@ -163,9 +163,6 @@ public:
 
 	// ------------------------------------------------------------------------
 
-
-	void SetCamera(); // ī�޶� ���� ��ȯ : 1��Ī <--> 3��Ī (��Ʈ�ѷ����� ȣ��)
-
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
