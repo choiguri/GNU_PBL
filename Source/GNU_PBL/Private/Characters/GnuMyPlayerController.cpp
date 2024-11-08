@@ -280,17 +280,6 @@ void AGnuMyPlayerController::Aiming()
 		}
 	}
 }
-void AGnuMyPlayerController::ArrowSkill(const FInputActionValue& InputActionValue)
-{
-	if (APawn* ControlledPawn = GetPawn<APawn>())
-	{
-		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
-		if (MyCharacter)
-		{
-			MyCharacter->SpawnArrow(); // 캐릭터의 StopJumping 메서드 호출
-		}
-	}
-}
 
 void AGnuMyPlayerController::StopAiming()
 {
@@ -303,19 +292,7 @@ void AGnuMyPlayerController::StopAiming()
 		}
 	}
 }
-void AGnuMyPlayerController::HealSkill(const FInputActionValue& InputActionValue)
-{
-	FString HPMessage2 = FString::Printf(TEXT("SpawnHeal Call!"));
-	if (APawn* ControlledPawn = GetPawn<APawn>())
-	{
-		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
-		if (MyCharacter)
-		{
-			FString HPMessage = FString::Printf(TEXT("SpawnHeal Call!"));
-			MyCharacter->SpawnHeal(); // 캐릭터의 StopJumping 메서드 호출
-		}
-	}
-}
+
 
 void AGnuMyPlayerController::Fire()
 {
@@ -363,6 +340,30 @@ void AGnuMyPlayerController::Interact()
 		if (MyCharacter)
 		{
 			MyCharacter->Interact();
+		}
+	}
+}
+
+void AGnuMyPlayerController::ArrowSkill(const FInputActionValue& InputActionValue)
+{
+	if (APawn* ControlledPawn = GetPawn<APawn>())
+	{
+		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
+		if (MyCharacter)
+		{
+			MyCharacter->SpawnArrow(); // 캐릭터의 StopJumping 메서드 호출
+		}
+	}
+}
+
+void AGnuMyPlayerController::HealSkill(const FInputActionValue& InputActionValue)
+{
+	if (APawn* ControlledPawn = GetPawn<APawn>())
+	{
+		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
+		if (MyCharacter)
+		{
+			MyCharacter->SpawnHeal(); // 캐릭터의 StopJumping 메서드 호출
 		}
 	}
 }
