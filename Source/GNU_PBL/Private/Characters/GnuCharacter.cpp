@@ -167,12 +167,17 @@ void AGnuCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 }
 
 
-
 void AGnuCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AGnuCharacter, Health);
+
+}
+
+
+void AGnuCharacter::OnRep_Health()
+{
 
 }
 
@@ -182,6 +187,7 @@ void AGnuCharacter::Elim()
 }
 
 
+// Player Name
 void AGnuCharacter::ClientSetName_Implementation(const FString& Name)
 {
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
@@ -203,13 +209,7 @@ void AGnuCharacter::ServerSetPlayerName_Implementation(const FString& PlayerName
 	}
 }
 
-/// 
-/// HP 바
-/// 
-void AGnuCharacter::OnRep_Health()
-{
 
-}
 
 
 

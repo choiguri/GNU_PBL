@@ -22,6 +22,12 @@
 
 #include "Characters/Widget/GnuCharacterBaseWidget.h"
 
+// Character 합치면서 추가
+#include "Components/WidgetComponent.h"
+#include "HUD/GNUOverHeadWidget.h"
+#include "PlayerController/GNUPlayerController.h"
+#include "GameModes/GNUGameMode.h"
+
 AGnuMyCharacter::AGnuMyCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -79,6 +85,10 @@ AGnuMyCharacter::AGnuMyCharacter()
 	MaxStamina = 100.f;
 
 	OverlapItem = nullptr;	// 공격이 맞았는지 확인
+
+	// 추가 사항
+	OverHeadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverHeadWidget"));
+	OverHeadWidget->SetupAttachment(RootComponent);
 }
 
 void AGnuMyCharacter::BeginPlay()
@@ -142,6 +152,12 @@ void AGnuMyCharacter::BeginPlay()
 		}
 	}
 
+	GNUPlayerController = Cast<AGNUPlayerController>(Controller);
+	if (GNUPlayerController)
+	{
+		GNUPlayerController->SetHUDHealth(Health, MaxHealth);
+
+	}
 }
 
 void AGnuMyCharacter::Tick(float DeltaTime)
@@ -221,16 +237,6 @@ void AGnuMyCharacter::SetZoomIn()
 }
 // -----------------------------------------------------------------
 
-
-void AGnuMyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	// ������ ��Ʈ��ũ���� ������ �� �ֵ��� ����
-	DOREPLIFETIME(AGnuMyCharacter, isSprint);
-	DOREPLIFETIME(AGnuMyCharacter, isCrouch);
-	DOREPLIFETIME(AGnuMyCharacter, CurHP);
-}
 
 // ----------------------------------------- Sprint Replicate-----------------------------------
 void AGnuMyCharacter::ServerSprintStart_Implementation() // Ŭ���̾�Ʈ���� ������Ʈ ���� ��û�� ������ �������� ServerSprintStart_Implementation�� ����
@@ -671,6 +677,17 @@ void AGnuMyCharacter::SpawnHeal()
 
 
 //--------------------------- HP Update --------------------------------
+void AGnuMyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AGnuMyCharacter, isSprint);
+	DOREPLIFETIME(AGnuMyCharacter, isCrouch);
+	DOREPLIFETIME(AGnuMyCharacter, CurHP);
+	DOREPLIFETIME(AGnuMyCharacter, Health);
+	DOREPLIFETIME(AGnuMyCharacter, Stamina);
+}
+
 void AGnuMyCharacter::OnRep_CurHP()
 {
 	// HP�� ����Ǹ� UI�� �ݿ�
@@ -707,6 +724,39 @@ void AGnuMyCharacter::UpdateUIHealthAndStamina()
 		CharacterHealthWidget->UpdateStaminaBar(CurStamina, MaxStamina);
 	}
 }
+
+void AGnuMyCharacter::OnRep_Health()
+{
+
+}
+
+void AGnuMyCharacter::OnRep_Stamina()
+{
+
+}
+
+void AGnuMyCharacter::ClientSetName_Implementation(const FString& Name)
+{
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (PlayerController)
+	{
+		PlayerController->PlayerState->SetPlayerName(Name);
+	}
+
+}
+
+
+void AGnuMyCharacter::ServerSetPlayerName_Implementation(const FString& PlayerName)
+{
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (PlayerController)
+	{
+		PlayerController->PlayerState->SetPlayerName(PlayerName);
+		ClientSetName(PlayerName);
+	}
+}
+
+
 // -------------------------------------------------------------------------
 
 

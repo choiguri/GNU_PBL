@@ -29,6 +29,8 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+
 	void AddCharacterOverlay();
-	void AddCharacterOverHead();
+
+	/*void AddCharacterOverHead();*/
 };

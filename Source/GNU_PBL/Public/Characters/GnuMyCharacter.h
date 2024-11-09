@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "Characters/GnuBaseCharacter.h"
 #include "Components/TimelineComponent.h" // FTimeline
+
+#include "GameFramework/PlayerState.h"
 #include "GnuMyCharacter.generated.h"
 
 class USpringArmComponent;
@@ -24,10 +26,6 @@ UCLASS()
 class GNU_PBL_API AGnuMyCharacter : public AGnuBaseCharacter
 {
 	GENERATED_BODY()
-
-private:
-	// ��Ʈ��ũ ������ ���� �Լ� ���� : UFUNCTION(Server) ��� ����Ϸ��� �� �Լ��� �־�� ��
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
 	AGnuMyCharacter();
@@ -224,4 +222,54 @@ protected:
 	// 공격 맞았는지 체크
 	UPROPERTY(VisibleInstanceOnly)
 	AGnuAttackCollisionActor* OverlapItem;
+
+
+
+// Character 합치면서 작성
+private:
+	// 머리 위의 스팀 닉네임 표시
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	class UWidgetComponent* OverHeadWidget;
+
+	// HP바 설정
+	UPROPERTY(EditAnywhere, Category = "Player Stats")
+	float MaxHealth = 100.f;
+
+	UPROPERTY(ReplicatedUsing = OnRep_Health, VisibleAnywhere, Category = "Player Stats")
+	float Health = 1.f;
+
+	UPROPERTY(EditAnywhere, Category = "Player Stats")
+	float MaxStaminaa = 100.f;
+
+	UPROPERTY(ReplicatedUsing = OnRep_Stamina, VisibleAnywhere, Category = "Player Stats")
+	float Stamina = 1.f;
+
+	UFUNCTION()
+	void OnRep_Health();
+
+	UFUNCTION()
+	void OnRep_Stamina();
+
+	class AGNUPlayerController* GNUPlayerController;
+
+	UPROPERTY(EditAnywhere, Category = "Player Name")
+	FString LocalPlayerName = TEXT("Unknown Player");
+
+
+public:
+	// 서버에서 수정 -> RepNotify -> 클라이언트 반응
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	// Implementation으로 정의해서 밑줄이 뜨더라도 오류가 아님
+	UFUNCTION(Client, Reliable)
+	void ClientSetName(const FString& Name);
+
+	UFUNCTION(Server, Reliable)
+	void ServerSetPlayerName(const FString& PlayerName);
+
+	//
+	// GNUGameMode와 관련
+	//
+	void Elim();
+
 };

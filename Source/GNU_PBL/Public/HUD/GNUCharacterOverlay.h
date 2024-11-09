@@ -22,6 +22,12 @@ public:
 	class UTextBlock* HealthText;
 
 	UPROPERTY(meta = (BindWidget))
+	UProgressBar* StaminaBar;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* StaminaText;
+
+	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* CombatTimeText;
 
 	UPROPERTY(meta = (BindWidget))
