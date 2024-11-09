@@ -95,7 +95,7 @@ void AGun::Fire()
 			ABullet* Bullet = GetWorld()->SpawnActor<ABullet>(bulletFactory, fireposition);
 			if (Bullet)
 			{
-				Bullet->SetPower(Power);
+				Bullet->SetPower(DamageAmount);
 				Bullet->SetDirection(shootDirection);  // 탄환에 발사 방향 설정
 			}
 		}
@@ -140,7 +140,7 @@ void AGun::Fire()
 						if (Enemy)
 						{
 							UE_LOG(LogTemp, Warning, TEXT("Hit Enemy!"));
-							Enemy->GetDamage(Power);
+							Enemy->GetDamage(DamageAmount);
 						}
 					}
 				}

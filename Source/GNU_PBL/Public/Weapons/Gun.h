@@ -74,8 +74,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = BulletFactory)
 	TSubclassOf<class ABullet> bulletFactory;
 
-	UPROPERTY(EditAnywhere)
-	int Power = 50;
+	// 피해 정보
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	float DamageAmount = 50.f;
 
 	UPROPERTY(EditAnywhere)
 	float MaxRange = 1000;

@@ -2,6 +2,12 @@
 
 
 #include "Weapons/Bullet.h"
+// 데미지 관련
+#include "Monster/GnuMonster.h"
+#include "GameFramework/DamageType.h"  // FPointDamageEvent를 사용하기 위해 포함
+#include "Engine/EngineTypes.h" // FHitResult에 필요한 헤더
+#include "Engine/DamageEvents.h"
+
 #include "Kismet/GameplayStatics.h"
 #include <GameFramework/ProjectileMovementComponent.h>
 #include "Particles/ParticleSystemComponent.h"
@@ -63,22 +69,32 @@ void ABullet::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrim
 	if (OtherActor)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Hit!"));
+
 		// 1. 충돌한 액터의 태그를 확인
 		if (ImpactParticle) // 파티클이 설정된 경우
 		{
 			// 충돌 지점에 파티클 생성
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticle, Hit.ImpactPoint, FRotator::ZeroRotator);
 		}
-		if (OtherActor->Tags.Contains(FName("Enemy")))
+
+		if (AGnuMonster* Monster = Cast<AGnuMonster>(OtherActor))
 		{
-			// 2. 특정 타입으로 캐스팅
-			ADamageTest* Enemy = Cast<ADamageTest>(OtherActor);
-			if (Enemy)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Hit Enemy!"));
-				Enemy->GetDamage(Power);
-			}
+			// FPointDamageEvent를 사용하여 데미지 이벤트 생성
+			FPointDamageEvent DamageEvent(Power, Hit, NormalImpulse, UDamageType::StaticClass());
+			Monster->TakeDamage(Power, DamageEvent, nullptr, this);
+			GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Red, FString::Printf(TEXT("Monster hit by projectile, Damage")));
 		}
+		
+		//if (OtherActor->Tags.Contains(FName("Enemy")))
+		//{
+		//	// 2. 특정 타입으로 캐스팅
+		//	ADamageTest* Enemy = Cast<ADamageTest>(OtherActor);
+		//	if (Enemy)
+		//	{
+		//		UE_LOG(LogTemp, Warning, TEXT("Hit Enemy!"));
+		//		Enemy->GetDamage(Power);
+		//	}
+		//}
 		Destroy();
 	}
 }
@@ -89,9 +105,9 @@ void ABullet::Die()
 	Destroy();
 }
 
-void ABullet::SetPower(int power)
+void ABullet::SetPower(float DamageAmount)
 {
-	Power = power;
+	Power = DamageAmount;
 }
 
 void ABullet::SetDirection(const FVector& Direction)

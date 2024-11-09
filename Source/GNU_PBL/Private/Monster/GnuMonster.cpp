@@ -2,9 +2,15 @@
 
 
 #include "Monster/GnuMonster.h"
+// 보스 공격 관련
 #include "Monster/AttackActor/GnuFireballActor.h"
 #include "Monster/AttackActor/GnuFiretornadoActor.h"
 #include "Monster/AttackActor/GnuFirebreathActor.h"
+// 무기 관련
+#include "Weapons/Bullet.h"
+// 위젯
+#include "Monster/Widget/GnuMonsterHealthBase.h"
+
 #include "Characters/GnuMyCharacter.h"
 #include "Components/BoxComponent.h"
 #include "Animation/AnimNotifies/AnimNotify.h"
@@ -25,7 +31,7 @@ AGnuMonster::AGnuMonster()
 	MaxHealth = 1000.f;
 	CurrentHealth = MaxHealth;
 
-	// 넉배 힘
+	// 넉백 힘
 	KnockbackStrength = 0.f;
 
 	// 콜리전 초기화
@@ -56,19 +62,10 @@ void AGnuMonster::BeginPlay()
 	// 플레이어를 인식하면 UI가 뜨도록 변경해야함 (추후 수정)
 	if (MonsterHealthWidgetClass)
 	{
-		MonsterHealthWidget = CreateWidget<UGnuMonsterHealthBase>(GetWorld(), MonsterHealthWidgetClass);
-		if (MonsterHealthWidget && MonsterWidget)
-		{
-			MonsterWidget->AddToViewport();
-			MonsterHealthWidget->UpdateBossHP(CurrentHealth, MaxHealth); // 시작 시 HP 업데이트
-		}
-	}
+		GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Call MonsterHealthWidgetClass"));
 
-	// 스켈레탈 메시에 충돌 이벤트 추가
-	// 공격 당했을 때
-	if (GetMesh())
-	{
-		GetMesh()->OnComponentBeginOverlap.AddDynamic(this, &AGnuMonster::OnMeshOverlapBegin);
+		MonsterHealthWidget = CreateWidget<UGnuMonsterHealthBase>(GetWorld(), MonsterHealthWidgetClass);
+		MonsterHealthWidget->AddToViewport();
 	}
 }
 
@@ -104,18 +101,25 @@ void AGnuMonster::Tick(float DeltaTime)
 // 데미지 계산 부분
 float AGnuMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	// 부모 클래스에서의 TakeDamage를 호출하지 않고 직접 처리
+	float ActualDamage = DamageAmount;  // DamageAmount를 그대로 사용 (필요 시 추가 계산 가능)
 
+	// 데미지 처리
 	CurrentHealth -= ActualDamage;
+	GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Red, FString::Printf(TEXT("Current Health : %f"), CurrentHealth));
+	GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Red, FString::Printf(TEXT("Max Health : %f"), MaxHealth));
 
+	if (MonsterHealthWidget)
+	{
+		MonsterHealthWidget->UpdateBossHP(CurrentHealth, MaxHealth);  // HP 업데이트
+	}
 
-	// 사실상 체크 데미지 함수가 할 일을 할 수 있는 곳
 	if (CurrentHealth <= 0)
 	{
 		Die();
 	}
 
-	if (CurrentHealth <= MaxHealth * 0.5f && bIsPhaseTwo)
+	if (CurrentHealth <= MaxHealth * 0.5f && !bIsPhaseTwo)  // 여기서 `bIsPhaseTwo`가 false일 때만 Phase2로 들어가도록 수정
 	{
 		bIsPhaseTwo = true;
 		EnterPhaseTwo();
@@ -124,27 +128,6 @@ float AGnuMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 	return ActualDamage;
 }
 
-
-// 메시를 통해 공격 당했을 때의 데미지 입히기
-void AGnuMonster::OnMeshOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	if (OtherActor && OtherActor != this)
-	{
-		// 탄환이 맞았는지 확인
-		// 임시 탄환 정의 포인터 구현
-		/*AGnuProjectile* Projectile = Cast<AGnuProjectile>(OtherActor);*/
-
-		//if (Projectile)
-		//{
-		//	// 탄환의 데미지 값을 가져와서 적용
-		//	float Damage = Projectile->DamageAmount;
-		//	TakeDamage(Damage, FDamageEvent(), nullptr, OtherActor);
-
-		//	// 디버그 메시지 출력
-		//	GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Red, FString::Printf(TEXT("Monster hit by projectile, Damage: %f"), Damage));
-		//}
-	}
-}
 
 void AGnuMonster::OnClawOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
@@ -201,8 +184,8 @@ void AGnuMonster::KnockbackPlayer(AGnuMyCharacter* PlayerCharacter)
 
 void AGnuMonster::Die()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Boss has died!"));
-	SetLifeSpan(5.0f); // 5초 후 보스를 파괴
+	GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Black, TEXT("Boss has died!"));
+	//SetLifeSpan(5.0f); // 5초 후 보스를 파괴
 	Destroy();
 }
 
