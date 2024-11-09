@@ -272,4 +272,10 @@ public:
 	//
 	void Elim();
 
+protected:
+	UFUNCTION()
+	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
+	
+	void UpdateHUDHealth();
+	void UpdateHUDStamina();
 };

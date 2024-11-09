@@ -152,13 +152,17 @@ void AGnuMyCharacter::BeginPlay()
 		}
 	}
 
-	// HP, Stamina HUD
-	GNUPlayerController = Cast<AGnuMyPlayerController>(Controller);
+	// 추가사항 HP, Stamina HUD 
+	GNUPlayerController = GNUPlayerController == nullptr ? Cast<AGnuMyPlayerController>(Controller) : GNUPlayerController;
 	if (GNUPlayerController)
 	{
 		GNUPlayerController->SetHUDHealth(Health, MaxHealth);
 		GNUPlayerController->SetHUDStamina(Stamina, MaxStaminaa);
 
+	}
+	if (HasAuthority())
+	{
+		OnTakeAnyDamage.AddDynamic(this, &AGnuMyCharacter::ReceiveDamage);
 	}
 }
 
@@ -690,6 +694,8 @@ void AGnuMyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME(AGnuMyCharacter, Stamina);
 }
 
+
+
 void AGnuMyCharacter::OnRep_CurHP()
 {
 	// HP�� ����Ǹ� UI�� �ݿ�
@@ -727,14 +733,40 @@ void AGnuMyCharacter::UpdateUIHealthAndStamina()
 	}
 }
 
+void AGnuMyCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
+{
+	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
+	// 여기서 PlayHitReactMontage(); 와 같은 함수로 데미지를 입었을 때의 몽타주 출력 가능
+	UpdateHUDHealth();
+
+}
+
+void AGnuMyCharacter::UpdateHUDHealth()
+{
+	GNUPlayerController = GNUPlayerController == nullptr ? Cast<AGnuMyPlayerController>(Controller) : GNUPlayerController;
+	if (GNUPlayerController)
+	{
+		GNUPlayerController->SetHUDHealth(Health, MaxHealth);
+	}
+}
+
+void AGnuMyCharacter::UpdateHUDStamina()
+{
+	GNUPlayerController = GNUPlayerController == nullptr ? Cast<AGnuMyPlayerController>(Controller) : GNUPlayerController;
+	if (GNUPlayerController)
+	{
+		GNUPlayerController->SetHUDStamina(Stamina, MaxStaminaa);
+	}
+}
+
 void AGnuMyCharacter::OnRep_Health()
 {
-
+	UpdateHUDHealth();
 }
 
 void AGnuMyCharacter::OnRep_Stamina()
 {
-
+	
 }
 
 void AGnuMyCharacter::ClientSetName_Implementation(const FString& Name)
