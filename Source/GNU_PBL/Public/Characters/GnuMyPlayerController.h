@@ -4,6 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+
+// PlayerController 합치면서 추가
+#include "GameFramework/PlayerState.h"
+#include "InputActionValue.h"
+
 #include "GnuMyPlayerController.generated.h"
 
 class UInputMappingContext;
@@ -18,9 +23,44 @@ class GNU_PBL_API AGnuMyPlayerController : public APlayerController
 public:
 	AGnuMyPlayerController();
 
+
+	// 추가사항
+	void SetHUDHealth(float Health, float MaxHealth);
+
+	void SetHUDStamina(float Stamina, float MaxStamina);
+
+	void SetHUDCombatTime(float CombatTime);
+
+	virtual void Tick(float DeltaTime) override;
+	virtual float GetServertime();
+	virtual void ReceivedPlayer() override;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
+
+	//
+	// 추가사항
+	//
+	void SetHUDTime();
+	void ShowReturnToMainMenu();
+
+	// 서버와 클라이언트 사이의 시간 동기화
+	// 현재 서버 시간 요청
+	UFUNCTION(Server, Reliable)
+	void ServerRequestServerTime(float TimeOfClientRequest);
+
+	// 현재 서버 시간과 서버에서 클라이언트로의 응답시간 
+	UFUNCTION(Client, Reliable)
+	void ClientReportServerTime(float TimeOfClientRequest, float TimeServerReceivedClientRequest);
+
+	float ClientServerDelta = 0.f; // 서버와 클라이언트 사이의 차이
+
+	UPROPERTY(EditAnywhere, Category = Time)
+	float TimeSyncFrequency = 5.f;
+
+	float TimeSyncRunningTime = 0.0f;
+	void CheckTimeSync(float DeltaTime);
 
 private:
 	UPROPERTY(EditAnywhere, Category = "input")
@@ -52,6 +92,11 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "input")
 	TObjectPtr<UInputAction> ZoomInAction; // ī�޶� ��
+
+
+	// 추가사항
+	UPROPERTY(EditAnywhere, Category = "input")
+	TObjectPtr<UInputAction> QuitAction;
 
 	// Weapon input
 	UPROPERTY(EditAnywhere, Category = "input")
@@ -95,6 +140,25 @@ private:
 	void Reload();
 	void Interact(); // 상호작용 함수
 	// -----------------------------------------------
+
+
+//
+// 추가사항
+//
+private:
+	UPROPERTY()
+	class AGNUHUD* GNUHUD;
+
+	UPROPERTY(EditAnywhere, Category = "HUD")
+	TSubclassOf<class UUserWidget> ReturnToMainMenuWidget;
+
+	UPROPERTY()
+	class UGNUReturnToMainMenu* ReturnToMainMenu;
+
+	bool bReturnToMainMenuOpen = false;
+
+	float TotalTime = 120.f; // 나중에 total 게임 시간 설정 해야 함
+	uint32 CountdownInt = 0;
 };
 
 // TObjectPtr :  ����Ʈ ������ Ÿ������, �ַ� UObject ��� ��ü�� �����ϰ� �����ϴ� �� ���

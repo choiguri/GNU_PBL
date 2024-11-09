@@ -7,6 +7,16 @@
 #include "EnhancedInputComponent.h"
 
 
+// 추가사항
+#include "HUD/GNUHUD.h"
+#include "HUD/GNUCharacterOverlay.h"
+#include "HUD/GNUOverHeadWidget.h"
+#include "Components/ProgressBar.h"
+#include "Components/TextBlock.h"
+#include "Components/Image.h"
+#include "HUD/GNUReturnToMainMenu.h"
+
+
 AGnuMyPlayerController::AGnuMyPlayerController()
 {
 	bReplicates = true;
@@ -37,6 +47,94 @@ void AGnuMyPlayerController::BeginPlay()
 	}
 }
 
+//
+// 추가사항 여러 개
+//
+void AGnuMyPlayerController::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	SetHUDTime();
+	CheckTimeSync(DeltaTime);
+
+}
+
+void AGnuMyPlayerController::ReceivedPlayer()
+{
+	Super::ReceivedPlayer();
+	if (IsLocalController())
+	{
+		ServerRequestServerTime(GetWorld()->GetTimeSeconds());
+	}
+}
+
+void AGnuMyPlayerController::SetHUDHealth(float Health, float MaxHealth)
+{
+	GNUHUD = GNUHUD == nullptr ? Cast<AGNUHUD>(GetHUD()) : GNUHUD;
+
+	bool bHUDValid = GNUHUD &&
+		GNUHUD->CharacterOverlay &&
+		GNUHUD->CharacterOverlay->HealthBar &&
+		GNUHUD->CharacterOverlay->HealthText;
+	if (bHUDValid)
+	{
+		const float HealthPercent = Health / MaxHealth;
+		GNUHUD->CharacterOverlay->HealthBar->SetPercent(HealthPercent);
+		FString HealthText = FString::Printf(TEXT("%d / %d"), FMath::CeilToInt(Health), FMath::CeilToInt(MaxHealth));
+		GNUHUD->CharacterOverlay->HealthText->SetText(FText::FromString(HealthText));
+	}
+}
+
+void AGnuMyPlayerController::SetHUDStamina(float Stamina, float MaxStamina)
+{
+	GNUHUD = GNUHUD == nullptr ? Cast<AGNUHUD>(GetHUD()) : GNUHUD;
+
+	bool bHUDValid = GNUHUD &&
+		GNUHUD->CharacterOverlay &&
+		GNUHUD->CharacterOverlay->StaminaBar &&
+		GNUHUD->CharacterOverlay->StaminaText;
+
+	if (bHUDValid)
+	{
+		const float HealthPercent = Stamina / MaxStamina;
+		GNUHUD->CharacterOverlay->StaminaBar->SetPercent(HealthPercent);
+		FString HealthText = FString::Printf(TEXT("%d / %d"), FMath::CeilToInt(Stamina), FMath::CeilToInt(MaxStamina));
+		GNUHUD->CharacterOverlay->StaminaText->SetText(FText::FromString(HealthText));
+	}
+}
+
+void AGnuMyPlayerController::SetHUDCombatTime(float CombatTime)
+{
+	GNUHUD = GNUHUD == nullptr ? Cast<AGNUHUD>(GetHUD()) : GNUHUD;
+
+	bool bHUDValid = GNUHUD &&
+		GNUHUD->CharacterOverlay &&
+		GNUHUD->CharacterOverlay->CombatTimeText;
+
+	if (bHUDValid)
+	{
+		int32 Minutes = FMath::FloorToInt(CombatTime / 60.f);
+		int32 Seconds = CombatTime - Minutes * 60;
+
+		FString TimeText = FString::Printf(TEXT("%02d : %02d"), Minutes, Seconds);
+		GNUHUD->CharacterOverlay->CombatTimeText->SetText(FText::FromString(TimeText));
+	}
+}
+
+
+void AGnuMyPlayerController::SetHUDTime()
+{
+	uint32 SecondsLeft = FMath::CeilToInt(TotalTime - GetServertime());
+
+	if (CountdownInt != SecondsLeft)
+	{
+		SetHUDCombatTime(TotalTime - GetServertime());
+
+	}
+
+	CountdownInt = SecondsLeft;
+}
+
 void AGnuMyPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
@@ -61,8 +159,69 @@ void AGnuMyPlayerController::SetupInputComponent()
 	EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::Reload);
 	EnhancedInputComponent->BindAction(ArrowSkillAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::ArrowSkill);
 	EnhancedInputComponent->BindAction(HealSkillAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::HealSkill);
+
+	// 추가사항
+	EnhancedInputComponent->BindAction(QuitAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::ShowReturnToMainMenu);
 }
 
+// 추가사항
+void AGnuMyPlayerController::ShowReturnToMainMenu()
+{
+	if (ReturnToMainMenuWidget == nullptr) return;
+	if (ReturnToMainMenu == nullptr)
+	{
+		ReturnToMainMenu = CreateWidget<UGNUReturnToMainMenu>(this, ReturnToMainMenuWidget);
+	}
+
+	if (ReturnToMainMenu)
+	{
+		bReturnToMainMenuOpen = !bReturnToMainMenuOpen;
+		if (bReturnToMainMenuOpen)
+		{
+			ReturnToMainMenu->MenuSetup();
+		}
+		else
+		{
+			ReturnToMainMenu->MenuTearDown();
+		}
+	}
+
+}
+
+void AGnuMyPlayerController::CheckTimeSync(float DeltaTime)
+{
+	TimeSyncRunningTime += DeltaTime;
+	if (IsLocalController() && TimeSyncRunningTime > TimeSyncFrequency)
+	{
+		ServerRequestServerTime(GetWorld()->GetTimeSeconds());
+		TimeSyncRunningTime = 0.f;
+
+	}
+}
+
+// 서버와 클라이언트 사이의 RoundTripTime 계산 하기 위한 함수들
+// 클라이언트가 요청하고 서버에 도착하는 시간, 서버에서 클라이언트로 응답하는 시간
+// 두 개를 합쳐서 RTT, 하지만 두 개가 같지는 않아서 RTT / 2 가 각각의 시간이라고 장담하지는 못한다.
+float AGnuMyPlayerController::GetServertime()
+{
+	if (HasAuthority()) return GetWorld()->GetTimeSeconds();
+	else return GetWorld()->GetTimeSeconds() + ClientServerDelta;
+}
+
+void AGnuMyPlayerController::ServerRequestServerTime_Implementation(float TimeOfClientRequest)
+{
+	float ServerTimeOfReceipt = GetWorld()->GetTimeSeconds();
+	ClientReportServerTime(TimeOfClientRequest, ServerTimeOfReceipt);
+}
+
+void AGnuMyPlayerController::ClientReportServerTime_Implementation(float TimeOfClientRequest, float TimeServerReceivedClientRequest)
+{
+	float RoundTripTime = GetWorld()->GetTimeSeconds() - TimeOfClientRequest;
+	float CurrentServerTime = TimeServerReceivedClientRequest + (0.5f * RoundTripTime);
+	ClientServerDelta = CurrentServerTime - GetWorld()->GetTimeSeconds();
+}
+
+// 여기까지
 
 void AGnuMyPlayerController::Move(const struct FInputActionValue& InputActionValue)
 {

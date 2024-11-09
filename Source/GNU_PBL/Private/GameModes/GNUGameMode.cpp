@@ -2,8 +2,8 @@
 
 
 #include "GameModes/GNUGameMode.h"
-#include "Characters/GnuCharacter.h"
-#include "PlayerController/GNUPlayerController.h"
+#include "Characters/GnuMyCharacter.h"
+#include "Characters/GnuMyPlayerController.h"
 // #include "GnuMonster.h"
 
 AGNUGameMode::AGNUGameMode()

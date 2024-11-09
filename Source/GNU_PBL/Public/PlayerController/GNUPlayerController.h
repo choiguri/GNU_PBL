@@ -20,6 +20,9 @@ class GNU_PBL_API AGNUPlayerController : public APlayerController
 public:
 
 	void SetHUDHealth(float Health, float MaxHealth);
+
+	void SetHUDStamina(float Stamina, float MaxStamina);
+
 	void SetHUDCombatTime(float CombatTime);
 
 	virtual void Tick(float DeltaTime) override;

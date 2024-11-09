@@ -72,6 +72,24 @@ void AGNUPlayerController::SetHUDHealth(float Health, float MaxHealth)
 	}
 }
 
+void AGNUPlayerController::SetHUDStamina(float Stamina, float MaxStamina)
+{
+	GNUHUD = GNUHUD == nullptr ? Cast<AGNUHUD>(GetHUD()) : GNUHUD;
+
+	bool bHUDValid = GNUHUD &&
+		GNUHUD->CharacterOverlay &&
+		GNUHUD->CharacterOverlay->StaminaBar &&
+		GNUHUD->CharacterOverlay->StaminaText;
+
+	if (bHUDValid)
+	{
+		const float HealthPercent = Stamina / MaxStamina;
+		GNUHUD->CharacterOverlay->StaminaBar->SetPercent(HealthPercent);
+		FString HealthText = FString::Printf(TEXT("%d / %d"), FMath::CeilToInt(Stamina), FMath::CeilToInt(MaxStamina));
+		GNUHUD->CharacterOverlay->StaminaText->SetText(FText::FromString(HealthText));
+	}
+}
+
 void AGNUPlayerController::SetHUDCombatTime(float CombatTime)
 {
 	GNUHUD = GNUHUD == nullptr ? Cast<AGNUHUD>(GetHUD()) : GNUHUD;

@@ -152,10 +152,12 @@ void AGnuMyCharacter::BeginPlay()
 		}
 	}
 
+	// HP, Stamina HUD
 	GNUPlayerController = Cast<AGNUPlayerController>(Controller);
 	if (GNUPlayerController)
 	{
 		GNUPlayerController->SetHUDHealth(Health, MaxHealth);
+		GNUPlayerController->SetHUDStamina(Stamina, MaxStaminaa);
 
 	}
 }
