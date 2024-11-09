@@ -91,6 +91,7 @@ private:
 	UFUNCTION()	// 몬스터 꼬리 공격에 맞았는지
 	void OnTailOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+	// 근접 공격 맞았으면 플레이어가 뒤로 밀려나도록 하기
 	void KnockbackPlayer(AGnuMyCharacter* PlayerCharacter);
 
 public:

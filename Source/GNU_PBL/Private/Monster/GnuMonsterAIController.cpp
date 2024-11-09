@@ -132,7 +132,7 @@ void AGnuMonsterAIController::OnTargetDetected(AActor* Actor, FAIStimulus const 
     {
         // SensedCharacter가 특정 클래스인지 확인
         ACharacter* SensedCharacter = Cast<ACharacter>(Actor);
-        if (SensedCharacter != nullptr && SensedCharacter->IsA(AGnuMyCharacter::StaticClass()))
+        if (SensedCharacter && SensedCharacter->IsA<AGnuMyCharacter>())
         {
             // 기존 타겟 가져오기
             ACharacter* CurrentTarget = Cast<ACharacter>(GetBlackboardComponent()->GetValueAsObject(FName("TargetActor")));

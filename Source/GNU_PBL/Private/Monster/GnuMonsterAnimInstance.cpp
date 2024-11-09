@@ -59,7 +59,7 @@ void UGnuMonsterAnimInstance::PlayAttackMontage(UAnimMontage* MontageToPlay)
     }
 
     // 현재 몽타주가 재생 중인지 확인
-    if (Montage_IsPlaying(nullptr))
+    if (Montage_IsPlaying(MontageToPlay))
     {
         GEngine->AddOnScreenDebugMessage(1, 4, FColor::Red, TEXT("Playing Montage!!"));
         return;
