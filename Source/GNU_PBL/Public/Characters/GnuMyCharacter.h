@@ -250,7 +250,7 @@ private:
 	UFUNCTION()
 	void OnRep_Stamina();
 
-	class AGNUPlayerController* GNUPlayerController;
+	class AGnuMyPlayerController* GNUPlayerController;
 
 	UPROPERTY(EditAnywhere, Category = "Player Name")
 	FString LocalPlayerName = TEXT("Unknown Player");

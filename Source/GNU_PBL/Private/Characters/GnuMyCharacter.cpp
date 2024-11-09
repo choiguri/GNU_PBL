@@ -25,7 +25,7 @@
 // Character 합치면서 추가
 #include "Components/WidgetComponent.h"
 #include "HUD/GNUOverHeadWidget.h"
-#include "PlayerController/GNUPlayerController.h"
+#include "Characters/GnuMyPlayerController.h"
 #include "GameModes/GNUGameMode.h"
 
 AGnuMyCharacter::AGnuMyCharacter()
@@ -153,7 +153,7 @@ void AGnuMyCharacter::BeginPlay()
 	}
 
 	// HP, Stamina HUD
-	GNUPlayerController = Cast<AGNUPlayerController>(Controller);
+	GNUPlayerController = Cast<AGnuMyPlayerController>(Controller);
 	if (GNUPlayerController)
 	{
 		GNUPlayerController->SetHUDHealth(Health, MaxHealth);
