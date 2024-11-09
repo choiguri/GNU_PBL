@@ -8,7 +8,6 @@
 #include "Components/SphereComponent.h"
 #include "Bullet.generated.h"
 
-
 UCLASS()
 class GNU_PBL_API ABullet : public AActor
 {
@@ -20,7 +19,7 @@ public:
 
 	void Die();
 
-	void SetPower(int power);
+	void SetPower(float DamageAmount);
 
 	void SetDirection(const FVector& Direction);
 
@@ -54,6 +53,5 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Effects")
 	UParticleSystem* ImpactParticle;
 
-	int Power = 10;
-	
+	float Power = 10.f;
 };

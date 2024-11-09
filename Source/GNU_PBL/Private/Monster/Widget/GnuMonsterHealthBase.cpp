@@ -3,11 +3,14 @@
 
 #include "Monster/Widget/GnuMonsterHealthBase.h"
 #include "Components/ProgressBar.h"
+#include "Monster/GnuMonster.h"
 
 void UGnuMonsterHealthBase::UpdateBossHP(float CurrentHP, float MaxHP)
 {
     if (ProgressBar_Health)
     {
+        GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Yellow, FString::Printf(TEXT("Health Update Call")));
+
         float HPPercent = FMath::Clamp(CurrentHP / MaxHP, 0.0f, 1.0f);
         ProgressBar_Health->SetPercent(HPPercent);
     }
@@ -22,4 +25,7 @@ void UGnuMonsterHealthBase::NativeConstruct()
     {
         ProgressBar_Health->SetPercent(1.0f);  // 처음에 Max 상태로 설정
     }
+
+    // 위젯을 화면에 보이게 활성화 (필요 시 추가)
+    SetVisibility(ESlateVisibility::Visible);
 }
