@@ -11,7 +11,6 @@
 			"AdditionalDependencies": [
 				"Engine",
 				"AIModule",
-				"GameplayAbilities",
 				"UMG"
 			]
 		}
@@ -39,10 +38,6 @@
 		{
 			"Name": "OnlineSubsystemSteam",
 			"Enabled": true
-		},
-		{
-			"Name": "GameplayAbilities",
-			"Enabled": false
 		}
 	]
 }
