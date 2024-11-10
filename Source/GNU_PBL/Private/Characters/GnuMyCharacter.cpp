@@ -356,6 +356,7 @@ void AGnuMyCharacter::ServerMontageOnDodge_Implementation(float Forward, float R
 		return;
 	}
 
+	isReload = false;
 	// ��Ÿ�� ����
 	SetDodgeMontage(Forward, Right);
 
@@ -529,7 +530,7 @@ void AGnuMyCharacter::Fire()
 {
 	if (GetController() != nullptr)
 	{
-		if (isReload != true) 
+		if (!(isReload || isDodge)) 
 		{
 			if (isSprint) {
 				UpdateSprintState(false);
