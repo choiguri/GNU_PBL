@@ -12,6 +12,8 @@
 UBTTask_MonsterAttack::UBTTask_MonsterAttack()
 {
 	NodeName = TEXT("FireballAttack");
+	// TickTask 활성화
+	bNotifyTick = true;
 }
 
 EBTNodeResult::Type UBTTask_MonsterAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -34,18 +36,29 @@ EBTNodeResult::Type UBTTask_MonsterAttack::ExecuteTask(UBehaviorTreeComponent& O
 	if (AnimInstance)
 	{
 		AnimInstance->PlayFireballAttackMontage(); // Fireball 공격 몽타주 실행
+		// 몽타주가 끝날 때까지 기다리기 위해 Latent Task가 끝나기를 기다림
+		return EBTNodeResult::InProgress;
 	}
 	else
 	{
 		return EBTNodeResult::Failed;
 	}
 
-	// 몽타주가 끝날 때까지 기다리기 위해 Latent Task가 끝나기를 기다림
-	return EBTNodeResult::Succeeded;
+	
 }
 
-void UBTTask_MonsterAttack::OnMontageEnded(UBehaviorTreeComponent* OwnerComp, bool bInterrupted)
+void UBTTask_MonsterAttack::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
-	// 몽타주가 끝나면 다음 노드로 넘어가기
-	FinishLatentTask(*OwnerComp, EBTNodeResult::Succeeded);
+	AGnuMonster* Monster = Cast<AGnuMonster>(OwnerComp.GetAIOwner()->GetPawn());
+	if (Monster == nullptr)
+	{
+		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
+		return;
+	}
+
+	UGnuMonsterAnimInstance* AnimInstance = Cast<UGnuMonsterAnimInstance>(Monster->GetMesh()->GetAnimInstance());
+	if (AnimInstance && AnimInstance->bIsMontageEnded) // 몽타주가 끝났는지 확인
+	{
+		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded); // 완료되면 Succeeded 반환
+	}
 }

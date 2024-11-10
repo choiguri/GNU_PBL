@@ -20,8 +20,5 @@ public:
 protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory);
 
-private:
-
-	UFUNCTION()
-	void OnMontageEnded(UBehaviorTreeComponent* OwnerComp, bool bInterrupted);
+	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 };

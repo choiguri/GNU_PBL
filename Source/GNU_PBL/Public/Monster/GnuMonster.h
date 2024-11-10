@@ -32,8 +32,9 @@ public:
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 	// HP 상황에 따라 상태 함수들
-	void Die();
-	void EnterPhaseTwo();
+	void Die(); // 사망 함수
+	void DelayedDestroy(); // 타이머가 만료되면 호출될 함수
+	void EnterPhaseTwo(); // 페이즈 2 (할지 안할지 모름)
 
 	// 몬스터 공격 함수
 	void SpawnFireball();  // 파이어볼 소환 함수
@@ -45,6 +46,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	float KnockbackStrength; // 넉백 힘
+	FTimerHandle DestroyTimerHandle;
 
 	// 몬스터 애님인스턴스 설정
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")

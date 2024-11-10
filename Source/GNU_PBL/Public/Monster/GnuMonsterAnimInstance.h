@@ -18,25 +18,21 @@ class GNU_PBL_API UGnuMonsterAnimInstance : public UAnimInstance
 public:
     virtual void NativeInitializeAnimation() override;
 
+    // 몽타주가 끝난 상태인지 확인을 위한 변수
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Montage")
+    bool bIsMontageEnded = false;
+
 
     // 몽타주 실행 중인 노티파이 이벤트를 처리할 함수
     // cpp는 BlueprintNativeEvent 라고 설정되면 블루프린트에서 재정의 가능하도록 하려는 목적
     // 이 함수의 기본 구현을 C++에서 찾을 때는 _Implementation이 붙은 함수 이름을 기준으로 호출
-    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
-    void OnAttackNotifyEvent(FName NotifyName);
+    /*UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
+    void OnAttackNotifyEvent(FName NotifyName);*/
 
 
     // 현재 몬스터를 참조하기 위한 변수
     UPROPERTY(BlueprintReadOnly, Category = "Monster")
     class AGnuMonster* MonsterOwner;
-
-    // 애니메이션 몽타주 시작
-    UFUNCTION(BlueprintCallable, Category = "Animation")
-    void PlayAttackMontage(UAnimMontage* MontageToPlay);
-
-    // 현재 재생 중인 애니메이션 몽타주 가져오기
-    UFUNCTION(BlueprintCallable, Category = "Animation")
-    UAnimMontage* GetCurrentMontage() const;
 
 
     // 애니메이션 몽타주 공격 지정
@@ -55,6 +51,11 @@ public:
     UPROPERTY(EditDefaultsOnly, Category = "Montage")
     UAnimMontage* TailAttackMontage;
 
+    // 그 외 몽타주 지정
+    UPROPERTY(EditDefaultsOnly, Category = "Montage")
+    UAnimMontage* DragonDieMontage;
+
+    // 임시 예시 재생 몽타주
     UPROPERTY(EditDefaultsOnly, Category = "Montage")
     UAnimMontage* ExampleAttackMontage;
     
@@ -63,11 +64,18 @@ protected:
     // 몽타주 애니메이션을 재생하기 위한 변수
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
     UAnimMontage* AttackMontage;
+
+    // 애니메이션 몽타주 시작 함수
+    UFUNCTION(BlueprintCallable, Category = "Animation")
+    void PlayMontage(UAnimMontage* MontageToPlay);
+
+
+    // 몽타주 애니메이션 끝났을 때 호출 될 함수
+    UFUNCTION()
+    void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
     
 
 private:
-    // 공격 몽타주 실행 중에 특정 로직을 실행하는 함수
-    void HandleAttackNotify(FName NotifyName);
 
 public:
 
@@ -87,6 +95,13 @@ public:
     UFUNCTION(BlueprintCallable)
     void PlayTailAttackMontage();
 
+
+    // 죽었을 때 몽타주 처리
+    UFUNCTION(BlueprintCallable)
+    void PlayDieMontage();
+
+
+    // 애니메이션 예시 실행기
     UFUNCTION(BlueprintCallable)
     void PlayExampleMontage();
 };

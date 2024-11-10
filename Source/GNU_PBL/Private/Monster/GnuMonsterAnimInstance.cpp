@@ -4,7 +4,6 @@
 #include "Monster/GnuMonsterAnimInstance.h"
 #include "Monster/GnuMonster.h"
 #include "GameFramework/Actor.h"
-#include "Monster/GnuMonster.h"
 #include "AIController.h"
 #include "Kismet/KismetSystemLibrary.h"
 
@@ -19,39 +18,13 @@ void UGnuMonsterAnimInstance::NativeInitializeAnimation()
     {
         MonsterOwner = Cast<AGnuMonster>(TryGetPawnOwner());
     }
+
+    // 초기값 설정
+    bIsMontageEnded = true;
 }
 
 
-void UGnuMonsterAnimInstance::OnAttackNotifyEvent_Implementation(FName NotifyName)
-{
-    HandleAttackNotify(NotifyName);
-}
-
-
-void UGnuMonsterAnimInstance::HandleAttackNotify(FName NotifyName)
-{
-    if (NotifyName == "Attack_Start")
-    {
-        UE_LOG(LogTemp, Log, TEXT("Attack Start Notify triggered."));
-        GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, TEXT("Attack Start Notify trggered"));
-        if (MonsterOwner)
-        {
-            MonsterOwner->ActivateClawCollision();
-        }
-    }
-    else if (NotifyName == "Attack_End")
-    {
-        UE_LOG(LogTemp, Log, TEXT("Attack End Notify triggered."));
-        GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, TEXT("Attack End Notify trggered"));
-        if (MonsterOwner)
-        {
-            MonsterOwner->DeactivateClawCollision();
-        }
-    }
-}
-
-
-void UGnuMonsterAnimInstance::PlayAttackMontage(UAnimMontage* MontageToPlay)
+void UGnuMonsterAnimInstance::PlayMontage(UAnimMontage* MontageToPlay)
 {
     if (MontageToPlay == nullptr)
     {
@@ -65,45 +38,63 @@ void UGnuMonsterAnimInstance::PlayAttackMontage(UAnimMontage* MontageToPlay)
         return;
     }
 
-    // 새 몽타주 재생
     Montage_Play(MontageToPlay);
+    bIsMontageEnded = false;
+    
+
+    // 몽타주가 끝날 때 호출될 델리게이트를 설정
+    FOnMontageEnded MontageEndedDelegate;
+    MontageEndedDelegate.BindUObject(this, &UGnuMonsterAnimInstance::OnMontageEnded);
+
+    Montage_SetEndDelegate(MontageEndedDelegate, MontageToPlay);
 }
 
-UAnimMontage* UGnuMonsterAnimInstance::GetCurrentMontage() const
+
+void UGnuMonsterAnimInstance::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-    return nullptr;
+    // 몽타주가 끝났으므로 상태 업데이트
+    bIsMontageEnded = true;
+
+    // 종료 로그 출력
+    GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Blue, bInterrupted ? TEXT("Montage Interrupted!") : TEXT("Montage Ended Successfully!"));
 }
+
 
 
 // 각 몽타주 실행
 void UGnuMonsterAnimInstance::PlayFireballAttackMontage()
 {
-    PlayAttackMontage(FireballAttackMontage);
+    PlayMontage(FireballAttackMontage);
 }
 
 void UGnuMonsterAnimInstance::PlayFlyingAttackMontage()
 {
-    PlayAttackMontage(FlyingAttackMontage);
+    PlayMontage(FlyingAttackMontage);
 }
 
 void UGnuMonsterAnimInstance::PlayFirebreathAttackMontage()
 {
-    PlayAttackMontage(FirebreathAttackMontage);
+    PlayMontage(FirebreathAttackMontage);
 }
 
 void UGnuMonsterAnimInstance::PlayClawAttackMontage()
 {
-    PlayAttackMontage(ClawAttackMontage);
+    PlayMontage(ClawAttackMontage);
 }
 
 void UGnuMonsterAnimInstance::PlayTailAttackMontage()
 {
-    PlayAttackMontage(TailAttackMontage);
+    PlayMontage(TailAttackMontage);
+}
+
+void UGnuMonsterAnimInstance::PlayDieMontage()
+{
+    PlayMontage(DragonDieMontage);
 }
 
 void UGnuMonsterAnimInstance::PlayExampleMontage()
 {
-    PlayAttackMontage(ExampleAttackMontage);
+    PlayMontage(ExampleAttackMontage);
 }
 
 

@@ -16,6 +16,7 @@
 #include "Animation/AnimNotifies/AnimNotify.h"
 #include "Animation/AnimMontage.h"
 #include "Animation/AnimInstance.h"
+#include "TimerManager.h" // 타이머 사용을 위한 헤더 추가
 #include "GameFramework/CharacterMovementComponent.h"
 
 
@@ -185,9 +186,32 @@ void AGnuMonster::KnockbackPlayer(AGnuMyCharacter* PlayerCharacter)
 void AGnuMonster::Die()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Black, TEXT("Boss has died!"));
-	//SetLifeSpan(5.0f); // 5초 후 보스를 파괴
+	
+	UGnuMonsterAnimInstance* AnimInstance = Cast<UGnuMonsterAnimInstance>(this->GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->PlayDieMontage();
+
+		// 몽타주가 종료되었는지 확인 후 10초 후에 Destroy 호출
+		if (AnimInstance->bIsMontageEnded == false)
+		{
+			// 10초 타이머 설정
+			GetWorld()->GetTimerManager().SetTimer(
+				DestroyTimerHandle,						// 타이머 핸들
+				this,									// 호출 객체
+				&AGnuMonster::DelayedDestroy,			// 호출할 함수
+				10.0f,									// 지연 시간 (초)
+				false									// 반복 여부 (false : 한 번만 실행)
+			);
+		}
+	}
+}
+
+void AGnuMonster::DelayedDestroy()
+{
 	Destroy();
 }
+
 
 void AGnuMonster::EnterPhaseTwo()
 {
