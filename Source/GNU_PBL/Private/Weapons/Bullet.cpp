@@ -13,6 +13,8 @@
 #include "Particles/ParticleSystemComponent.h"
 #include <Weapons/DamageTest.h>
 
+#include "GameFramework/Character.h"
+
 // Sets default values
 ABullet::ABullet()
 {
@@ -79,10 +81,25 @@ void ABullet::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrim
 
 		if (AGnuMonster* Monster = Cast<AGnuMonster>(OtherActor))
 		{
-			// FPointDamageEvent를 사용하여 데미지 이벤트 생성
-			FPointDamageEvent DamageEvent(Power, Hit, NormalImpulse, UDamageType::StaticClass());
-			Monster->TakeDamage(Power, DamageEvent, nullptr, this);
-			GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Red, FString::Printf(TEXT("Monster hit by projectile, Damage")));
+			//// FPointDamageEvent를 사용하여 데미지 이벤트 생성
+			//FPointDamageEvent DamageEvent(Power, Hit, NormalImpulse, UDamageType::StaticClass());
+			//Monster->TakeDamage(Power, DamageEvent, nullptr, this);
+			//GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Red, FString::Printf(TEXT("Monster hit by projectile, Damage")));
+
+			// 변경
+			ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+			if (OwnerCharacter)
+			{
+				AController* OwnerController = OwnerCharacter->Controller;
+				if (OwnerController)
+				{
+					UGameplayStatics::ApplyDamage(OtherActor, Damage, OwnerController, this, UDamageType::StaticClass());
+					if (GEngine)
+					{
+						GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("ApplyDamage")));
+					}
+				}
+			}
 		}
 		Destroy();
 	}

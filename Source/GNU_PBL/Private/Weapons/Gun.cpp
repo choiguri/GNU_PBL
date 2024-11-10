@@ -90,8 +90,13 @@ void AGun::Fire()
 
 		shootDirection = recoilRotation.Vector();
 
+		// 추가 및 수정 24.11.11 ApplyDamage를 위한 SpawnParams 설정
+		APawn* InstigatorPawn = Cast<APawn>(GetOwner());
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = GetOwner();
+		SpawnParams.Instigator = InstigatorPawn;
 
-		ABullet* Bullet = GetWorld()->SpawnActor<ABullet>(bulletFactory, fireposition);
+		ABullet* Bullet = GetWorld()->SpawnActor<ABullet>(bulletFactory, fireposition, SpawnParams);
 		if (Bullet)
 		{
 			Bullet->SetPower(DamageAmount);

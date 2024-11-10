@@ -18,6 +18,7 @@
 #include "Animation/AnimInstance.h"
 #include "TimerManager.h" // 타이머 사용을 위한 헤더 추가
 #include "GameFramework/CharacterMovementComponent.h"
+#include <Net/UnrealNetwork.h>
 
 
 AGnuMonster::AGnuMonster()
@@ -68,6 +69,12 @@ void AGnuMonster::BeginPlay()
 		MonsterHealthWidget = CreateWidget<UGnuMonsterHealthBase>(GetWorld(), MonsterHealthWidgetClass);
 		MonsterHealthWidget->AddToViewport();
 	}
+
+	if (HasAuthority())
+	{
+		OnTakeAnyDamage.AddDynamic(this, &AGnuMonster::ReceiveDamage);
+	}
+	
 }
 
 
@@ -100,33 +107,75 @@ void AGnuMonster::Tick(float DeltaTime)
 }
 
 // 데미지 계산 부분
-float AGnuMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+//float AGnuMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+//{
+//		// 부모 클래스에서의 TakeDamage를 호출하지 않고 직접 처리
+//		float ActualDamage = DamageAmount;  // DamageAmount를 그대로 사용 (필요 시 추가 계산 가능)
+//
+//		// 데미지 처리
+//		CurrentHealth -= ActualDamage;
+//		GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Red, FString::Printf(TEXT("Current Health : %f"), CurrentHealth));
+//		GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Red, FString::Printf(TEXT("Max Health : %f"), MaxHealth));
+//
+//		if (MonsterHealthWidget)
+//		{
+//			MonsterHealthWidget->UpdateBossHP(CurrentHealth, MaxHealth);  // HP 업데이트
+//		}
+//
+//		if (CurrentHealth <= 0)
+//		{
+//			Die();
+//		}
+//
+//		if (CurrentHealth <= MaxHealth * 0.5f && !bIsPhaseTwo)  // 여기서 `bIsPhaseTwo`가 false일 때만 Phase2로 들어가도록 수정
+//		{
+//			bIsPhaseTwo = true;
+//			EnterPhaseTwo();
+//		}
+//
+//		return ActualDamage;
+//}
+
+
+void AGnuMonster::OnRep_Health()
 {
-	// 부모 클래스에서의 TakeDamage를 호출하지 않고 직접 처리
-	float ActualDamage = DamageAmount;  // DamageAmount를 그대로 사용 (필요 시 추가 계산 가능)
-
-	// 데미지 처리
-	CurrentHealth -= ActualDamage;
-	GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Red, FString::Printf(TEXT("Current Health : %f"), CurrentHealth));
-	GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Red, FString::Printf(TEXT("Max Health : %f"), MaxHealth));
-
 	if (MonsterHealthWidget)
 	{
-		MonsterHealthWidget->UpdateBossHP(CurrentHealth, MaxHealth);  // HP 업데이트
+		MonsterHealthWidget->UpdateBossHP(CurrentHealth, MaxHealth);
 	}
 
-	if (CurrentHealth <= 0)
+}
+
+void AGnuMonster::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	DOREPLIFETIME(AGnuMonster, CurrentHealth);
+}
+
+void AGnuMonster::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
+{
+	if (GEngine)
 	{
-		Die();
+		GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Red, FString::Printf(TEXT("Current Health : %f"), CurrentHealth));
+		GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Red, FString::Printf(TEXT("Max Health : %f"), MaxHealth));
 	}
 
-	if (CurrentHealth <= MaxHealth * 0.5f && !bIsPhaseTwo)  // 여기서 `bIsPhaseTwo`가 false일 때만 Phase2로 들어가도록 수정
+	if (HasAuthority())
 	{
-		bIsPhaseTwo = true;
-		EnterPhaseTwo();
+		CurrentHealth = FMath::Clamp(CurrentHealth - Damage, 0.f, MaxHealth);
+		if (MonsterHealthWidget)
+		{
+			MonsterHealthWidget->UpdateBossHP(CurrentHealth, MaxHealth); 
+		}
 	}
+	else
+	{
+		TakeDamageFromClient(DamagedActor, Damage, DamageType, InstigatorController, DamageCauser);
+	}
+}
 
-	return ActualDamage;
+void AGnuMonster::TakeDamageFromClient_Implementation(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
+{
+	ReceiveDamage(this, Damage, DamageType, InstigatorController, this);
 }
 
 
@@ -181,6 +230,7 @@ void AGnuMonster::KnockbackPlayer(AGnuMyCharacter* PlayerCharacter)
 	PlayerCharacter->LaunchCharacter(KnockbackDirection * KnockbackStrength, true, true);
 
 }
+
 
 
 void AGnuMonster::Die()
@@ -291,6 +341,8 @@ void AGnuMonster::SpawnFirebreath()
 }
 
 
+
+
 void AGnuMonster::InitializeAnimInstance()
 {
 }
@@ -301,6 +353,8 @@ void AGnuMonster::InitializeCollisionComponent(UBoxComponent*& CollisionComponen
 	//CollisionComponent->SetupAttachment(GetMesh());
 	//CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly); // 오버랩을 위해 QueryOnly로 설정
 }
+
+
 
 
 #if WITH_EDITOR

@@ -29,7 +29,9 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	// TakeDamage 함수 오버라이드
-	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+	//virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
+	
 
 	// HP 상황에 따라 상태 함수들
 	void Die(); // 사망 함수
@@ -40,6 +42,9 @@ public:
 	void SpawnFireball();  // 파이어볼 소환 함수
 	void SpawnFiretornado(); // 파이어토네이도 소환 함수
 	void SpawnFirebreath(); // 파이어브레스 소환 함수
+
+	UFUNCTION(Server, Reliable)
+	void TakeDamageFromClient(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
 
 protected:
 	// Called when the game starts or when spawned
@@ -57,6 +62,11 @@ protected:
 
 	UFUNCTION()
 	void InitializeCollisionComponent(UBoxComponent*& CollisionComponent, const FName& ComponentName);
+	
+	UFUNCTION()
+	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
+
+	
 
 
 	// 공격 부위별 콜리전 컴포넌트
@@ -107,11 +117,22 @@ public:
 	UUserWidget* MonsterWidget;
 
 	// HP 관련 구현부
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
-	float CurrentHealth;
+	UPROPERTY(EditAnywhere, Category = "Health")
+	float MaxHealth = 1000.f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
-	float MaxHealth;
+	UPROPERTY(ReplicatedUsing = OnRep_Health, VisibleAnywhere, Category = "Health")
+	float CurrentHealth = 1.f;
+
+	UFUNCTION()
+	void OnRep_Health();
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+	//float CurrentHealth;
+
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+	//float MaxHealth;
 
 
 	// 원거리 공격 Actor 소환 class 설정
