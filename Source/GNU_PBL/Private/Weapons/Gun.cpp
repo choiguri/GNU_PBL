@@ -52,99 +52,50 @@ void AGun::Fire()
 {	
 	if (RemainAmmo > 0)
 	{
-		if (1) //Projectile
+		
+		UGameplayStatics::SpawnEmitterAttached(MuzzleFlash, Mesh, TEXT("MuzzleFlashSocket"));
+
+		ServerMontageOnFire();
+
+		FTransform fireposition = Mesh->GetSocketTransform(TEXT("FirePosition"), RTS_World);
+		FVector spawnLocation = fireposition.GetLocation();
+
+		APawn* OwnerPawn = Cast<APawn>(GetOwner());
+		if (OwnerPawn == nullptr) return;
+		AController* OwnerController = OwnerPawn->GetController();
+		if (OwnerController == nullptr) return;
+
+		FVector Location;
+		FRotator Rotation;
+		OwnerController->GetPlayerViewPoint(Location, Rotation);
+
+		FVector traceEnd = Location + (Rotation.Vector() * 10000.0f);
+		FHitResult hitResult;
+		FCollisionQueryParams traceParams(FName(TEXT("ProjectileTrace")), true, this);
+		traceParams.bTraceComplex = true;
+		traceParams.bReturnPhysicalMaterial = false;
+
+		// 라인트레이스 실행
+		bool bHit = GetWorld()->LineTraceSingleByChannel(hitResult, Location, traceEnd, ECC_Visibility, traceParams);
+
+		// 히트 판정이 발생한 경우 해당 지점으로 투사체 발사 방향 설정
+		FVector targetLocation = bHit ? hitResult.Location : traceEnd;
+		FVector shootDirection = (targetLocation - spawnLocation).GetSafeNormal();
+
+		//Recoil
+		float RecoilOffset = GetRecoilOffset(); // Accuracy + MovementStability;
+		FRotator recoilRotation = shootDirection.Rotation();
+		recoilRotation.Pitch = FMath::RandRange(recoilRotation.Pitch, recoilRotation.Pitch + RecoilOffset);
+		recoilRotation.Yaw = FMath::RandRange(recoilRotation.Yaw - RecoilOffset, recoilRotation.Yaw + RecoilOffset);
+
+		shootDirection = recoilRotation.Vector();
+
+
+		ABullet* Bullet = GetWorld()->SpawnActor<ABullet>(bulletFactory, fireposition);
+		if (Bullet)
 		{
-			UGameplayStatics::SpawnEmitterAttached(MuzzleFlash, Mesh, TEXT("MuzzleFlashSocket"));
-
-			ServerMontageOnFire();
-
-			FTransform fireposition = Mesh->GetSocketTransform(TEXT("FirePosition"), RTS_World);
-			FVector spawnLocation = fireposition.GetLocation();
-
-			APawn* OwnerPawn = Cast<APawn>(GetOwner());
-			if (OwnerPawn == nullptr) return;
-			AController* OwnerController = OwnerPawn->GetController();
-			if (OwnerController == nullptr) return;
-
-			FVector Location;
-			FRotator Rotation;
-			OwnerController->GetPlayerViewPoint(Location, Rotation);
-
-			FVector traceEnd = Location + (Rotation.Vector() * 10000.0f);
-			FHitResult hitResult;
-			FCollisionQueryParams traceParams(FName(TEXT("ProjectileTrace")), true, this);
-			traceParams.bTraceComplex = true;
-			traceParams.bReturnPhysicalMaterial = false;
-
-			// 라인트레이스 실행
-			bool bHit = GetWorld()->LineTraceSingleByChannel(hitResult, Location, traceEnd, ECC_Visibility, traceParams);
-
-			// 히트 판정이 발생한 경우 해당 지점으로 투사체 발사 방향 설정
-			FVector targetLocation = bHit ? hitResult.Location : traceEnd;
-			FVector shootDirection = (targetLocation - spawnLocation).GetSafeNormal();
-
-			//Recoil
-			float RecoilOffset = GetRecoilOffset(); // Accuracy + MovementStability;
-			FRotator recoilRotation = shootDirection.Rotation();
-			recoilRotation.Pitch = FMath::RandRange(recoilRotation.Pitch, recoilRotation.Pitch + RecoilOffset);
-			recoilRotation.Yaw = FMath::RandRange(recoilRotation.Yaw - RecoilOffset, recoilRotation.Yaw + RecoilOffset);
-
-			shootDirection = recoilRotation.Vector();
-
-
-			ABullet* Bullet = GetWorld()->SpawnActor<ABullet>(bulletFactory, fireposition);
-			if (Bullet)
-			{
-				Bullet->SetPower(DamageAmount);
-				Bullet->SetDirection(shootDirection);  // 탄환에 발사 방향 설정
-			}
-		}
-		else // hitscan
-		{
-			UGameplayStatics::SpawnEmitterAttached(MuzzleFlash, Mesh, TEXT("MuzzleFlashSocket"));
-
-			APawn* OwnerPawn = Cast<APawn>(GetOwner());
-			if (OwnerPawn == nullptr) return;
-			AController* OwnerController = OwnerPawn->GetController();
-			if (OwnerController == nullptr) return;
-
-			FVector Location;
-			FRotator Rotation;
-			OwnerController->GetPlayerViewPoint(Location, Rotation);
-
-			//Recoil
-			float RecoilOffset = GetRecoilOffset(); // Accuracy + MovementStability;
-			//Rotation.Pitch += BulletRecoil.Y;
-			Rotation.Pitch = FMath::RandRange(Rotation.Pitch, Rotation.Pitch + RecoilOffset);
-			//Rotation.Yaw += BulletRecoil.Z;
-			Rotation.Yaw = FMath::RandRange(Rotation.Yaw - RecoilOffset, Rotation.Yaw + RecoilOffset);
-			//Rotation.Roll += BulletRecoil.X;
-
-
-			FVector End = Location + Rotation.Vector() * MaxRange;
-			// TODO: LineTrace 
-
-			FHitResult Hit;
-			bool bSuccess = GetWorld()->LineTraceSingleByChannel(Hit, Location, End, ECollisionChannel::ECC_GameTraceChannel1);
-			if (bSuccess)
-			{
-				FVector ShotDirection = -Rotation.Vector();
-				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactEffect, Hit.Location, ShotDirection.Rotation());
-				AActor* HitActor = Hit.GetActor();
-				if (HitActor)
-				{
-					// ���Ϳ� Ư�� �±װ� �ִ��� Ȯ�� (��: "WeaponSwitch")
-					if (HitActor->ActorHasTag(FName("Enemy")))
-					{
-						ADamageTest* Enemy = Cast<ADamageTest>(HitActor);
-						if (Enemy)
-						{
-							UE_LOG(LogTemp, Warning, TEXT("Hit Enemy!"));
-							Enemy->GetDamage(DamageAmount);
-						}
-					}
-				}
-			}
+			Bullet->SetPower(DamageAmount);
+			Bullet->SetDirection(shootDirection);  // 탄환에 발사 방향 설정
 		}
 		
 

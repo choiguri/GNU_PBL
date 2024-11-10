@@ -84,17 +84,6 @@ void ABullet::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrim
 			Monster->TakeDamage(Power, DamageEvent, nullptr, this);
 			GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Red, FString::Printf(TEXT("Monster hit by projectile, Damage")));
 		}
-		
-		//if (OtherActor->Tags.Contains(FName("Enemy")))
-		//{
-		//	// 2. 특정 타입으로 캐스팅
-		//	ADamageTest* Enemy = Cast<ADamageTest>(OtherActor);
-		//	if (Enemy)
-		//	{
-		//		UE_LOG(LogTemp, Warning, TEXT("Hit Enemy!"));
-		//		Enemy->GetDamage(Power);
-		//	}
-		//}
 		Destroy();
 	}
 }
