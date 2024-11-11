@@ -43,8 +43,7 @@ public:
 	void SpawnFiretornado(); // 파이어토네이도 소환 함수
 	void SpawnFirebreath(); // 파이어브레스 소환 함수
 
-	UFUNCTION(Server, Reliable)
-	void TakeDamageFromClient(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
+	
 
 protected:
 	// Called when the game starts or when spawned
@@ -63,11 +62,7 @@ protected:
 	UFUNCTION()
 	void InitializeCollisionComponent(UBoxComponent*& CollisionComponent, const FName& ComponentName);
 	
-	UFUNCTION()
-	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
-
 	
-
 
 	// 공격 부위별 콜리전 컴포넌트
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack")
@@ -125,6 +120,10 @@ public:
 
 	UFUNCTION()
 	void OnRep_Health();
+
+	UFUNCTION()
+	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
+
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 

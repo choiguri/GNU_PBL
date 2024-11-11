@@ -21,6 +21,8 @@ ABullet::ABullet()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;	
 
+	
+
 	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	SetRootComponent(Root);
 
@@ -38,8 +40,12 @@ ABullet::ABullet()
 	movementComp->bShouldBounce = false;
 	movementComp->ProjectileGravityScale = 0.0f;
 	movementComp->SetUpdatedComponent(CollisionComp);
+	
+	
 
 	InitialLifeSpan = 2.0f;
+
+	
 }
 
 // Called when the game starts or when spawned
@@ -93,10 +99,14 @@ void ABullet::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrim
 				AController* OwnerController = OwnerCharacter->Controller;
 				if (OwnerController)
 				{
-					UGameplayStatics::ApplyDamage(OtherActor, Damage, OwnerController, this, UDamageType::StaticClass());
-					if (GEngine)
+					if (HasAuthority())
 					{
-						GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, FString::Printf(TEXT("ApplyDamage")));
+						UGameplayStatics::ApplyDamage(OtherActor, Damage, OwnerController, this, UDamageType::StaticClass());
+						if (GEngine)
+						{
+							GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, FString::Printf(TEXT("ApplyDamage")));
+						}
+
 					}
 				}
 			}
@@ -104,6 +114,7 @@ void ABullet::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrim
 		Destroy();
 	}
 }
+
 
 
 void ABullet::Die()

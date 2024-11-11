@@ -104,6 +104,7 @@ private:
 
 	FTimerHandle FireTimerHandle;  // Ÿ�̸� �ڵ� ���� �߰�
 
+	UFUNCTION()
 	void Fire();  // �߻� ��� ���� �Լ�
 
 

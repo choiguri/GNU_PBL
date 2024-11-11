@@ -75,6 +75,7 @@ void AGnuMonster::BeginPlay()
 		OnTakeAnyDamage.AddDynamic(this, &AGnuMonster::ReceiveDamage);
 	}
 	
+	
 }
 
 
@@ -146,6 +147,8 @@ void AGnuMonster::OnRep_Health()
 
 }
 
+
+
 void AGnuMonster::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	DOREPLIFETIME(AGnuMonster, CurrentHealth);
@@ -159,19 +162,17 @@ void AGnuMonster::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamag
 		GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Red, FString::Printf(TEXT("Max Health : %f"), MaxHealth));
 	}
 
-	if (HasAuthority())
-	{
-		CurrentHealth = FMath::Clamp(CurrentHealth - Damage, 0.f, MaxHealth);
-		if (MonsterHealthWidget)
-		{
-			MonsterHealthWidget->UpdateBossHP(CurrentHealth, MaxHealth); 
-		}
-	}
-	else
-	{
-		TakeDamageFromClient(DamagedActor, Damage, DamageType, InstigatorController, DamageCauser);
-	}
+	CurrentHealth = FMath::Clamp(CurrentHealth - Damage, 0.f, MaxHealth);
 
+	if (MonsterHealthWidget)
+	{
+		MonsterHealthWidget->UpdateBossHP(CurrentHealth, MaxHealth); 			
+	}
+	if (GEngine)	
+	{
+		GEngine->AddOnScreenDebugMessage(1, 3.f, FColor::Blue, FString::Printf(TEXT("HasAuthority")));
+
+	}
 	// 몬스터 죽음 처리
 	if (CurrentHealth <= 0)
 	{
@@ -179,10 +180,6 @@ void AGnuMonster::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamag
 	}
 }
 
-void AGnuMonster::TakeDamageFromClient_Implementation(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
-{
-	ReceiveDamage(this, Damage, DamageType, InstigatorController, this);
-}
 
 
 void AGnuMonster::OnClawOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
