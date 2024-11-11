@@ -11,7 +11,6 @@
 #include "Kismet/GameplayStatics.h"
 #include <GameFramework/ProjectileMovementComponent.h>
 #include "Particles/ParticleSystemComponent.h"
-#include <Weapons/DamageTest.h>
 
 #include "GameFramework/Character.h"
 
