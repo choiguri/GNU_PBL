@@ -6,7 +6,6 @@
 #include "Animation/AnimInstance.h"
 #include "GnuMonsterAnimInstance.generated.h"
 
-
 /**
  * 
  */
@@ -22,6 +21,9 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Montage")
     bool bIsMontageEnded = false;
 
+    // 죽음 상태인지 확인을 위한 변수
+    UPROPERTY(BlueprintReadOnly, Category = "State")
+    bool bIsDead = false;
 
     // 몽타주 실행 중인 노티파이 이벤트를 처리할 함수
     // cpp는 BlueprintNativeEvent 라고 설정되면 블루프린트에서 재정의 가능하도록 하려는 목적
@@ -95,11 +97,9 @@ public:
     UFUNCTION(BlueprintCallable)
     void PlayTailAttackMontage();
 
-
     // 죽었을 때 몽타주 처리
     UFUNCTION(BlueprintCallable)
     void PlayDieMontage();
-
 
     // 애니메이션 예시 실행기
     UFUNCTION(BlueprintCallable)

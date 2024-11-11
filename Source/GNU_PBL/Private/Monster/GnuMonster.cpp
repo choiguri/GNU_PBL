@@ -171,6 +171,12 @@ void AGnuMonster::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamag
 	{
 		TakeDamageFromClient(DamagedActor, Damage, DamageType, InstigatorController, DamageCauser);
 	}
+
+	// 몬스터 죽음 처리
+	if (CurrentHealth <= 0)
+	{
+		Die();
+	}
 }
 
 void AGnuMonster::TakeDamageFromClient_Implementation(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
@@ -240,17 +246,18 @@ void AGnuMonster::Die()
 	UGnuMonsterAnimInstance* AnimInstance = Cast<UGnuMonsterAnimInstance>(this->GetMesh()->GetAnimInstance());
 	if (AnimInstance)
 	{
+		AnimInstance->bIsDead = true;
 		AnimInstance->PlayDieMontage();
 
 		// 몽타주가 종료되었는지 확인 후 10초 후에 Destroy 호출
-		if (AnimInstance->bIsMontageEnded == false)
+		if (AnimInstance->bIsDead)
 		{
-			// 10초 타이머 설정
+			// 12초 타이머 설정
 			GetWorld()->GetTimerManager().SetTimer(
 				DestroyTimerHandle,						// 타이머 핸들
 				this,									// 호출 객체
 				&AGnuMonster::DelayedDestroy,			// 호출할 함수
-				10.0f,									// 지연 시간 (초)
+				12.0f,									// 지연 시간 (초)
 				false									// 반복 여부 (false : 한 번만 실행)
 			);
 		}

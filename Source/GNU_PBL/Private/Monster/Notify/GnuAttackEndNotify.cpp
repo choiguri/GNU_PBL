@@ -25,6 +25,11 @@ void UGnuAttackEndNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequence
                 Monster->DeactivateTailCollision(); // 테일 공격 종료 로직
                 GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, TEXT("Tail Collision Deactivate"));
             }
+            else if (AnimInstance->Montage_IsPlaying(AnimInstance->DragonDieMontage))
+            {
+                AnimInstance->Montage_Pause(AnimInstance->DragonDieMontage);
+                GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, TEXT("Die Montage Pause"));
+            }
         }
     }
 }

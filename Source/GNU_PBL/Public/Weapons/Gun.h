@@ -96,7 +96,7 @@ private:
 	// AmmoDisplay 위젯의 클래스 변수
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<class UAmmoDisplay> AmmoDisplayClass;
-		
+
 	// AmmoDisplay 위젯 인스턴스
 	UPROPERTY()
 	UAmmoDisplay* AmmoDisplay;

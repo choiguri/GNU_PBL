@@ -38,9 +38,11 @@ void UGnuMonsterAnimInstance::PlayMontage(UAnimMontage* MontageToPlay)
         return;
     }
 
-    Montage_Play(MontageToPlay);
-    bIsMontageEnded = false;
-    
+    if (bIsMontageEnded)
+    {
+        Montage_Play(MontageToPlay);
+        bIsMontageEnded = false;
+    }
 
     // 몽타주가 끝날 때 호출될 델리게이트를 설정
     FOnMontageEnded MontageEndedDelegate;

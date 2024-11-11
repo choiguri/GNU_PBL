@@ -96,7 +96,7 @@ void ABullet::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrim
 					UGameplayStatics::ApplyDamage(OtherActor, Damage, OwnerController, this, UDamageType::StaticClass());
 					if (GEngine)
 					{
-						GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("ApplyDamage")));
+						GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, FString::Printf(TEXT("ApplyDamage")));
 					}
 				}
 			}
@@ -111,9 +111,9 @@ void ABullet::Die()
 	Destroy();
 }
 
-void ABullet::SetPower(float DamageAmount)
+void ABullet::SetDamage(float DamageAmount)
 {
-	Power = DamageAmount;
+	Damage = DamageAmount;
 }
 
 void ABullet::SetDirection(const FVector& Direction)

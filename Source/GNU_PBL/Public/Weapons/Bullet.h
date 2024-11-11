@@ -19,7 +19,7 @@ public:
 
 	void Die();
 
-	void SetPower(float DamageAmount);
+	void SetDamage(float DamageAmount);
 
 	void SetDirection(const FVector& Direction);
 
@@ -53,9 +53,8 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Effects")
 	UParticleSystem* ImpactParticle;
 
-	float Power = 10.f;
-
 	// 변경
+	// Damage를 총에서 받아와서 저장
 	UPROPERTY(EditAnywhere)
-	float Damage = 10.f;
+	float Damage;
 };

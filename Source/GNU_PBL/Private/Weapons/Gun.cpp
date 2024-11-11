@@ -99,8 +99,8 @@ void AGun::Fire()
 		ABullet* Bullet = GetWorld()->SpawnActor<ABullet>(bulletFactory, fireposition, SpawnParams);
 		if (Bullet)
 		{
-			Bullet->SetPower(DamageAmount);
-			Bullet->SetDirection(shootDirection);  // 탄환에 발사 방향 설정
+			Bullet->SetDamage(DamageAmount);		// 탄환 데미지 설정
+			Bullet->SetDirection(shootDirection);	// 탄환에 발사 방향 설정
 		}
 		
 

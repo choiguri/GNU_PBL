@@ -8,6 +8,8 @@
 UBTTask_MonsterFlyingAttack::UBTTask_MonsterFlyingAttack()
 {
 	NodeName = TEXT("Flying Attack");
+	// TickTask 활성화
+	bNotifyTick = true;
 }
 
 EBTNodeResult::Type UBTTask_MonsterFlyingAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -30,12 +32,26 @@ EBTNodeResult::Type UBTTask_MonsterFlyingAttack::ExecuteTask(UBehaviorTreeCompon
 	if (AnimInstance)
 	{
 		AnimInstance->PlayFlyingAttackMontage();
+		return EBTNodeResult::InProgress;
 	}
 	else
 	{
 		return EBTNodeResult::Failed;
 	}
+}
 
+void UBTTask_MonsterFlyingAttack::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
+{
+	AGnuMonster* Monster = Cast<AGnuMonster>(OwnerComp.GetAIOwner()->GetPawn());
+	if (Monster == nullptr)
+	{
+		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
+		return;
+	}
 
-	return EBTNodeResult::Succeeded;
+	UGnuMonsterAnimInstance* AnimInstance = Cast<UGnuMonsterAnimInstance>(Monster->GetMesh()->GetAnimInstance());
+	if (AnimInstance && AnimInstance->bIsMontageEnded) // 몽타주가 끝났는지 확인
+	{
+		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded); // 완료되면 Succeeded 반환
+	}
 }
