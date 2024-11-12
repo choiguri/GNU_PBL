@@ -32,7 +32,7 @@ AGnuMyCharacter::AGnuMyCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	// ------------------------------- ĳ���� ȸ�� ------------------------------
+	// ------------------------------- Character Rotation ------------------------------
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
@@ -42,25 +42,25 @@ AGnuMyCharacter::AGnuMyCharacter()
 	MovementComponent->RotationRate = FRotator(0.f, 400.f, 0.f);
 	// ---------------------------------------------------------------
 
-	// ------------------------------- Camera �ʱ�ȭ ------------------------------
+	// ------------------------------- Camera Init ------------------------------
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	CameraBoom->SetupAttachment(RootComponent); // RootComponent�� ����
-	CameraBoom->TargetArmLength = 350.0f; // ���ϴ� ���̷� ����
+	CameraBoom->SetupAttachment(RootComponent);
+	CameraBoom->TargetArmLength = 350.0f;
 	CameraBoom->SocketOffset = FVector(0.0f, 80.0f, 40.0f);
-	CameraBoom->bUsePawnControlRotation = true; // ī�޶� ȸ�� ���
+	CameraBoom->bUsePawnControlRotation = true; // 카메라 회전 사용
 
 	TPPCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("TPPCamera"));
-	TPPCamera->SetupAttachment(CameraBoom); // ī�޶�տ� ����
+	TPPCamera->SetupAttachment(CameraBoom);
 	TPPCamera->bUsePawnControlRotation = false;
 
 	FPPCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FPPCamera"));
-	FPPCamera->SetupAttachment(GetMesh(), TEXT("Head")); // Head ���Ͽ� ����
+	FPPCamera->SetupAttachment(GetMesh(), TEXT("Head")); // Head 소켓에 부착
 	FPPCamera->bUsePawnControlRotation = true;
 
 	isFPPCamera = false;
 	// ---------------------------------------------------------------
 
-	// ---------------------- Movement ���� �ʱ�ȭ -----------------------
+	// ---------------------- Movement Init -----------------------
 	DefaultSpeed = 300.0f;
 	SprintSpeed = 600.0f;
 	MovementComponent->MaxWalkSpeed = DefaultSpeed;
@@ -95,23 +95,23 @@ void AGnuMyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ---------------- ZoomIn �ε巴�� �����Ǵ� Ÿ�Ӷ��� �ʱ�ȭ ----------------
-	// FOnTimelineFloat : Ÿ�Ӷ��ο��� �÷�Ʈ(float) ���� ��ȯ�ϴ� ��������Ʈ Ÿ��
+	// ---------------- ZoomIn 부드럽게 조절되는 타임라인 초기화 ----------------
+	// FOnTimelineFloat : 타임라인에서 플로트(float) 값을 반환하는 델리게이트 타입
 	FOnTimelineFloat ZoomInProgressUpdate;
-	// BindUFunction : ZoomInUpdate�̶�� �̸��� ���� �Լ��� ���ε�
-	// Ÿ�Ӷ����� ����� ������ ZoomInUpdate �Լ��� ȣ��
+	// BindUFunction : ZoomInUpdate이라는 이름을 가진 함수를 바인딩
+	// 타임라인이 진행될 때마다 ZoomInUpdate 함수를 호출
 	ZoomInProgressUpdate.BindUFunction(this, FName("ZoomInUpdate"));
 
-	// FOnTimelineEvent : Ÿ�Ӷ����� ������ �� ȣ��Ǵ� �̺�Ʈ ��������Ʈ
+	// FOnTimelineEvent : 타임라인이 끝났을 때 호출되는 이벤트 델리게이트
 	FOnTimelineEvent ZoomInFinishedEvent;
-	// ZoomInFinished�̶�� �̸��� ���� �Լ��� ���ε�
+	// ZoomInFinished이라는 이름을 가진 함수를 바인딩
 	ZoomInFinishedEvent.BindUFunction(this, FName("ZoomInFinished"));
 
-	// AddInterpFloat : �÷�Ʈ �(Curve)�� �߰�, �ش� ��� ���� ���� ��ȭ��Ű�鼭 ��������Ʈ(ZoomInProgressUpdate)�� ȣ��
+	// AddInterpFloat : 플로트 곡선(Curve)을 추가, 해당 곡선을 따라 값을 변화시키면서 델리게이트(ZoomInProgressUpdate)를 호출
 	ZoomInTimeline.AddInterpFloat(ZoomInCurve, ZoomInProgressUpdate);
-	// SetTimelineFinishedFunc : Ÿ�Ӷ����� ������ �� ȣ���� ��������Ʈ(�̺�Ʈ)�� ����
+	// SetTimelineFinishedFunc : 타임라인이 끝났을 때 호출할 델리게이트(이벤트)를 설정
 	ZoomInTimeline.SetTimelineFinishedFunc(ZoomInFinishedEvent);
-	// SetTimelineLength : Ÿ�Ӷ��� ���� ����
+	// SetTimelineLength : 타임라인 길이 설정
 	ZoomInTimeline.SetTimelineLength(0.3f);
 	// -------------------------------------------------------------------------------
 
@@ -170,18 +170,17 @@ void AGnuMyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	ZoomInTimeline.TickTimeline(DeltaTime);
-	// �� �����Ӹ��� UI ������Ʈ
 	UpdateUIHealthAndStamina();
 }
 
 void AGnuMyCharacter::SetCamera()
 {
-	isFPPCamera = !isFPPCamera; // ���� ���¸� ������Ŵ
+	isFPPCamera = !isFPPCamera;// 현재 상태를 반전시킴
 
 	if (isFPPCamera)
 	{
-		// 1��Ī ī�޶� Ȱ��ȭ
-		if (FPPCamera && TPPCamera) // Null üũ
+		// 1인칭 카메라 활성화
+		if (FPPCamera && TPPCamera) // Null Check
 		{
 			TPPCamera->SetActive(false);
 			FPPCamera->SetActive(true);
@@ -189,8 +188,8 @@ void AGnuMyCharacter::SetCamera()
 	}
 	else
 	{
-		// 3��Ī ī�޶� Ȱ��ȭ
-		if (FPPCamera && TPPCamera) // Null üũ
+		// 3인칭 카메라 활성화
+		if (FPPCamera && TPPCamera)
 		{
 			TPPCamera->SetActive(true);
 			FPPCamera->SetActive(false);
@@ -199,21 +198,21 @@ void AGnuMyCharacter::SetCamera()
 }
 
 
-// ------------------------ ī�޶� ���� �� �ƿ� -----------------------
+// ------------------------ 카메라 줌인 줌 아웃 -----------------------
 void AGnuMyCharacter::ZoomInUpdate(float Alpha)
 {
 	float NewArmLength = 0.0f;
 
-	// Lerp : �� �� ���̸� ���������� �����ϴ� �Լ�
-	// Alpha : 0 ~ 1���� ������ ������ �󸶳� ����Ǿ����� ��Ÿ��
+	// Lerp : 두 값 사이를 선형적으로 보간하는 함수
+	// Alpha : 0 ~ 1사이 값으로 보간이 얼마나 진행되었는지 나타냄
 	NewArmLength = FMath::Lerp(350.0f, 150.0f, Alpha);
 	FVector StartOffset(0.0f, 80.0f, 40.0f);
 	FVector EndOffset(0.0f, 80.0f, 60.0f);
 
-	// CameraBoom�� StartOffset�� ������Ʈ
+	// CameraBoom의 StartOffset을 업데이트
 	FVector NewSocketOffset = FMath::Lerp(StartOffset, EndOffset, Alpha);
 	CameraBoom->SocketOffset = NewSocketOffset;
-	// CameraBoom�� TargetArmLength�� ������Ʈ
+	// CameraBoom의 TargetArmLength를 업데이트
 	CameraBoom->TargetArmLength = NewArmLength;
 }
 
@@ -224,18 +223,18 @@ void AGnuMyCharacter::ZoomInFinished()
 
 void AGnuMyCharacter::SetZoomIn()
 {
-	isZoomIn = !isZoomIn; // ���� ���¸� ������Ŵ
+	isZoomIn = !isZoomIn; // 현재 상태를 반전시킴
 
 	if (isZoomIn)
 	{
-		if (ZoomInCurve) // Null üũ
+		if (ZoomInCurve) // Null 체크
 		{
 			ZoomInTimeline.PlayFromStart();
 		}
 	}
 	else
 	{
-		if (ZoomInCurve) // Null üũ
+		if (ZoomInCurve)
 		{
 			ZoomInTimeline.ReverseFromEnd();
 		}
@@ -245,16 +244,15 @@ void AGnuMyCharacter::SetZoomIn()
 
 
 // ----------------------------------------- Sprint Replicate-----------------------------------
-void AGnuMyCharacter::ServerSprintStart_Implementation() // Ŭ���̾�Ʈ���� ������Ʈ ���� ��û�� ������ �������� ServerSprintStart_Implementation�� ����
+void AGnuMyCharacter::ServerSprintStart_Implementation() // 클라이언트에서 스프린트 시작 요청을 보내면 서버에서 ServerSprintStart_Implementation이 실행
 {
 	StopFire();
-	UpdateSprintState(true); //  �� �Լ��� ���������� ����
-	// ������ ��Ʈ��ũ���� ������ �� �ֵ��� ����
+	UpdateSprintState(true); //  이 함수는 서버에서만 실행
 }
 
 bool AGnuMyCharacter::ServerSprintStart_Validate()
 {
-	return true; // �ʿ��� ��ȿ�� �˻� ������ ���⿡ �߰�
+	return true;  // 필요한 유효성 검사 로직을 여기에 추가
 }
 
 void AGnuMyCharacter::ServerSprintEnd_Implementation()
@@ -264,12 +262,12 @@ void AGnuMyCharacter::ServerSprintEnd_Implementation()
 
 bool AGnuMyCharacter::ServerSprintEnd_Validate()
 {
-	return true; // �ʿ��� ��ȿ�� �˻� ������ ���⿡ �߰�
+	return true; // 필요한 유효성 검사 로직을 여기에 추가
 }
 
-void AGnuMyCharacter::ClientSprintStart_Implementation() // Ŭ���̾�Ʈ�� ��� �ݿ��ϴ� ��������� ���� - Ŭ���̾�Ʈ �ϰ����� ������
+void AGnuMyCharacter::ClientSprintStart_Implementation() // 클라이언트에 즉시 반영하는 방식이지만 서버 - 클라이언트 일관성이 떨어짐
 {
-	// �ּ��� Ǯ�� Ŭ���̾�Ʈ���� ������Ʈ ���¸� ������ �ݿ��� �� ������, �� ����� ������ ������ ��ٸ��� �ʱ� ������ ������ Ŭ���̾�Ʈ�� �ϰ����� ������ �� ����
+	// 주석을 풀면 클라이언트에서 스프린트 상태를 빠르게 반영할 수 있지만, 이 방식은 서버의 명령을 기다리지 않기 때문에 서버와 클라이언트의 일관성이 떨어질 수 있음
 	// UpdateSprintState(true);
 }
 
@@ -279,11 +277,11 @@ void AGnuMyCharacter::ClientSprintEnd_Implementation()
 	// UpdateSprintState(false);
 }
 
-void AGnuMyCharacter::OnRep_IsSprinting() 	// Ŭ���̾�Ʈ�� ����ȭ �Ǵ� �Լ� -> �������� isSprint ���� ����� �� Ŭ���̾�Ʈ���� �� ��ȭ�� �����ϰ� ����Ǵ� �Լ� (��, ������ �����ϴ� ������Ʈ ���¸� Ŭ���̾�Ʈ�� ����ȭ �ϴ� ���)
+void AGnuMyCharacter::OnRep_IsSprinting()// 클라이언트가 동기화 되는 함수 -> 서버에서 isSprint 값이 변경될 때 클라이언트에서 그 변화를 감지하고 실행되는 함수 (즉, 서버가 관리하는 스프린트 상태를 클라이언트가 동기화 하는 방식)
 {
-	// Client�� Implementation �Լ������� �ᵵ ������ ����� �۵��ȴ�.
-	// -> �ٸ� Clint �Լ� ���ο��� ����ϸ� �� �� ���� �ӵ��� ���� �ݸ�, OnRep �Լ����� ���� ������ Ŭ���̾�Ʈ���� �ϰ����� ������ �� �ִ�.
-	UpdateSprintState(isSprint); // ������Ʈ ���°� ����� ���� Ŭ���̾�Ʈ���� �ݿ�
+	// Client의 Implementation 함수에서만 써도 동일한 기능이 작동된다.
+	// -> 다만 Clint 함수 내부에서 사용하면 좀 더 반응 속도가 빠른 반면, OnRep 함수에서 쓰면 서버와 클라이언트간의 일관성을 유지할 수 있다.
+	UpdateSprintState(isSprint); // 스프린트 상태가 변경된 것을 클라이언트에서 반영
 }
 
 void AGnuMyCharacter::UpdateSprintState(bool bIsSprinting)
@@ -296,7 +294,7 @@ void AGnuMyCharacter::UpdateSprintState(bool bIsSprinting)
 	}
 	else
 	{
-		GetCharacterMovement()->MaxWalkSpeed = DefaultSpeed; // �⺻ �ӵ� ����
+		GetCharacterMovement()->MaxWalkSpeed = DefaultSpeed; // 기본 속도 설정
 	}
 }
 
@@ -311,7 +309,7 @@ void AGnuMyCharacter::ServerCrouchStart_Implementation()
 
 bool AGnuMyCharacter::ServerCrouchStart_Validate()
 {
-	return true; // �ʿ��� ��ȿ�� �˻� ������ ���⿡ �߰�
+	return true;
 }
 
 void AGnuMyCharacter::ServerCrouchEnd_Implementation()
@@ -321,7 +319,7 @@ void AGnuMyCharacter::ServerCrouchEnd_Implementation()
 
 bool AGnuMyCharacter::ServerCrouchEnd_Validate()
 {
-	return true; // �ʿ��� ��ȿ�� �˻� ������ ���⿡ �߰�
+	return true;
 }
 
 void AGnuMyCharacter::ClientCrouchStart_Implementation()
@@ -334,7 +332,7 @@ void AGnuMyCharacter::ClientCrouchEnd_Implementation()
 
 void AGnuMyCharacter::OnRep_IsCrouching()
 {
-	// �ɱ� ���¿� ���� ���� ����
+	// 앉기 상태에 따라 조절
 	if (isCrouch)
 	{
 		Crouch();
@@ -348,26 +346,27 @@ void AGnuMyCharacter::OnRep_IsCrouching()
 
 
 // --------------------------------- Dodge Replicate ------------------------------------
-void AGnuMyCharacter::ServerMontageOnDodge_Implementation(float Forward, float Right) // �������� ������ �ִϸ��̼��� ó���ϴ� �Լ�
+void AGnuMyCharacter::ServerMontageOnDodge_Implementation(float Forward, float Right)// 서버에서 구르기 애니메이션을 처리하는 함수
 {
 	if (isDodge)
 	{
-		// ������ �߿� �ٽ� ȣ���ϸ� ����
+		// 구르기 중에 다시 호출하면 중지
 		return;
 	}
 
 	isReload = false;
-	// ��Ÿ�� ����
+
+	// 몽타주 설정
 	SetDodgeMontage(Forward, Right);
 
-	// ��Ÿ�ְ� ��ȿ�� ��� ���
+	// 몽타주가 유효한 경우 재생
 	if (DodgeMontage)
 	{
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 
 		PlayAnimMontage(DodgeMontage);
 		UpdateStamina(-10.f);
-		// ��Ƽĳ��Ʈ ȣ��
+		// 멀티캐스트 호출
 		MultiCastMontage_Dodge(Forward, Right);
 	}
 }
@@ -377,7 +376,7 @@ bool AGnuMyCharacter::ServerMontageOnDodge_Validate(float Forward, float Right)
 	return true; // ���� ������ �ʿ��ϸ� �߰�
 }
 
-void AGnuMyCharacter::MultiCastMontage_Dodge_Implementation(float Forward, float Right) // ��� Ŭ���̾�Ʈ���� ������ ������ �ִϸ��̼��� ����ϵ��� �ϴ� ��Ƽĳ��Ʈ �Լ�. Ŭ���̾�Ʈ�� ���� ���� ����ȭ�� ���� ���
+void AGnuMyCharacter::MultiCastMontage_Dodge_Implementation(float Forward, float Right) // 모든 클라이언트에서 동일한 구르기 애니메이션을 재생하도록 하는 멀티캐스트 함수. 클라이언트와 서버 간의 동기화를 위해 사용
 {
 	if (isDodge)
 	{
@@ -385,10 +384,10 @@ void AGnuMyCharacter::MultiCastMontage_Dodge_Implementation(float Forward, float
 		return;
 	}
 
-	// ��Ÿ�� ����
+	// 몽타주 설정
 	SetDodgeMontage(Forward, Right);
 
-	// ��Ÿ�ְ� ��ȿ�� ��� ���
+	// 몽타주가 유효한 경우 재생
 	if (DodgeMontage)
 	{
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
@@ -403,16 +402,16 @@ void AGnuMyCharacter::SetDodgeMontage(float Forward, float Right)
 
 	if (Forward == 0)
 	{
-		// Forward�� 0�� ���, Right�� Ȯ��
+		// Forward가 0인 경우, Right를 확인
 		if (Right != 0)
 		{
-			// Right�� 0���� ũ�� DiveRoll_R_Montage, �׷��� ������ DiveRoll_L_Montage ����
+			// Right가 0보다 크면 DiveRoll_R_Montage, 그렇지 않으면 DiveRoll_L_Montage 저장
 			DodgeMontage = (Right > 0) ? DiveRoll_R_Montage : DiveRoll_L_Montage;
 		}
 	}
 	else
 	{
-		// Forward�� 0���� ũ�� DiveRoll_F_Montage, �׷��� ������ DiveRoll_B_Montage ����
+		// Forward가 0보다 크면 DiveRoll_F_Montage, 그렇지 않으면 DiveRoll_B_Montage 저장
 		DodgeMontage = (Forward > 0) ? DiveRoll_F_Montage : DiveRoll_B_Montage;
 	}
 }
@@ -641,15 +640,6 @@ bool AGnuMyCharacter::GetIsSprinting() const
 	return isSprint;
 }
 
-/* ----------- ���� - Ŭ���̾�Ʈ ����ȭ ���� -------------------
-< ���ø����̼� ��� >
-������Ʈ: isSprint ������ �������� �����ϰ�, �� ���� ������ OnRep_IsSprinting�� ���� Ŭ���̾�Ʈ�� �˸��� ����. �� Ŭ���̾�Ʈ�� �����κ��� ���������� ���¸� ����ȭ����
-������ : isDodge ������ �ܼ� ���� ǥ�ÿ��̰�, ������ �ִϸ��̼��� ������ �� �� ó���ϰ� ��� Ŭ���̾�Ʈ���� ���� ����ǰԲ� ��Ƽĳ��Ʈ�� ���ĵ�
-
-< �Լ� ȣ�� ��� >
-������Ʈ: Ŭ���̾�Ʈ�� ������ ��û�� ������, ������ ���� Ŭ���̾�Ʈ���� �ٽ� ���¸� �����ϴ� ����� ��� ���
-������ : Ŭ���̾�Ʈ�� ������ ��û�ϸ�, ������ ��� Ŭ���̾�Ʈ�� ���ÿ� ����� �����ϴ� �� ���� ���� ���
-*/
 //--------------------------- Arrow Skill --------------------------------
 void AGnuMyCharacter::SpawnHeal()
 {
@@ -683,11 +673,11 @@ void AGnuMyCharacter::SpawnHeal()
 // -------------------------------------------------------------------------
 
 
-//--------------------------- HP Update --------------------------------
+
 void AGnuMyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
+	// 변수를 네트워크에서 복제할 수 있도록 설정
 	DOREPLIFETIME(AGnuMyCharacter, isSprint);
 	DOREPLIFETIME(AGnuMyCharacter, isCrouch);
 	DOREPLIFETIME(AGnuMyCharacter, CurHP);
@@ -696,19 +686,19 @@ void AGnuMyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 }
 
 
-
+//--------------------------- HP Update --------------------------------
 void AGnuMyCharacter::OnRep_CurHP()
 {
-	// HP�� ����Ǹ� UI�� �ݿ�
+	// HP가 변경되면 UI에 반영
 	UpdateUIHealthAndStamina();
 }
 
 void AGnuMyCharacter::UpdateHealth(float NewHP)
 {
-	CurHP = FMath::Clamp(CurHP + NewHP, 0.0f, MaxHP); // HP�� 0�� MaxHP ���̷� Ŭ����
+	CurHP = FMath::Clamp(CurHP + NewHP, 0.0f, MaxHP); // HP를 0과 MaxHP 사이로 클램핑
 	FString HPMessage = FString::Printf(TEXT("Current HP: %f"), CurHP);
 	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, HPMessage);
-	// �������� HP ������Ʈ �� UI ������Ʈ
+	// 서버에서 HP 업데이트 시 UI 업데이트
 	if (HasAuthority())
 	{
 		OnRep_CurHP();
@@ -725,8 +715,8 @@ void AGnuMyCharacter::UpdateStamina(float NewStamina)
 
 void AGnuMyCharacter::UpdateUIHealthAndStamina()
 {
-	// UI �������� ȣ��� �Լ���, Health�� Stamina �ٸ� ������Ʈ
-	// ���⿡ UGnuCharacterBaseWidget�� �����ϴ� �ڵ带 ������ �˴ϴ�.
+	// UI 위젯에서 호출될 함수로, Health와 Stamina 바를 업데이트
+	// 여기에 UGnuCharacterBaseWidget을 연결하는 코드를 넣으면 됩니다.
 	if (CharacterHealthWidget)
 	{
 		CharacterHealthWidget->UpdateHealthBar(CurHP, MaxHP);
@@ -769,6 +759,7 @@ void AGnuMyCharacter::OnRep_Stamina()
 {
 	
 }
+// -------------------------------------------------------------------------
 
 void AGnuMyCharacter::ClientSetName_Implementation(const FString& Name)
 {
@@ -792,15 +783,12 @@ void AGnuMyCharacter::ServerSetPlayerName_Implementation(const FString& PlayerNa
 }
 
 
-// -------------------------------------------------------------------------
+/* ----------- 서버 - 클라이언트 동기화 설명 -------------------
+< 리플리케이션 방식 >
+스프린트: isSprint 변수를 서버에서 관리하고, 그 변동 사항을 OnRep_IsSprinting을 통해 클라이언트에 알리는 구조. 각 클라이언트가 서버로부터 개별적으로 상태를 동기화받음
+구르기 : isDodge 변수는 단순 상태 표시용이고, 구르기 애니메이션은 서버가 한 번 처리하고 모든 클라이언트에서 동시 실행되게끔 멀티캐스트로 전파됨
 
-
-/* ----------- ���� - Ŭ���̾�Ʈ ����ȭ ���� -------------------
-< ���ø����̼� ��� >
-������Ʈ: isSprint ������ �������� �����ϰ�, �� ���� ������ OnRep_IsSprinting�� ���� Ŭ���̾�Ʈ�� �˸��� ����. �� Ŭ���̾�Ʈ�� �����κ��� ���������� ���¸� ����ȭ����
-������ : isDodge ������ �ܼ� ���� ǥ�ÿ��̰�, ������ �ִϸ��̼��� ������ �� �� ó���ϰ� ��� Ŭ���̾�Ʈ���� ���� ����ǰԲ� ��Ƽĳ��Ʈ�� ���ĵ�
-
-< �Լ� ȣ�� ��� >
-������Ʈ: Ŭ���̾�Ʈ�� ������ ��û�� ������, ������ ���� Ŭ���̾�Ʈ���� �ٽ� ���¸� �����ϴ� ����� ��� ���
-������ : Ŭ���̾�Ʈ�� ������ ��û�ϸ�, ������ ��� Ŭ���̾�Ʈ�� ���ÿ� ������ �����ϴ� �� ���� ���� ���
+< 함수 호출 방식 >
+스프린트: 클라이언트가 서버에 요청을 보내면, 서버는 개별 클라이언트에게 다시 상태를 전파하는 양방향 통신 방식
+구르기 : 클라이언트가 서버에 요청하면, 서버가 모든 클라이언트에 동시에 명령을 전파하는 한 번의 전파 방식
 ------------------------------------------------------------- */

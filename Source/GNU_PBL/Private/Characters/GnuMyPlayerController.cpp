@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Characters/GnuMyPlayerController.h"
-#include "Characters/GnuMyCharacter.h" // GnuMyChracter�Լ� ȣ������ ���
+#include "Characters/GnuMyCharacter.h"
 #include "Characters/GnuMyAnimInstance.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
