@@ -20,6 +20,7 @@
 AGnuMyPlayerController::AGnuMyPlayerController()
 {
 	bReplicates = true;
+	SetReplicateMovement(true);
 
 	CurrentMoveDirection = { 0.0f, 0.0f }; // 구르기 방향 결정에 사용
 	// 생성자 정의

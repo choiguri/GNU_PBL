@@ -70,6 +70,7 @@ AGnuMyCharacter::AGnuMyCharacter()
 	isCrouch = false;
 	isZoomIn = false;
 	DodgeMontage = nullptr;
+	SetReplicateMovement(true);
 	
 	// -------------------- CrossHair create -----------------
 	static ConstructorHelpers::FClassFinder<UUserWidget> CrossHairFinder(TEXT("/Game/GNU/weapon/UI_CrossHair.UI_CrossHair_C"));

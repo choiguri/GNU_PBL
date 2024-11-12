@@ -105,6 +105,7 @@ private:
 	UAmmoDisplay* AmmoDisplay;
 
 
+	UPROPERTY()
 	FTimerHandle FireTimerHandle;  // Ÿ�̸� �ڵ� ���� �߰�
 
 	 // �߻� ��� ���� �Լ�

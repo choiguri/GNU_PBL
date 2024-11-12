@@ -31,13 +31,22 @@ AGun::AGun()
 	{
 		Mesh->SetAnimInstanceClass(AnimBP.Object->GeneratedClass);
 	}
-}
+	bReplicates = true;
+	SetReplicateMovement(true);
+} 
 
 void AGun::PullTrigger()
 {
 	if (!GetWorld()->GetTimerManager().IsTimerActive(FireTimerHandle))
 	{
 		GetWorld()->GetTimerManager().SetTimer(FireTimerHandle, this, &AGun::Fire, 60.0 / RPM, true, 0.f);
+		if (HasAuthority())
+		{
+			if (GEngine)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("zzzz")));
+			}
+		}
 	}
 }
 
