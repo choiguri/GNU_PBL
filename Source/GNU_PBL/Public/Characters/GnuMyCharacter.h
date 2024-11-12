@@ -6,6 +6,7 @@
 #include "Characters/GnuBaseCharacter.h"
 #include "Components/TimelineComponent.h" // FTimeline
 
+
 #include "GameFramework/PlayerState.h"
 #include "GnuMyCharacter.generated.h"
 
@@ -272,10 +273,24 @@ public:
 	//
 	void Elim();
 
+	UFUNCTION(Server, Reliable)
+	void ServerFire();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiCastFire();
+
+	UFUNCTION(Server, Reliable)
+	void ServerStopFire();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiCastStopFire();
+
 protected:
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
 	
 	void UpdateHUDHealth();
 	void UpdateHUDStamina();
+
+	
 };

@@ -478,6 +478,7 @@ void AGnuMyCharacter::MultiCastMontage_Reload_Implementation() // ï¿½ï¿½ï¿½ Å¬ï¿
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 
 		PlayAnimMontage(Reload_Montage);
+
 	}
 }
 
@@ -528,9 +529,21 @@ void AGnuMyCharacter::StopAiming()
 
 void AGnuMyCharacter::Fire()
 {
+	
+	ServerFire();
+
+}
+
+void AGnuMyCharacter::ServerFire_Implementation()
+{
+	MultiCastFire();
+}
+
+void AGnuMyCharacter::MultiCastFire_Implementation()
+{
 	if (GetController() != nullptr)
 	{
-		if (!(isReload || isDodge)) 
+		if (!(isReload || isDodge))
 		{
 			if (isSprint) {
 				UpdateSprintState(false);
@@ -549,6 +562,16 @@ void AGnuMyCharacter::Fire()
 
 void AGnuMyCharacter::StopFire()
 {
+	ServerStopFire();
+}
+
+void AGnuMyCharacter::ServerStopFire_Implementation()
+{
+	MultiCastStopFire();
+}
+
+void AGnuMyCharacter::MultiCastStopFire_Implementation()
+{
 	if (GetController() != nullptr)
 	{
 		if (isReload != true) {
@@ -561,7 +584,6 @@ void AGnuMyCharacter::StopFire()
 		Gun->ReleaseTrigger();
 	}
 }
-
 
 
 void AGnuMyCharacter::Interact()
@@ -734,6 +756,8 @@ void AGnuMyCharacter::UpdateUIHealthAndStamina()
 	}
 }
 
+
+
 void AGnuMyCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
 {
 	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
@@ -759,6 +783,8 @@ void AGnuMyCharacter::UpdateHUDStamina()
 		GNUPlayerController->SetHUDStamina(Stamina, MaxStaminaa);
 	}
 }
+
+
 
 void AGnuMyCharacter::OnRep_Health()
 {

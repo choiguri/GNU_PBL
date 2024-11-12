@@ -11,6 +11,8 @@
 #include "DrawDebugHelpers.h"
 #include <Characters/GnuMyCharacter.h>
 
+#include "Animation/AnimationAsset.h"
+
 // Sets default values
 AGun::AGun()
 {
@@ -51,6 +53,10 @@ void AGun::Fire()
 {	
 	if (RemainAmmo > 0)
 	{
+		if (FireAnimation)
+		{
+			Mesh->PlayAnimation(FireAnimation, false);
+		}
 		
 		UGameplayStatics::SpawnEmitterAttached(MuzzleFlash, Mesh, TEXT("MuzzleFlashSocket"));
 
@@ -113,6 +119,7 @@ void AGun::Fire()
 	}
 	UpdateAmmoDisplay();
 }
+
 
 float AGun::GetRecoilOffset()
 {
@@ -249,6 +256,8 @@ void AGun::BeginPlay()
 	}
 	
 }
+
+
 
 // Called every frame
 void AGun::Tick(float DeltaTime)

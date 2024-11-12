@@ -21,6 +21,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -57,6 +58,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	UAnimMontage* Reload_Montage;
 	
+	UFUNCTION()
+	void Fire();
 
 private:
 	UPROPERTY(VisibleAnywhere)
@@ -104,9 +107,9 @@ private:
 
 	FTimerHandle FireTimerHandle;  // Ÿ�̸� �ڵ� ���� �߰�
 
-	UFUNCTION()
-	void Fire();  // �߻� ��� ���� �Լ�
+	 // �߻� ��� ���� �Լ�
 
-
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	class UAnimationAsset* FireAnimation;
 
 };

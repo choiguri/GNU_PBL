@@ -200,6 +200,10 @@ void AGnuMyPlayerController::CheckTimeSync(float DeltaTime)
 	}
 }
 
+
+
+
+
 // 서버와 클라이언트 사이의 RoundTripTime 계산 하기 위한 함수들
 // 클라이언트가 요청하고 서버에 도착하는 시간, 서버에서 클라이언트로 응답하는 시간
 // 두 개를 합쳐서 RTT, 하지만 두 개가 같지는 않아서 RTT / 2 가 각각의 시간이라고 장담하지는 못한다.

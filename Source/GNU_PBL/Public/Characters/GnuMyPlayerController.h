@@ -62,6 +62,7 @@ protected:
 	float TimeSyncRunningTime = 0.0f;
 	void CheckTimeSync(float DeltaTime);
 
+
 private:
 	UPROPERTY(EditAnywhere, Category = "input")
 	TObjectPtr<UInputMappingContext> MyCharacterContext;
