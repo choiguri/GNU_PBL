@@ -38,6 +38,12 @@ void UGnuMonsterAnimInstance::PlayMontage(UAnimMontage* MontageToPlay)
         return;
     }
 
+    if (bIsDead)
+    {
+        bIsMontageEnded = false;
+        return;
+    }
+
     if (bIsMontageEnded)
     {
         Montage_Play(MontageToPlay);
@@ -87,6 +93,11 @@ void UGnuMonsterAnimInstance::PlayClawAttackMontage()
 void UGnuMonsterAnimInstance::PlayTailAttackMontage()
 {
     PlayMontage(TailAttackMontage);
+}
+
+void UGnuMonsterAnimInstance::PlayGroundAttackMontage()
+{
+    PlayMontage(GroundAttackMontage);
 }
 
 void UGnuMonsterAnimInstance::PlayDieMontage()

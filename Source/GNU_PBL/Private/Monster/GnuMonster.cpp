@@ -2,6 +2,8 @@
 
 
 #include "Monster/GnuMonster.h"
+#include "Monster/GnuMonsterAnimInstance.h"
+#include "Monster/GnuMonsterAIController.h"
 // 보스 공격 관련
 #include "Monster/AttackActor/GnuFireballActor.h"
 #include "Monster/AttackActor/GnuFiretornadoActor.h"
@@ -10,13 +12,15 @@
 #include "Weapons/Bullet.h"
 // 위젯
 #include "Monster/Widget/GnuMonsterHealthBase.h"
-
+// 라이브러리 함수
+#include "Materials/MaterialInstanceDynamic.h"
 #include "Characters/GnuMyCharacter.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/BoxComponent.h"
 #include "Animation/AnimNotifies/AnimNotify.h"
 #include "Animation/AnimMontage.h"
 #include "Animation/AnimInstance.h"
-#include "TimerManager.h" // 타이머 사용을 위한 헤더 추가
+#include "TimerManager.h"				// 타이머 사용을 위한 헤더 추가
 #include "GameFramework/CharacterMovementComponent.h"
 #include <Net/UnrealNetwork.h>
 
@@ -52,8 +56,6 @@ AGnuMonster::AGnuMonster()
 	TailCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	TailCollision->bEditableWhenInherited = true; // 블루프린트 값이 우선되게 함
 	TailCollision->OnComponentBeginOverlap.AddDynamic(this, &AGnuMonster::OnTailOverlapBegin);
-
-
 }
 
 void AGnuMonster::BeginPlay()
@@ -75,7 +77,17 @@ void AGnuMonster::BeginPlay()
 		OnTakeAnyDamage.AddDynamic(this, &AGnuMonster::ReceiveDamage);
 	}
 	
-	
+	// Dynamic Material Instance 생성
+	UMaterialInterface* Material_1st = GetMesh()->GetMaterial(0);  // 첫 번째 머티리얼 인덱스 사용
+	UMaterialInterface* Material_2nd = GetMesh()->GetMaterial(1);  // 두 번째 머티리얼 인덱스 사용
+	if (Material_1st && Material_2nd)
+	{
+		DynamicMaterialInst_1st = UMaterialInstanceDynamic::Create(Material_1st, this);
+		GetMesh()->SetMaterial(0, DynamicMaterialInst_1st);
+
+		DynamicMaterialInst_2nd = UMaterialInstanceDynamic::Create(Material_2nd, this);
+		GetMesh()->SetMaterial(1, DynamicMaterialInst_2nd);
+	}
 }
 
 
@@ -148,7 +160,6 @@ void AGnuMonster::OnRep_Health()
 }
 
 
-
 void AGnuMonster::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	DOREPLIFETIME(AGnuMonster, CurrentHealth);
@@ -163,6 +174,32 @@ void AGnuMonster::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamag
 	}
 
 	CurrentHealth = FMath::Clamp(CurrentHealth - Damage, 0.f, MaxHealth);
+
+	// 머티리얼의 이미시브 색상 변경
+	if (DynamicMaterialInst_1st && DynamicMaterialInst_2nd)
+	{
+		// 머티리얼의 첫번째 두번째 인덱스 찾아서 EmissiveColor 라는 이름을 찾으면 그 값을 변경
+		// VectorParam을 이용해서 변경
+		DynamicMaterialInst_1st->SetVectorParameterValue(FName("EmissiveColor"), FLinearColor(0.05f, 0.0f, 0.0f));  // 빨간색
+		DynamicMaterialInst_2nd->SetVectorParameterValue(FName("EmissiveColor"), FLinearColor(0.05f, 0.0f, 0.0f));  // 빨간색
+
+		// 타이머로 원래 색상으로 복원
+		FTimerHandle TimerHandle_1st;
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle_1st, [this]() {
+			if (DynamicMaterialInst_1st)
+			{
+				DynamicMaterialInst_1st->SetVectorParameterValue(FName("EmissiveColor"), FLinearColor(0.0f, 0.0f, 0.0f));  // 기본값 (검정색)
+			}
+			}, 0.05f, false);
+
+		FTimerHandle TimerHandle_2nd;
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle_2nd, [this]() {
+			if (DynamicMaterialInst_2nd)
+			{
+				DynamicMaterialInst_2nd->SetVectorParameterValue(FName("EmissiveColor"), FLinearColor(0.0f, 0.0f, 0.0f));  // 기본값 (검정색)
+			}
+			}, 0.05f, false);
+	}
 
 	if (MonsterHealthWidget)
 	{
@@ -239,14 +276,29 @@ void AGnuMonster::KnockbackPlayer(AGnuMyCharacter* PlayerCharacter)
 void AGnuMonster::Die()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Black, TEXT("Boss has died!"));
+
+	// 몬스터 죽었을 때 메시의 충돌 비활성화
+	if (USkeletalMeshComponent* SkeletalMesh = GetMesh())
+	{
+		SkeletalMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+
+	// 몬스터 죽었을 때 캡슐 컴포넌트 충돌 비활성화
+	if (UCapsuleComponent* CapsuleComp = GetCapsuleComponent())
+	{
+		CapsuleComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+
 	
 	UGnuMonsterAnimInstance* AnimInstance = Cast<UGnuMonsterAnimInstance>(this->GetMesh()->GetAnimInstance());
 	if (AnimInstance)
-	{
+	{	
+		// 죽음 상태 설정
 		AnimInstance->bIsDead = true;
-		AnimInstance->PlayDieMontage();
+		AnimInstance->bIsMontageEnded = false;
+		AnimInstance->Montage_Play(AnimInstance->DragonDieMontage);
 
-		// 몽타주가 종료되었는지 확인 후 10초 후에 Destroy 호출
+		// 몽타주가 종료되었는지 확인 후 Destroy 호출
 		if (AnimInstance->bIsDead)
 		{
 			// 12초 타이머 설정

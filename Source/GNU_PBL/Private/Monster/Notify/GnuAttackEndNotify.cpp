@@ -2,6 +2,7 @@
 
 
 #include "Monster/Notify/GnuAttackEndNotify.h"
+#include "Monster/AttackActor/GnuFirebreathActor.h"
 #include "Monster/GnuMonster.h"
 #include "Monster/GnuMonsterAnimInstance.h"
 
@@ -25,10 +26,10 @@ void UGnuAttackEndNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequence
                 Monster->DeactivateTailCollision(); // 테일 공격 종료 로직
                 GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, TEXT("Tail Collision Deactivate"));
             }
-            else if (AnimInstance->Montage_IsPlaying(AnimInstance->DragonDieMontage))
+            else if (AnimInstance->Montage_IsPlaying(AnimInstance->FirebreathAttackMontage))
             {
-                AnimInstance->Montage_Pause(AnimInstance->DragonDieMontage);
-                GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, TEXT("Die Montage Pause"));
+                Monster->FirebreathActor->DestroyFirebreath();  // 소환된 브레스 액터 삭제
+                Monster->FirebreathActor = nullptr;             // 참조 초기화
             }
         }
     }

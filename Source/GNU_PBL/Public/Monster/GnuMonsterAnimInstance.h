@@ -19,7 +19,7 @@ public:
 
     // 몽타주가 끝난 상태인지 확인을 위한 변수
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Montage")
-    bool bIsMontageEnded = false;
+    bool bIsMontageEnded = true;
 
     // 죽음 상태인지 확인을 위한 변수
     UPROPERTY(BlueprintReadOnly, Category = "State")
@@ -38,20 +38,23 @@ public:
 
 
     // 애니메이션 몽타주 공격 지정
-    UPROPERTY(EditDefaultsOnly, Category = "Montage")
+    UPROPERTY(EditDefaultsOnly, Category = "Attack")
     UAnimMontage* FireballAttackMontage;
 
-    UPROPERTY(EditDefaultsOnly, Category = "Montage")
+    UPROPERTY(EditDefaultsOnly, Category = "Attack")
     UAnimMontage* FlyingAttackMontage;
 
-    UPROPERTY(EditDefaultsOnly, Category = "Montage")
+    UPROPERTY(EditDefaultsOnly, Category = "Attack")
     UAnimMontage* FirebreathAttackMontage;
 
-    UPROPERTY(EditDefaultsOnly, Category = "Montage")
+    UPROPERTY(EditDefaultsOnly, Category = "Attack")
     UAnimMontage* ClawAttackMontage;
 
-    UPROPERTY(EditDefaultsOnly, Category = "Montage")
+    UPROPERTY(EditDefaultsOnly, Category = "Attack")
     UAnimMontage* TailAttackMontage;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Attack")
+    UAnimMontage* GroundAttackMontage;
 
     // 그 외 몽타주 지정
     UPROPERTY(EditDefaultsOnly, Category = "Montage")
@@ -96,6 +99,9 @@ public:
 
     UFUNCTION(BlueprintCallable)
     void PlayTailAttackMontage();
+
+    UFUNCTION(BlueprintCallable)
+    void PlayGroundAttackMontage();
 
     // 죽었을 때 몽타주 처리
     UFUNCTION(BlueprintCallable)

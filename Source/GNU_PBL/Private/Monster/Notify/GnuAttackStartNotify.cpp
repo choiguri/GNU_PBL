@@ -25,6 +25,13 @@ void UGnuAttackStartNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequen
                 Monster->ActivateTailCollision(); // 테일 공격 콜리전 활성화
                 GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, TEXT("Tail Collision Activate"));
             }
+            else if (AnimInstance->Montage_IsPlaying(AnimInstance->FirebreathAttackMontage))
+            {
+                if (Monster->FirebreathActor == nullptr)
+                {
+                    Monster->SpawnFirebreath();  // 몬스터가 파이어브레스를 발사하는 함수
+                }
+            }
         }
     }
 }

@@ -88,6 +88,11 @@ private:
 	// 페이즈 2 여부 확인
 	bool bIsPhaseTwo = false;
 
+	// 머터리얼 인스턴스 다이나믹으로 선언
+	UMaterialInstanceDynamic* DynamicMaterialInst_1st;
+	UMaterialInstanceDynamic* DynamicMaterialInst_2nd;
+
+
 	// 충돌 처리 함수
 	//UFUNCTION()	// 몬스터가 맞았는지
 	//void OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
