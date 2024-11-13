@@ -2,6 +2,7 @@
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "BrainComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Character.h"
 #include "Characters/GnuMyCharacter.h"
@@ -13,16 +14,7 @@ AGnuMonsterAIController::AGnuMonsterAIController()
     SetUpPerceptionComponent();
 
     // 팀 아이디 1로 지정
-    SetGenericTeamId(FGenericTeamId(1));
-
-    if (GetGenericTeamId() == FGenericTeamId(1))
-    {
-        UE_LOG(LogTemp, Warning, TEXT("Team ID successfully set to 1."));
-    }
-    else
-    {
-        UE_LOG(LogTemp, Warning, TEXT("Failed to set Team ID to 1. Current Team ID: %d"), GetGenericTeamId().GetId());
-    }
+    /*SetGenericTeamId(FGenericTeamId(1));*/
 
 }
 
@@ -75,19 +67,27 @@ void AGnuMonsterAIController::Tick(float DeltaSeconds)
     }
 }
 
-ETeamAttitude::Type AGnuMonsterAIController::GetTeamAttitudeTowards(const AActor& Other) const
+//ETeamAttitude::Type AGnuMonsterAIController::GetTeamAttitudeTowards(const AActor& Other) const
+//{
+//    const APawn* PawnToCheck = Cast<const APawn>(&Other);
+//
+//    const IGenericTeamAgentInterface* OtherTeamAgent = Cast<IGenericTeamAgentInterface>(PawnToCheck->GetController());
+//
+//    if (OtherTeamAgent && OtherTeamAgent->GetGenericTeamId() != GetGenericTeamId())
+//    {
+//        return ETeamAttitude::Hostile;
+//    }
+//    return ETeamAttitude::Friendly;
+//}
+
+
+void AGnuMonsterAIController::StopBehaviorTree()
 {
-    const APawn* PawnToCheck = Cast<const APawn>(&Other);
-
-    const IGenericTeamAgentInterface* OtherTeamAgent = Cast<IGenericTeamAgentInterface>(PawnToCheck->GetController());
-
-    if (OtherTeamAgent && OtherTeamAgent->GetGenericTeamId() != GetGenericTeamId())
+    if (BrainComponent)
     {
-        return ETeamAttitude::Hostile;
+        BrainComponent->StopLogic(TEXT("Monster Died"));
     }
-    return ETeamAttitude::Friendly;
 }
-
 
 // 인식 설정 함수
 void AGnuMonsterAIController::SetUpPerceptionComponent()
@@ -119,7 +119,7 @@ void AGnuMonsterAIController::SetUpPerceptionComponent()
 // 초기 타겟 지정
 void AGnuMonsterAIController::OnTargetDetected(AActor* Actor, FAIStimulus const Stimulus)
 {
-    if (!GetBlackboardComponent() || !Actor)
+    if (!GetBlackboardComponent() || !Actor || !Actor->IsValidLowLevel())
     {
         return;
     }
@@ -128,11 +128,11 @@ void AGnuMonsterAIController::OnTargetDetected(AActor* Actor, FAIStimulus const 
     if (Stimulus.WasSuccessfullySensed())
     {
         // SensedCharacter가 특정 클래스인지 확인
-        ACharacter* SensedCharacter = Cast<ACharacter>(Actor);
+        AGnuMyCharacter* SensedCharacter = Cast<AGnuMyCharacter>(Actor);
         if (SensedCharacter && SensedCharacter->IsA<AGnuMyCharacter>())
         {
             // 기존 타겟 가져오기
-            ACharacter* CurrentTarget = Cast<ACharacter>(GetBlackboardComponent()->GetValueAsObject(FName("TargetActor")));
+            AGnuMyCharacter* CurrentTarget = Cast<AGnuMyCharacter>(GetBlackboardComponent()->GetValueAsObject(FName("TargetActor")));
 
             // 기존 타겟이 없거나, 가장 가까운 플레이어를 찾기
             if (!CurrentTarget || IsCloser(SensedCharacter, CurrentTarget))

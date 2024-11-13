@@ -14,6 +14,7 @@
 #include "Monster/Widget/GnuMonsterHealthBase.h"
 // 라이브러리 함수
 #include "Materials/MaterialInstanceDynamic.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "Characters/GnuMyCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/BoxComponent.h"
@@ -277,6 +278,13 @@ void AGnuMonster::Die()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Black, TEXT("Boss has died!"));
 
+	// AIController에서 Behavior Tree 중지
+	AGnuMonsterAIController* AIController = Cast<AGnuMonsterAIController>(GetController());
+	if (AIController)
+	{
+		AIController->StopBehaviorTree();
+	}
+
 	// 몬스터 죽었을 때 메시의 충돌 비활성화
 	if (USkeletalMeshComponent* SkeletalMesh = GetMesh())
 	{
@@ -295,8 +303,7 @@ void AGnuMonster::Die()
 	{	
 		// 죽음 상태 설정
 		AnimInstance->bIsDead = true;
-		AnimInstance->bIsMontageEnded = false;
-		AnimInstance->Montage_Play(AnimInstance->DragonDieMontage);
+		AnimInstance->PlayDieMontage();
 
 		// 몽타주가 종료되었는지 확인 후 Destroy 호출
 		if (AnimInstance->bIsDead)

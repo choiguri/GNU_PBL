@@ -23,8 +23,12 @@ public:
 
 	virtual void Tick(float DeltaSecond) override;
 
+	// BehaviorTree 종료 함수 (몬스턱 죽었을 때 호출)
+	UFUNCTION()
+	void StopBehaviorTree();
+
 	//~ Begin IGenericTeamAgentInterface Interface.
-	virtual ETeamAttitude::Type GetTeamAttitudeTowards(const AActor& Other) const;
+	/*virtual ETeamAttitude::Type GetTeamAttitudeTowards(const AActor& Other) const;*/
 	//~ End IGenericTeamAgentInterface Interface
 
 protected:
@@ -45,6 +49,7 @@ protected:
 	UBehaviorTree* AIBehavior;
 
 
+	// 인식 관련 컴포넌트
 	void SetUpPerceptionComponent();
 
 	UFUNCTION()

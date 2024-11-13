@@ -38,13 +38,7 @@ void UGnuMonsterAnimInstance::PlayMontage(UAnimMontage* MontageToPlay)
         return;
     }
 
-    if (bIsDead)
-    {
-        bIsMontageEnded = false;
-        return;
-    }
-
-    if (bIsMontageEnded)
+    if (bIsMontageEnded || bIsDead)
     {
         Montage_Play(MontageToPlay);
         bIsMontageEnded = false;
