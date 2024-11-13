@@ -492,7 +492,7 @@ void AGnuMyPlayerController::ArrowSkill(const FInputActionValue& InputActionValu
 		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
 		if (MyCharacter)
 		{
-			MyCharacter->SpawnArrow(); // 캐릭터의 StopJumping 메서드 호출
+			MyCharacter->SpawnArrow();
 		}
 	}
 }

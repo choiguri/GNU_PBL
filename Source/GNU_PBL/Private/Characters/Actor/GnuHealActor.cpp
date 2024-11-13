@@ -29,49 +29,50 @@ void AGnuHealActor::BeginPlay()
 {
     Super::BeginPlay();
 
-    // 일정 시간마다 체력을 회복하도록 타이머 설정
-    GetWorld()->GetTimerManager().SetTimer(DamageHandle, this, &AGnuHealActor::HealOverTime, 3.0f, true);
-
-    // 5초 후에 힐 이펙트를 삭제하도록 타이머 설정
-    GetWorld()->GetTimerManager().SetTimer(DestructionTimerHandle, this, &AGnuHealActor::DestroyHeal, 10.0f, false);
-    GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Blue, FString::Printf(TEXT("HealNiagara Begin!!")));
 }
 
 void AGnuHealActor::Tick(float DeltaTime)
 {
     // Niagara 이펙트를 계속해서 캐릭터 위치에 맞춰 업데이트 (캐릭터와 함께 움직이도록)
+    // Overlap 된 캐릭터를 계속 추적하여 이펙트를 캐릭터 위치로 이동
+    if (AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(GetOwner()))
+    {
+        FVector CharacterLocation = MyCharacter->GetActorLocation();
+        SetActorLocation(CharacterLocation);  // 힐 이펙트를 캐릭터 위치로 이동
+    }
 }
 
 void AGnuHealActor::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-    // Overlap 시 Heal 시작
-    if (OtherActor && OtherActor->IsA(AGnuMyCharacter::StaticClass()))
-    {
-        if (OtherActor)
-        {
-            SetActorLocation(OtherActor->GetActorLocation());  // 캐릭터와 동일한 위치로 이펙트 이동
-        }
-        AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(OtherActor);
-        if (MyCharacter)
-        {
-            // 체력 회복 시작
-            GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("Healing started!")));
-        }
-    }
+    //// Overlap 시 Heal 시작
+    //if (OtherActor && OtherActor->IsA(AGnuMyCharacter::StaticClass()))
+    //{
+    //    if (OtherActor)
+    //    {
+    //        SetActorLocation(OtherActor->GetActorLocation());  // 캐릭터와 동일한 위치로 이펙트 이동
+    //        GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("SetActorLocation!")));
+    //    }
+    //    AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(OtherActor);
+    //    if (MyCharacter)
+    //    {
+    //        // 체력 회복 시작
+    //        GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("Healing started!")));
+    //    }
+    //}
 }
 
 void AGnuHealActor::EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-    // Overlap 끝날 때 Heal 중지
-    if (OtherActor && OtherActor->IsA(AGnuMyCharacter::StaticClass()))
-    {
-        AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(OtherActor);
-        if (MyCharacter)
-        {
-            // 체력 회복 중지
-            GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::Printf(TEXT("Healing stopped!")));
-        }
-    }
+    //// Overlap 끝날 때 Heal 중지
+    //if (OtherActor && OtherActor->IsA(AGnuMyCharacter::StaticClass()))
+    //{
+    //    AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(OtherActor);
+    //    if (MyCharacter)
+    //    {
+    //        // 체력 회복 중지
+    //        GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::Printf(TEXT("Healing stopped!")));
+    //    }
+    //}
 }
 
 void AGnuHealActor::HealOverTime()

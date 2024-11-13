@@ -471,7 +471,7 @@ void AGnuMyCharacter::SpawnHeal()
 	if (HealClass)
 	{
 	
-		FVector SpawnLocation = GetActorLocation() + FVector(0, 0, 100.0f);
+		FVector SpawnLocation = GetActorLocation() + FVector(0, 0, 500.0f);
 		FRotator SpawnRotation = GetActorRotation();
 
 		FTransform SpawnTransform(SpawnRotation, SpawnLocation);
@@ -480,6 +480,7 @@ void AGnuMyCharacter::SpawnHeal()
 
 		if (Heal)
 		{
+			Heal->SetOwner(this); // 이거 안해주면 GnuHealActor에서 onwer가 누군지 몰라서 오류가 난다
 			Heal->HealOverTime();
 		}
 		else
@@ -499,15 +500,56 @@ void AGnuMyCharacter::SpawnArrow()
 {
 	if (ArrowClass)
 	{
-		FVector SpawnLocation = Gun->GetMesh()->GetSocketLocation("MuzzleFlashSocket");
-		FRotator SpawnRotation = Gun->GetMesh()->GetSocketRotation("MuzzleFlashSocket");
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, FString::Printf(TEXT("SpawnArrow call!")));
+		/*FVector SpawnLocation = Gun->GetMesh()->GetSocketLocation("MuzzleFlashSocket");
+		FRotator SpawnRotation = Gun->GetMesh()->GetSocketRotation("MuzzleFlashSocket");*/
 
-		AGnuProjectileActor* Arrow = GetWorld()->SpawnActor<AGnuProjectileActor>(ArrowClass, SpawnLocation, SpawnRotation);
+		FTransform fireposition = Gun->GetMesh()->GetSocketTransform(TEXT("FirePosition"), RTS_World);
+		FVector spawnLocation = fireposition.GetLocation();
+
+		APawn* OwnerPawn = Cast<APawn>(this);
+		if (OwnerPawn == nullptr) return;
+		AController* OwnerController = OwnerPawn->GetController();
+		if (OwnerController == nullptr) return;
+
+		FVector Location;
+		FRotator Rotation;
+		OwnerController->GetPlayerViewPoint(Location, Rotation);
+
+		FVector traceEnd = Location + (Rotation.Vector() * 10000.0f);
+		FHitResult hitResult;
+		FCollisionQueryParams traceParams(FName(TEXT("ProjectileTrace")), true, this);
+		traceParams.bTraceComplex = true;
+		traceParams.bReturnPhysicalMaterial = false;
+
+		// 라인트레이스 실행
+		bool bHit = GetWorld()->LineTraceSingleByChannel(hitResult, Location, traceEnd, ECC_Visibility, traceParams);
+
+		// 히트 판정이 발생한 경우 해당 지점으로 투사체 발사 방향 설정
+		FVector targetLocation = bHit ? hitResult.Location : traceEnd;
+		FVector shootDirection = (targetLocation - spawnLocation).GetSafeNormal();
+
+		//Recoil
+		float RecoilOffset = Gun->GetRecoilOffset(); // Accuracy + MovementStability;
+		FRotator recoilRotation = shootDirection.Rotation();
+		recoilRotation.Pitch = FMath::RandRange(recoilRotation.Pitch, recoilRotation.Pitch + RecoilOffset);
+		recoilRotation.Yaw = FMath::RandRange(recoilRotation.Yaw - RecoilOffset, recoilRotation.Yaw + RecoilOffset);
+
+		shootDirection = recoilRotation.Vector();
+
+		APawn* InstigatorPawn = Cast<APawn>(this);
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = GetOwner();
+		SpawnParams.Instigator = InstigatorPawn;
+		AGnuProjectileActor* Arrow = GetWorld()->SpawnActor<AGnuProjectileActor>(ArrowClass, fireposition, SpawnParams);
+		/*AGnuProjectileActor* Arrow = GetWorld()->SpawnActor<AGnuProjectileActor>(ArrowClass, SpawnLocation, SpawnRotation);*/
 		if (Arrow)
 		{
+			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, FString::Printf(TEXT("Arrow!")));
 			Arrow->LaunchProjectile(this);
 		}
 	}
+
 }
 // -------------------------------------------------------------------------
 

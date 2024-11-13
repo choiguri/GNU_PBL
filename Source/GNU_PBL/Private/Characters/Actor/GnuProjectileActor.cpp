@@ -48,9 +48,20 @@ void AGnuProjectileActor::LaunchProjectile(AActor* IgnoredActor)
     {
         BoxComponent->IgnoreActorWhenMoving(IgnoredActor, true);
 
+        // 입력된 방향을 기준으로 초기 속도 설정
+        //ProjectileMovementComponent->Velocity = Direction * movementComp->InitialSpeed;
+
         FVector ForwardVector = ArrowComponent->GetForwardVector();
-        GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Blue, FString::Printf(TEXT("ForwardVector: %s"), *ForwardVector.ToString()));
         ProjectileMovementComponent->Velocity = ForwardVector * ProjectileMovementComponent->InitialSpeed; // 각 방향, 속도로 발사
+        FRotator Rotation = ForwardVector.Rotation();
+        SetActorRotation(Rotation);
+        ProjectileMovementComponent->Activate();  // 이동 시작
+
+        //GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Blue, FString::Printf(TEXT("ForwardVector: %s"), *ForwardVector.ToString()));
+    }
+    else
+    {
+        GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, FString::Printf(TEXT("Not ProjectileMoveComponent")));
     }
 }
 
