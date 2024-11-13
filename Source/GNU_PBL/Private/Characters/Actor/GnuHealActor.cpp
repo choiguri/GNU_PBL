@@ -55,7 +55,6 @@ void AGnuHealActor::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActo
         if (MyCharacter)
         {
             // 체력 회복 시작
-            MyCharacter->UpdateHealth(Damage);
             GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("Healing started!")));
         }
     }

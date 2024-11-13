@@ -41,15 +41,16 @@ public:
 
 	// 총기 애니메이션
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerMontageOnFire(); // �������� ������ ��Ÿ�ָ� �����ϴ� �Լ� (��Ʈ�ѷ����� ȣ��)
+	void ServerMontageOnFire();
 	UFUNCTION(NetMulticast, Reliable)
 	void MultiCastMontage_Fire();
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerMontageOnReload(); // �������� ������ ��Ÿ�ָ� �����ϴ� �Լ� (��Ʈ�ѷ����� ȣ��)
+	void ServerMontageOnReload();
 	UFUNCTION(NetMulticast, Reliable)
 	void MultiCastMontage_Reload();
 
+	USkeletalMeshComponent* GetMesh();
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	UAnimMontage* Fire_Montage;
@@ -102,10 +103,10 @@ private:
 	UAmmoDisplay* AmmoDisplay;
 
 
-	FTimerHandle FireTimerHandle;  // Ÿ�̸� �ڵ� ���� �߰�
+	FTimerHandle FireTimerHandle;
 
 	UFUNCTION()
-	void Fire();  // �߻� ��� ���� �Լ�
+	void Fire();
 
 
 

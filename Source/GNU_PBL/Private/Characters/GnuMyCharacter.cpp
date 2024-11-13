@@ -6,21 +6,26 @@
 #include "Components/CapsuleComponent.h" // SetCapsuleHalfHeight()
 #include "GameFramework/SpringArmComponent.h" // SpringArm
 #include "Camera/CameraComponent.h" // TPP, FPP Camera
-#include "Characters/GnuMyAnimInstance.h" // MultiCastMontage_Dodge_Implementation �Լ��� ��� �Լ���
 
+// Weapon
 #include "Weapons/Gun.h"
 #include "Weapons/CrossHair.h"
 #include "Weapons/WeaponSwitch.h"
 
+// Animation
 #include "Animation/AnimMontage.h" // class UAnimMontage
+#include "Characters/GnuMyAnimInstance.h"
+
+// Multi
 #include "Net/UnrealNetwork.h" // ~_Implementation(), ~_Validate(), GetLifetimeReplicatedProps()
+
+// Math
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
 
+// Skill
 #include "Characters/Actor/GnuProjectileActor.h"
 #include "Characters/Actor/GnuHealActor.h"
-
-#include "Characters/Widget/GnuCharacterBaseWidget.h"
 
 // Character 합치면서 추가
 #include "Components/WidgetComponent.h"
@@ -79,10 +84,6 @@ AGnuMyCharacter::AGnuMyCharacter()
 	}
 	// ---------------------------------------------------------------
 
-	CurHP = 50.f;
-	MaxHP = 100.f;
-	CurStamina = 50.f;
-	MaxStamina = 100.f;
 
 	OverlapItem = nullptr;	// 공격이 맞았는지 확인
 
@@ -140,17 +141,6 @@ void AGnuMyCharacter::BeginPlay()
 	Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("WeaponSocket"));
 	Gun->SetOwner(this);
 	Gun->UpdateAmmoDisplay();
-	
-	  // ������ �ʱ�ȭ�ϴ� �κ�
-	if (CharacterHealthWidgetClass)
-	{
-		CharacterHealthWidget = CreateWidget<UGnuCharacterBaseWidget>(GetWorld(), CharacterHealthWidgetClass);
-		if (CharacterHealthWidget && CharacterWidget)
-		{
-			CharacterWidget->AddToViewport();
-			CharacterHealthWidget->UpdateHealthBar(CurHP, MaxHP); // ���� �� HP ������Ʈ
-		}
-	}
 
 	// 추가사항 HP, Stamina HUD 
 	GNUPlayerController = GNUPlayerController == nullptr ? Cast<AGnuMyPlayerController>(Controller) : GNUPlayerController;
@@ -170,7 +160,6 @@ void AGnuMyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	ZoomInTimeline.TickTimeline(DeltaTime);
-	UpdateUIHealthAndStamina();
 }
 
 void AGnuMyCharacter::SetCamera()
@@ -365,7 +354,6 @@ void AGnuMyCharacter::ServerMontageOnDodge_Implementation(float Forward, float R
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 
 		PlayAnimMontage(DodgeMontage);
-		UpdateStamina(-10.f);
 		// 멀티캐스트 호출
 		MultiCastMontage_Dodge(Forward, Right);
 	}
@@ -373,14 +361,13 @@ void AGnuMyCharacter::ServerMontageOnDodge_Implementation(float Forward, float R
 
 bool AGnuMyCharacter::ServerMontageOnDodge_Validate(float Forward, float Right)
 {
-	return true; // ���� ������ �ʿ��ϸ� �߰�
+	return true;
 }
 
 void AGnuMyCharacter::MultiCastMontage_Dodge_Implementation(float Forward, float Right) // 모든 클라이언트에서 동일한 구르기 애니메이션을 재생하도록 하는 멀티캐스트 함수. 클라이언트와 서버 간의 동기화를 위해 사용
 {
 	if (isDodge)
 	{
-		// ������ �߿� �ٽ� ȣ���ϸ� ����
 		return;
 	}
 
@@ -433,7 +420,7 @@ void AGnuMyCharacter::Reload()
 	}
 }
 
-void AGnuMyCharacter::ServerMontageOnReload_Implementation() // �������� ������ �ִϸ��̼��� ó���ϴ� �Լ�
+void AGnuMyCharacter::ServerMontageOnReload_Implementation()
 {
 	if (isReload)
 	{
@@ -460,18 +447,16 @@ void AGnuMyCharacter::ServerMontageOnReload_Implementation() // ������
 
 bool AGnuMyCharacter::ServerMontageOnReload_Validate()
 {
-	return true; // ���� ������ �ʿ��ϸ� �߰�
+	return true;
 }
 
-void AGnuMyCharacter::MultiCastMontage_Reload_Implementation() // ��� Ŭ���̾�Ʈ���� ������ ������ �ִϸ��̼��� ����ϵ��� �ϴ� ��Ƽĳ��Ʈ �Լ�. Ŭ���̾�Ʈ�� ���� ���� ����ȭ�� ���� ���
+void AGnuMyCharacter::MultiCastMontage_Reload_Implementation()
 {
 	if (isReload)
 	{
-		// ������ �߿� �ٽ� ȣ���ϸ� ����
 		return;
 	}
 
-	// ��Ÿ�ְ� ��ȿ�� ��� ���
 	if (Reload_Montage)
 	{
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
@@ -480,13 +465,42 @@ void AGnuMyCharacter::MultiCastMontage_Reload_Implementation() // ��� Ŭ�
 	}
 }
 
+//--------------------------- Heal Skill --------------------------------
+void AGnuMyCharacter::SpawnHeal()
+{
+	if (HealClass)
+	{
+	
+		FVector SpawnLocation = GetActorLocation() + FVector(0, 0, 100.0f);
+		FRotator SpawnRotation = GetActorRotation();
+
+		FTransform SpawnTransform(SpawnRotation, SpawnLocation);
+
+		AGnuHealActor* Heal = GetWorld()->SpawnActor<AGnuHealActor>(HealClass, SpawnTransform);
+
+		if (Heal)
+		{
+			Heal->HealOverTime();
+		}
+		else
+		{
+			FString HPMessage = FString::Printf(TEXT("Hp Heal Spawn Error"));
+		}
+	}
+	else
+	{
+		FString HPMessage = FString::Printf(TEXT("Not Heal Class!!"));
+	}
+}
+// -------------------------------------------------------------------------
+
 //--------------------------- Arrow Skill --------------------------------
 void AGnuMyCharacter::SpawnArrow()
 {
 	if (ArrowClass)
 	{
-		FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 100.0f;
-		FRotator SpawnRotation = GetActorRotation();
+		FVector SpawnLocation = Gun->GetMesh()->GetSocketLocation("MuzzleFlashSocket");
+		FRotator SpawnRotation = Gun->GetMesh()->GetSocketRotation("MuzzleFlashSocket");
 
 		AGnuProjectileActor* Arrow = GetWorld()->SpawnActor<AGnuProjectileActor>(ArrowClass, SpawnLocation, SpawnRotation);
 		if (Arrow)
@@ -640,37 +654,6 @@ bool AGnuMyCharacter::GetIsSprinting() const
 	return isSprint;
 }
 
-//--------------------------- Arrow Skill --------------------------------
-void AGnuMyCharacter::SpawnHeal()
-{
-	if (HealClass)
-	{
-	
-		// ĳ������ ��ġ�� �������� �������� 100 ���� ������ ��ġ�� SpawnLocation ����
-		FVector SpawnLocation = GetActorLocation() + FVector(0, 0, 100.0f); // ���÷� ĳ������ 100 ���� ���� ����
-		FRotator SpawnRotation = GetActorRotation();
-
-		// FTransform�� ����Ͽ� ��ġ�� ȸ�� ����
-		FTransform SpawnTransform(SpawnRotation, SpawnLocation);
-
-		// HealActor ����
-		AGnuHealActor* Heal = GetWorld()->SpawnActor<AGnuHealActor>(HealClass, SpawnTransform);
-
-		if (Heal)
-		{
-			Heal->HealOverTime();
-		}
-		else
-		{
-			FString HPMessage = FString::Printf(TEXT("Hp Heal Spawn Error"));
-		}
-	}
-	else
-	{
-		FString HPMessage = FString::Printf(TEXT("Not Heal Class!!"));
-	}
-}
-// -------------------------------------------------------------------------
 
 
 
@@ -680,48 +663,8 @@ void AGnuMyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	// 변수를 네트워크에서 복제할 수 있도록 설정
 	DOREPLIFETIME(AGnuMyCharacter, isSprint);
 	DOREPLIFETIME(AGnuMyCharacter, isCrouch);
-	DOREPLIFETIME(AGnuMyCharacter, CurHP);
 	DOREPLIFETIME(AGnuMyCharacter, Health);
 	DOREPLIFETIME(AGnuMyCharacter, Stamina);
-}
-
-
-//--------------------------- HP Update --------------------------------
-void AGnuMyCharacter::OnRep_CurHP()
-{
-	// HP가 변경되면 UI에 반영
-	UpdateUIHealthAndStamina();
-}
-
-void AGnuMyCharacter::UpdateHealth(float NewHP)
-{
-	CurHP = FMath::Clamp(CurHP + NewHP, 0.0f, MaxHP); // HP를 0과 MaxHP 사이로 클램핑
-	FString HPMessage = FString::Printf(TEXT("Current HP: %f"), CurHP);
-	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, HPMessage);
-	// 서버에서 HP 업데이트 시 UI 업데이트
-	if (HasAuthority())
-	{
-		OnRep_CurHP();
-	}
-}
-
-void AGnuMyCharacter::UpdateStamina(float NewStamina)
-{
-	CurStamina = FMath::Clamp(CurStamina + NewStamina, 0.0f, MaxStamina);
-
-	FString StaminaMessage = FString::Printf(TEXT("Current Stamina: %f"), CurStamina);
-	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, StaminaMessage);
-}
-
-void AGnuMyCharacter::UpdateUIHealthAndStamina()
-{
-	// UI 위젯에서 호출될 함수로, Health와 Stamina 바를 업데이트
-	// 여기에 UGnuCharacterBaseWidget을 연결하는 코드를 넣으면 됩니다.
-	if (CharacterHealthWidget)
-	{
-		CharacterHealthWidget->UpdateHealthBar(CurHP, MaxHP);
-		CharacterHealthWidget->UpdateStaminaBar(CurStamina, MaxStamina);
-	}
 }
 
 void AGnuMyCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
@@ -759,7 +702,6 @@ void AGnuMyCharacter::OnRep_Stamina()
 {
 	
 }
-// -------------------------------------------------------------------------
 
 void AGnuMyCharacter::ClientSetName_Implementation(const FString& Name)
 {

@@ -7,10 +7,11 @@
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Characters/GnuMyCharacter.h"
+#include "Monster/GnuMonster.h"
+#include "Kismet/GameplayStatics.h"
 
 AGnuProjectileActor::AGnuProjectileActor()
 {
-    // 와 미친 이거 하나 때문에 안날라가고 있었음;;
     PrimaryActorTick.bCanEverTick = true;
 
     // ProjectileMovementComponent 생성 및 기본값 설정
@@ -53,7 +54,7 @@ void AGnuProjectileActor::LaunchProjectile(AActor* IgnoredActor)
     }
 }
 
-void AGnuProjectileActor::DestroyFireball()
+void AGnuProjectileActor::DestroyActor()
 {
     Destroy();
 }
@@ -84,7 +85,7 @@ void AGnuProjectileActor::BeginPlay()
     }
 
     // 일정 시간 이후 firball actor 삭제 위한 타이머 설정
-    GetWorld()->GetTimerManager().SetTimer(DestructionTimerHandle, this, &AGnuProjectileActor::DestroyFireball, 10.0f, false);
+    GetWorld()->GetTimerManager().SetTimer(DestructionTimerHandle, this, &AGnuProjectileActor::DestroyActor, 10.0f, false);
 }
 
 void AGnuProjectileActor::Tick(float DeltaTime)
@@ -107,17 +108,38 @@ void AGnuProjectileActor::Tick(float DeltaTime)
     PreviousLocation = CurrentLocation;
 }
 
-void AGnuProjectileActor::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void AGnuProjectileActor::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
 {
     if (OtherActor && (OtherActor != this))
     {
-        // 충돌한 액터가 벽이나 캐릭터일 때 파이어볼 삭제
-        AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(OtherActor);
-        if (MyCharacter != nullptr)
-        {
-            MyCharacter->UpdateHealth(Damage);;
-        }
+        // 충돌한 액터가 벽이나 캐릭터일 때 엑터 삭제
         GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, TEXT("Overlap with: ") + OtherActor->GetName());
+        Destroy();
+    }
+    if (OtherActor)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Arrow Hit!"));
+
+
+            AController* OwnerController = GetInstigator()->GetController();
+            if (OwnerController)
+            {
+                GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, FString::Printf(TEXT("OwnerController")));
+                if (HasAuthority())
+                {
+                    UE_LOG(LogTemp, Warning, TEXT("HasAuthority!"));
+                    UGameplayStatics::ApplyDamage(OtherActor, Damage, OwnerController, this, UDamageType::StaticClass());
+                    if (GEngine)
+                    {
+                        GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, FString::Printf(TEXT("ApplyDamage")));
+                    }
+
+                }
+            }
+            else
+            {
+                GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, FString::Printf(TEXT("Not OwnerController")));
+            }
         Destroy();
     }
 }

@@ -10,7 +10,7 @@ class AGnuMyCharacter;
 class UCharacterMovementComponent;
 
 UENUM(BlueprintType)
-enum class EMovementInput : uint8 // ĳ������ �̵� ���� ����
+enum class EMovementInput : uint8
 {
 	Forward        UMETA(DisplayName = "Forward"),
 	Right     UMETA(DisplayName = "Right"),
@@ -19,7 +19,7 @@ enum class EMovementInput : uint8 // ĳ������ �̵� ���� 
 };
 
 UENUM(BlueprintType)
-enum class EAnimationState : uint8 // ĳ������ ���� �ִϸ��̼� ����
+enum class EAnimationState : uint8
 {
 	Unarmed        UMETA(DisplayName = "Unarmed"),
 	Pistol     UMETA(DisplayName = "Pistol"),
@@ -40,49 +40,49 @@ protected:
 	UCharacterMovementComponent* MyCharacterMovement;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	EMovementInput MovementInput; // ĳ������ �̵� ������ �����ϴ� ������ ����
-
-	//UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	//EAnimationState EAnimState; // ĳ������ ���� �ִϸ��̼� ���¸� �����ϴ� ����
+	EMovementInput MovementInput; // 캐릭터의 이동 방향을 저장하는 열거형 변수
 
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	float GroundSpeed; // ĳ������ �ٴ� �ӵ�
+	EAnimationState EAnimState; // 캐릭터의 현재 애니메이션 상태를 저장하는 변수
 
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	FVector CurVelocity; // ĳ������ ���� �ӵ� ���͸� �����ϴ� ����
+	float GroundSpeed; // 캐릭터의 바닥 속도
 
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	FVector CurAcceleration; // ĳ������ ���� ���ӵ� ���͸� �����ϴ� ����
+	FVector CurVelocity;  // 캐릭터의 현재 속도 벡터를 저장하는 변수
 
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	float Direction; // ĳ���Ͱ� �ٶ󺸴� ������ �����ϴ� ����
+	FVector CurAcceleration;// 캐릭터의 현재 가속도 벡터를 저장하는 변수
 
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	float F_Orientation_Angle; // ĳ���Ͱ� �������� �ٶ󺸴� ������ ������ �����ϴ� ����
+	float Direction;// 캐릭터가 바라보는 방향을 저장하는 변수
 
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	float R_Orientation_Angle; // ĳ���Ͱ� ���������� �ٶ󺸴� ������ ������ �����ϴ� ����
+	float F_Orientation_Angle;// 캐릭터가 앞쪽으로 바라보는 방향의 각도를 저장하는 변수
 
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	float B_Orientation_Angle; // ĳ���Ͱ� �������� �ٶ󺸴� ������ ������ �����ϴ� ����
+	float R_Orientation_Angle; // 캐릭터가 오른쪽으로 바라보는 방향의 각도를 저장하는 변수
 
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	float L_Orientation_Angle; // ĳ���Ͱ� �������� �ٶ󺸴� ������ ������ �����ϴ� ����
+	float B_Orientation_Angle; // 캐릭터가 뒤쪽으로 바라보는 방향의 각도를 저장하는 변수
 
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	float CurPitch; // ĳ������ ���� ��ġ ���� �����ϴ� ���� (����� ������ ����)
+	float L_Orientation_Angle;  // 캐릭터가 왼쪽으로 바라보는 방향의 각도를 저장하는 변수
 
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	float TurnRate; // ĳ������ ���� ȸ�� �ӵ�(�� �ӵ�)�� �����ϴ� ����
+	float CurPitch; // 캐릭터의 현재 피치 값을 저장하는 변수 (고개를 돌리는 각도)
 
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	float CurDirectionAngle; // ĳ������ ���� �̵� ���� ������ �����ϴ� ����
+	float TurnRate; // 캐릭터의 현재 회전 속도(턴 속도)를 저장하는 변수
 
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	bool ShouldMove; // ĳ���Ͱ� �����̴��� ���θ� �����ϴ� ����
+	float CurDirectionAngle; // 캐릭터의 현재 이동 방향 각도를 저장하는 변수
 
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	bool IsFalling; // ĳ���Ͱ� ���߿� �� �ִ��� ���θ� �����ϴ� ����
+	bool ShouldMove; // 캐릭터가 움직이는지 여부를 저장하는 변수
+
+	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	bool IsFalling; // 캐릭터가 공중에 떠 있는지 여부를 저장하는 변수
 
 	UPROPERTY(BlueprintReadOnly, Category = "Movement")
 	bool bIsCrouching;
@@ -95,27 +95,9 @@ public:
 	virtual void NativeInitializeAnimation() override;
 
 	void SetTurnRate(float CurYaw);
-	void SetWeapon();
-
-	//UFUNCTION(Server, Reliable, WithValidation)
-	//void ServerSetWeapon(); // �������� ������ ��Ÿ�ָ� �����ϴ� �Լ� (��Ʈ�ѷ����� ȣ��)
-	//UFUNCTION(NetMulticast, Reliable)
-	//void MultiCastSetWeapon(); // ������ ��Ÿ�� ��Ƽĳ��Ʈ (������ ȣ��Ǹ� �ڵ����� ȣ��)
-
-	UPROPERTY(ReplicatedUsing = OnRep_SetAnimState, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	EAnimationState EAnimState; // �޸����� ����
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerSetAnimState(); // ���� �ɱ� ���� (��Ʈ�ѷ����� ȣ��)
-	UFUNCTION(Client, Reliable)
-	void ClientSetAnimState(); // Ŭ�󸮾�Ʈ �ɱ� ���� (������ ȣ��Ǹ� �ڵ����� ȣ��)
-	UFUNCTION()
-	void OnRep_SetAnimState(); // isCrouch ������ ����Ǹ� ȣ��Ǵ� �Լ� (�� �Լ����� ����Ǵ� �͵��� Ŭ���̾�Ʈ �ʿ��� ����Ǵ� �͵�)
 
 private:
-	// ��Ʈ��ũ ������ ���� �Լ� ���� : UFUNCTION(Server) ��� ����Ϸ��� �� �Լ��� �־�� ��
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
-	void UpdateMovementState(); // �̵� ���� ������Ʈ
-	void UpdateDirectionAndMovementInput(); // ����� �̵� �Է��� ������Ʈ
+	void UpdateMovementState(); // 이동 상태 업데이트
+	void UpdateDirectionAndMovementInput(); // 방향과 이동 입력을 업데이트
 
 };

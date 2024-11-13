@@ -67,31 +67,28 @@ private:
 	TObjectPtr<UInputMappingContext> MyCharacterContext;
 
 	UPROPERTY(EditAnywhere, Category = "input")
-	TObjectPtr<UInputAction> MoveAction; // �̵�
+	TObjectPtr<UInputAction> MoveAction; // 이동
 
 	UPROPERTY(EditAnywhere, Category = "input")
-	TObjectPtr<UInputAction> RotationAction; // ȸ��
+	TObjectPtr<UInputAction> RotationAction; // 회전
 
 	UPROPERTY(EditAnywhere, Category = "input")
-	TObjectPtr<UInputAction> JumpAction; // ����
+	TObjectPtr<UInputAction> JumpAction; // 점프
 
 	UPROPERTY(EditAnywhere, Category = "input")
-	TObjectPtr<UInputAction> SprintAction; // �޸���
+	TObjectPtr<UInputAction> SprintAction; // 달리기
 
 	UPROPERTY(EditAnywhere, Category = "input")
-	TObjectPtr<UInputAction> CrouchAction; // �ɱ�
+	TObjectPtr<UInputAction> CrouchAction; // 앉기
 
 	UPROPERTY(EditAnywhere, Category = "input")
-	TObjectPtr<UInputAction> DodgeAction; // ������
+	TObjectPtr<UInputAction> DodgeAction; // 구르기
 
 	UPROPERTY(EditAnywhere, Category = "input")
-	TObjectPtr<UInputAction> ToggleCameraAction; // ī�޶� ��Ī ��ȯ
+	TObjectPtr<UInputAction> ToggleCameraAction; // 카메라 인칭 전환
 
 	UPROPERTY(EditAnywhere, Category = "input")
-	TObjectPtr<UInputAction> WeaponChangeAction; // ���� ��ȯ (���� q�� ���ʴ�� �ٲ�� �����ص�)
-
-	UPROPERTY(EditAnywhere, Category = "input")
-	TObjectPtr<UInputAction> ZoomInAction; // ī�޶� ��
+	TObjectPtr<UInputAction> ZoomInAction; // 카메라 줌
 
 
 	// 추가사항
@@ -109,28 +106,26 @@ private:
 	TObjectPtr<UInputAction> InteractAction; // 상호작용 인풋
 	
 	UPROPERTY(EditAnywhere, Category = "input")
-	TObjectPtr<UInputAction> ArrowSkillAction; // ȭ�� ��ų
-
+	TObjectPtr<UInputAction> ArrowSkillAction;
 
 	UPROPERTY(EditAnywhere, Category = "input")
-	TObjectPtr<UInputAction> HealSkillAction; // �� ��ų
-	FVector2D CurrentMoveDirection; // ���� �̵� ���� Dodge�� �� ���
+	TObjectPtr<UInputAction> HealSkillAction;
+
+	FVector2D CurrentMoveDirection; // 현재 이동 방향 Dodge할 때 사용
 
 
-	void Move(const struct FInputActionValue& InputActionValue); // �̵�
-	void Rotation(const struct FInputActionValue& InputActionValue); // ȸ��
-	void Dodge(const struct FInputActionValue& InputActionValue); // ������
-	void Sprint(const struct FInputActionValue& InputActionValue); // �޸���
-	void SprintStop(const struct FInputActionValue& InputActionValue); // �޸��� ��
-	void ToggleCrouch(const struct FInputActionValue& InputActionValue); // �ɱ�
-	void ToggleCamera(const struct FInputActionValue& InputActionValue); // ī�޶� ��Ī ��ȯ
-	void ToggleZoomIn(const struct FInputActionValue& InputActionValue); // ī�޶� ����
-	void WeaponChange(const struct FInputActionValue& InputActionValue); // ���� ü���� (PistolChange, RifleChange�� �͵� ���� �Ҳ��� ���� �ؾ���)
-	void Jump(const struct FInputActionValue& InputActionValue); // ����
-	void StopJumping(const struct FInputActionValue& InputActionValue); // ���� ��
-	
-	void ArrowSkill(const struct FInputActionValue& InputActionValue); // ���ο� ��ų
-	void HealSkill(const struct FInputActionValue& InputActionValue); // �� ��ų
+	void Move(const struct FInputActionValue& InputActionValue); // 이동
+	void Rotation(const struct FInputActionValue& InputActionValue); // 회전
+	void Dodge(const struct FInputActionValue& InputActionValue); // 구르기
+	void Sprint(const struct FInputActionValue& InputActionValue); // 달리기
+	void SprintStop(const struct FInputActionValue& InputActionValue); // 달리기 끝
+	void ToggleCrouch(const struct FInputActionValue& InputActionValue); // 앉기
+	void ToggleCamera(const struct FInputActionValue& InputActionValue); // 카메라 인칭 전환
+	void ToggleZoomIn(const struct FInputActionValue& InputActionValue); // 카메라 줌인
+	void Jump(const struct FInputActionValue& InputActionValue); // 점프
+	void StopJumping(const struct FInputActionValue& InputActionValue); // 점프 끝
+	void ArrowSkill(const struct FInputActionValue& InputActionValue);
+	void HealSkill(const struct FInputActionValue& InputActionValue);
 
 	// ------------------ Weapon funtion -------------
 	void Aiming();
@@ -161,8 +156,8 @@ private:
 	uint32 CountdownInt = 0;
 };
 
-// TObjectPtr :  ����Ʈ ������ Ÿ������, �ַ� UObject ��� ��ü�� �����ϰ� �����ϴ� �� ���
-// Unreal Engine�� ������ �÷��� �ý��۰� ���յǾ�, ��ü�� �� �̻� �ʿ����� ���� �� �ڵ����� �޸𸮸� ������ �� �ֵ��� �����ϴ�. 
-// -> ������ �÷��� : ��ü�� ���� ī��Ʈ�� �����Ͽ�, �� �̻� �������� �ʴ� ��ü�� �ڵ����� û��
-// Ư�� UObject Ÿ�Ը� ����ų �� �ֵ��� �����մϴ�. �̴� �ٸ� Ÿ���� ��ü�� �߸� �����ϴ� ������ ����, ������ Ÿ�ӿ��� ������ �̸� ����
-// -> ���� ���, UInputAction Ÿ���� ��ü�� �ƴ� �ٸ� ��ü�� �Ҵ��Ϸ��� �ϸ� ������ ������ �߻�
+// TObjectPtr :  스마트 포인터 타입으로, 주로 UObject 기반 객체를 안전하게 관리하는 데 사용
+// Unreal Engine의 가비지 컬렉션 시스템과 통합되어, 객체가 더 이상 필요하지 않을 때 자동으로 메모리를 해제할 수 있도록 돕습니다. 
+// -> 가비지 컬렉터 : 객체의 참조 카운트를 추적하여, 더 이상 참조되지 않는 객체를 자동으로 청소
+// 특정 UObject 타입만 가리킬 수 있도록 제한합니다. 이는 다른 타입의 객체를 잘못 참조하는 오류를 방지, 컴파일 타임에서 문제를 미리 감지
+// -> 예를 들어, UInputAction 타입의 객체가 아닌 다른 객체를 할당하려고 하면 컴파일 오류가 발생

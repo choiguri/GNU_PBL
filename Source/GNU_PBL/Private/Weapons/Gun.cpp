@@ -166,6 +166,11 @@ void AGun::RemoveAmmoDisplay()
 	}
 }
 
+USkeletalMeshComponent* AGun::GetMesh()
+{
+	return Mesh;
+}
+
 // ------------------ Fire Animation -------------------------------------
 void AGun::ServerMontageOnFire_Implementation() // �������� ������ �ִϸ��̼��� ó���ϴ� �Լ�
 {

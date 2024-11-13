@@ -22,7 +22,7 @@ public:
 private:
     FTimerHandle DestructionTimerHandle; // 파괴 타이머 핸들
 
-    void DestroyFireball(); // 파이어볼 삭제 함수
+    void DestroyActor(); // 엑터 삭제 함수
 
     FVector PreviousLocation;
 

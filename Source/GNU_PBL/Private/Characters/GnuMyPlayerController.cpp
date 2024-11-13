@@ -148,7 +148,6 @@ void AGnuMyPlayerController::SetupInputComponent()
 	EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::ToggleCrouch);
 	EnhancedInputComponent->BindAction(ToggleCameraAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::ToggleCamera);
 	EnhancedInputComponent->BindAction(ZoomInAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::ToggleZoomIn);
-	EnhancedInputComponent->BindAction(WeaponChangeAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::WeaponChange);
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::Jump);
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AGnuMyPlayerController::StopJumping);
 
@@ -383,24 +382,6 @@ void AGnuMyPlayerController::ToggleZoomIn(const FInputActionValue& InputActionVa
 		if (MyCharacter)
 		{
 			MyCharacter->SetZoomIn(); // 카메라 줌인 설정
-		}
-	}
-}
-
-
-void AGnuMyPlayerController::WeaponChange(const FInputActionValue& InputActionValue)
-{
-	if (APawn* ControlledPawn = GetPawn<APawn>())
-	{
-		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
-		if (MyCharacter)
-		{
-			UGnuMyAnimInstance* AnimInstance = Cast<UGnuMyAnimInstance>(MyCharacter->GetMesh()->GetAnimInstance());
-			if (AnimInstance != nullptr)
-			{
-				// SetTurnRate �Լ� ȣ�� (���� Yaw ���� ����)
-				AnimInstance->ServerSetAnimState_Implementation();
-			}
 		}
 	}
 }

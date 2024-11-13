@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "Characters/GnuBaseCharacter.h"
 #include "Components/TimelineComponent.h" // FTimeline
-
 #include "GameFramework/PlayerState.h"
 #include "GnuMyCharacter.generated.h"
 
@@ -32,78 +31,79 @@ public:
 
 	void SetOverlapItem(AGnuAttackCollisionActor* _overlapItem) { OverlapItem = _overlapItem; }
 
-	// --------------------------------------------- Sprint ��� -----------------------------------
-	// ReplicatedUsing = OnRep_IsSprinting : �̷��� �����ϸ� ���� ������ ������ �ڵ����� OnRep_IsSprinting�Լ��� ȣ��ȴ�.
+	// --------------------------------------------- Sprint 기능 -----------------------------------
+// ReplicatedUsing = OnRep_IsSprinting : 이렇게 선언하면 값이 변동될 때마다 자동으로 OnRep_IsSprinting함수가 호출된다.
 	UPROPERTY(ReplicatedUsing = OnRep_IsSprinting, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	bool isSprint;  // �޸����� ���� (GnuMyCharacterAnimInstance���� ��� ��)
+	bool isSprint;  // 달리는지 여부 (GnuMyCharacterAnimInstance에서 사용 중)
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerSprintStart(); // ���� �޸��� ���� (��Ʈ�ѷ����� ȣ��)
+	void ServerSprintStart(); // 서버 달리기 시작 (컨트롤러에서 호출)
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerSprintEnd(); // ���� �޸��� �� (��Ʈ�ѷ����� ȣ��)
+	void ServerSprintEnd(); // 서버 달리기 끝 (컨트롤러에서 호출)
 	UFUNCTION(Client, Reliable)
-	void ClientSprintStart(); // Ŭ���̾�Ʈ �޸��� ���� (������ ȣ��Ǹ� �ڵ����� ȣ��)
+	void ClientSprintStart(); // 클라이언트 달리기 시작 (서버가 호출되면 자동으로 호출)
 	UFUNCTION(Client, Reliable)
-	void ClientSprintEnd(); // Ŭ���̾�Ʈ �޸��� �� (������ ȣ��Ǹ� �ڵ����� ȣ��)
+	void ClientSprintEnd(); // 클라이어트 달리기 끝 (서버가 호출되면 자동으로 호출)
 	UFUNCTION()
-	void OnRep_IsSprinting(); // isSprint ������ ����Ǹ� ȣ��Ǵ� �Լ� (�� �Լ����� ����Ǵ� �͵��� Ŭ���̾�Ʈ �ʿ��� ����Ǵ� �͵�)
+	void OnRep_IsSprinting(); // isSprint 변수가 변경되면 호출되는 함수 (이 함수에서 실행되는 것들이 클라이언트 쪽에서 실행되는 것들)
 	void UpdateSprintState(bool bIsSprinting);
 	// --------------------------------------------------------------------------------------------
 
 
-	// --------------------------------------------- Crouch ��� ------------------------------------
+	// --------------------------------------------- Crouch 기능 ------------------------------------
 	UPROPERTY(ReplicatedUsing = OnRep_IsCrouching, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	bool isCrouch;  // �޸����� ����
+	bool isCrouch;  // 달리는지 여부
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerCrouchStart(); // ���� �ɱ� ���� (��Ʈ�ѷ����� ȣ��)
+	void ServerCrouchStart(); // 서버 앉기 시작 (컨트롤러에서 호출)
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerCrouchEnd(); // ���� �ɱ� �� (��Ʈ�ѷ����� ȣ��)
+	void ServerCrouchEnd(); // 서버 앉기 끝 (컨트롤러에서 호출)
 	UFUNCTION(Client, Reliable)
-	void ClientCrouchStart(); // Ŭ�󸮾�Ʈ �ɱ� ���� (������ ȣ��Ǹ� �ڵ����� ȣ��)
+	void ClientCrouchStart(); // 클라리언트 앉기 시작 (서버가 호출되면 자동으로 호출)
 	UFUNCTION(Client, Reliable)
-	void ClientCrouchEnd(); // Ŭ�󸮾�Ʈ �ɱ� �� (������ ȣ��Ǹ� �ڵ����� ȣ��)
+	void ClientCrouchEnd(); // 클라리언트 앉기 끝 (서버가 호출되면 자동으로 호출)
 	UFUNCTION()
-	void OnRep_IsCrouching(); // isCrouch ������ ����Ǹ� ȣ��Ǵ� �Լ� (�� �Լ����� ����Ǵ� �͵��� Ŭ���̾�Ʈ �ʿ��� ����Ǵ� �͵�)
+	void OnRep_IsCrouching(); // isCrouch 변수가 변경되면 호출되는 함수 (이 함수에서 실행되는 것들이 클라이언트 쪽에서 실행되는 것들)
 	// --------------------------------------------------------------------------------------------
 
 
-	//------------------------------------------- Roll ��Ÿ�� ��� ---------------------------------
+	//------------------------------------------- Roll 몽타주 기능 ---------------------------------
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
-	bool isDodge; // �������� ����
+	bool isDodge; // 구르는지 여부
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerMontageOnDodge(float Forward, float Right); // �������� ������ ��Ÿ�ָ� �����ϴ� �Լ� (��Ʈ�ѷ����� ȣ��)
+	void ServerMontageOnDodge(float Forward, float Right); // 서버에서 구르기 몽타주를 실행하는 함수 (컨트롤러에서 호출)
 	UFUNCTION(NetMulticast, Reliable)
-	void MultiCastMontage_Dodge(float Forward, float Right); // ������ ��Ÿ�� ��Ƽĳ��Ʈ (������ ȣ��Ǹ� �ڵ����� ȣ��)
+	void MultiCastMontage_Dodge(float Forward, float Right); // 구르기 몽타주 멀티캐스트 (서버가 호출되면 자동으로 호출)
 	void SetDodgeMontage(float Forward, float Right);
 	//---------------------------------------------------------------------------
 
 
-	//------------------------------------------- ZoomIn ��� ---------------------------------
-	UPROPERTY()
-	FTimeline ZoomInTimeline;  // Timeline�� ������ ����
-	UPROPERTY(EditAnywhere, Category = "Timeline")
-	UCurveFloat* ZoomInCurve; // Ŀ�� ���� (�������Ʈ�� Ŀ�� ������)
-	UFUNCTION()
-	void ZoomInUpdate(float Alpha); // Ÿ�Ӷ����� ���۵� �� ȣ��� �Լ�
-	UFUNCTION()
-	void ZoomInFinished(); // Ÿ�Ӷ����� ������ �� ȣ��� �Լ�
+	//------------------------------------------- ZoomIn 기능 ---------------------------------
 	bool isZoomIn;
-	void SetZoomIn(); // ī�޶� ���� ��ȯ (��Ʈ�ѷ����� ȣ��)
+	void SetZoomIn(); // 카메라 시점 전환 (컨트롤러에서 호출)
+
+	UPROPERTY()
+	FTimeline ZoomInTimeline;  // Timeline을 저장할 변수
+
+	UPROPERTY(EditAnywhere, Category = "Timeline")
+	UCurveFloat* ZoomInCurve; // 커브 변수 (블루프린트로 커브 만들어둠)
+
+	UFUNCTION()
+	void ZoomInUpdate(float Alpha); // 타임라인이 시작될 때 호출될 함수
+
+	UFUNCTION()
+	void ZoomInFinished(); // 타임라인이 끝났을 때 호출될 함수
 	//---------------------------------------------------------------------------------------------
 
-
-	void SetCamera(); // ī�޶� ���� ��ȯ : 1��Ī <--> 3��Ī (��Ʈ�ѷ����� ȣ��)
 
 	//------------------ Weapon Funtion ---------------------------------------
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
 	bool isReload;
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerMontageOnReload(); // �������� ������ ��Ÿ�ָ� �����ϴ� �Լ� (��Ʈ�ѷ����� ȣ��)
+	void ServerMontageOnReload();
 	UFUNCTION(NetMulticast, Reliable)
-	void MultiCastMontage_Reload(); // ������ ��Ÿ�� ��Ƽĳ��Ʈ (������ ȣ��Ǹ� �ڵ����� ȣ��)
+	void MultiCastMontage_Reload();
 	void FinishReload();
 	//---------------------------------------------------------------------
 
-	
 
 	//------------------ Weapon Funtion ---------------------------------------
 	void Aiming();
@@ -131,78 +131,52 @@ public:
 	// -----------------------------------------------------------------------------------------
 	
 
-	// ------------------------------------- Arrow Skill ----------------------------------------
+	// ------------------------------------- Heal Skill ----------------------------------------
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
 	TSubclassOf<class AGnuHealActor> HealClass;
 	void SpawnHeal();
 	// -----------------------------------------------------------------------------------------
 
 
-	// ------------------------------------- HP, Stamina ----------------------------------------
-	UPROPERTY(ReplicatedUsing = OnRep_CurHP, BlueprintReadWrite, Category = "Status")
-	float CurHP;
-	UPROPERTY(BlueprintReadWrite, Category = "Status")
-	float MaxHP;
-
-	UPROPERTY(BlueprintReadWrite, Category = "Status")
-	float CurStamina;
-	UPROPERTY(BlueprintReadWrite, Category = "Status")
-	float MaxStamina;
-
-	UFUNCTION()
-	void OnRep_CurHP();
-	void UpdateHealth(float NewHP);
-	void UpdateStamina(float NewStamina);
-	void UpdateUIHealthAndStamina();
-
-	// ��������Ʈ ���� �ִ� ��
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	TSubclassOf<UGnuCharacterBaseWidget> CharacterHealthWidgetClass;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	UUserWidget* CharacterWidget;
-
-	UGnuCharacterBaseWidget* CharacterHealthWidget;
-
-	// ------------------------------------------------------------------------
+	void SetCamera();
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-	USpringArmComponent* CameraBoom; // ī�޶� ��
+	USpringArmComponent* CameraBoom; // 카메라 암
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-	UCameraComponent* FPPCamera; // 1��Ī ī�޶�
+	UCameraComponent* FPPCamera; // 1인칭 카메라
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-	UCameraComponent* TPPCamera; // 3��Ī ī�޶�
+	UCameraComponent* TPPCamera; // 3인칭 카메라
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-	bool isFPPCamera; // 1��Ī���� ����
+	bool isFPPCamera;// 1인칭인지 여부
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
-	float DefaultSpeed; // �⺻ �ӵ�
+	float DefaultSpeed; // 기본 속도
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-	float SprintSpeed; // ������Ʈ �ӵ�
+	float SprintSpeed;  // 스프린트 속도
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
-	UAnimMontage* DodgeMontage; // ����� ������ ��Ÿ��
+	UAnimMontage* DodgeMontage; // 저장된 구르기 몽타주
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
-	UAnimMontage* DiveRoll_F_Montage; // ������ ������ ��Ÿ��
+	UAnimMontage* DiveRoll_F_Montage; // 앞으로 구르기 몽타주
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
-	UAnimMontage* DiveRoll_B_Montage;  // �ڷ� ������ ��Ÿ��
+	UAnimMontage* DiveRoll_B_Montage;  // 뒤로 구르기 몽타주
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
-	UAnimMontage* DiveRoll_R_Montage;  // ���������� ������ ��Ÿ��
+	UAnimMontage* DiveRoll_R_Montage;  // 오른쪽으로 구르기 몽타주
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
-	UAnimMontage* DiveRoll_L_Montage; // �������� ������ ��Ÿ��
+	UAnimMontage* DiveRoll_L_Montage; // 왼쪽으로 구르기 몽타주
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	UAnimMontage* Reload_Montage;
