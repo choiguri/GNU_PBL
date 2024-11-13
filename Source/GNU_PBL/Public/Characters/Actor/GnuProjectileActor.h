@@ -33,7 +33,13 @@ protected:
     virtual void Tick(float DeltaTime) override;
 
     UPROPERTY(VisibleAnywhere)
-    UNiagaraComponent* NiagaraComponent;
+    UNiagaraComponent* FlyingNiagaraComponent;
+
+    UPROPERTY(VisibleAnywhere)
+    UNiagaraComponent* MuzzleNiagaraComponent;
+
+    UPROPERTY(VisibleAnywhere)
+    UNiagaraComponent* TargetNiagaraComponent;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projectile")
     UProjectileMovementComponent* ProjectileMovementComponent;
