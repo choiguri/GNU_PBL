@@ -42,7 +42,7 @@ public:
 	void SpawnFireball();  // 파이어볼 소환 함수
 	void SpawnFiretornado(); // 파이어토네이도 소환 함수
 	void SpawnFirebreath(); // 파이어브레스 소환 함수
-
+	void SpawnGroundAttack(); // 그라운드 돌 공격 소환 함수
 	
 
 protected:
@@ -145,16 +145,29 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
 	TSubclassOf<class AGnuFiretornadoActor> FiretornadoClass;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
 	TSubclassOf<class AGnuFirebreathActor> FirebreathClass;
-	UPROPERTY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	TSubclassOf<class AGnuGroundActor> GroundClass;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
 	AGnuFirebreathActor* FirebreathActor;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	AGnuGroundActor* GroundActor;
+
 	// 근접 공격 콜리전 활성, 비활성
+	UFUNCTION()
 	void ActivateClawCollision();
+	UFUNCTION()
 	void DeactivateClawCollision();
 
+	UFUNCTION()
 	void ActivateTailCollision();
+	UFUNCTION()
 	void DeactivateTailCollision();
 
 };

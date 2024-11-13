@@ -8,6 +8,7 @@
 #include "Monster/AttackActor/GnuFireballActor.h"
 #include "Monster/AttackActor/GnuFiretornadoActor.h"
 #include "Monster/AttackActor/GnuFirebreathActor.h"
+#include "Monster/AttackActor/GnuGroundActor.h"
 // 무기 관련
 #include "Weapons/Bullet.h"
 // 위젯
@@ -403,8 +404,20 @@ void AGnuMonster::SpawnFirebreath()
 	}
 }
 
+void AGnuMonster::SpawnGroundAttack()
+{
+	if (GroundClass)
+	{
+		FVector GroundLoaction = GetMesh()->GetSocketLocation(TEXT("GroundSocket"));
+		GroundLoaction.Z = 0.f;
 
+		FVector SpawnLocation = GroundLoaction + GetActorForwardVector() * 100;  // 몬스터 앞에 생성
+		FRotator SpawnRotation = GetActorRotation();
 
+		// 파이어볼 액터를 스폰
+		AGnuGroundActor* Ground = GetWorld()->SpawnActor<AGnuGroundActor>(GroundClass, SpawnLocation, SpawnRotation);
+	}
+}
 
 void AGnuMonster::InitializeAnimInstance()
 {

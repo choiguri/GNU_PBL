@@ -26,6 +26,7 @@ void UGnuGenericNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBa
                 }
                 else if (AnimInstance->Montage_IsPlaying(AnimInstance->GroundAttackMontage))
                 {
+                    Monster->SpawnGroundAttack();
                     GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Black, TEXT("Ground Attack Actor Spawn"));
                 }
                 else if (AnimInstance->Montage_IsPlaying(AnimInstance->DragonDieMontage))
