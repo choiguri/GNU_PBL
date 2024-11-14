@@ -28,6 +28,11 @@
 #include "Characters/GnuMyPlayerController.h"
 #include "GameModes/GNUGameMode.h"
 
+// GnuWeapon
+#include "Weapons/GnuWeapon.h"
+#include "Weapons/CombatComponent.h"
+
+
 AGnuMyCharacter::AGnuMyCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -90,6 +95,10 @@ AGnuMyCharacter::AGnuMyCharacter()
 	// 추가 사항
 	OverHeadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverHeadWidget"));
 	OverHeadWidget->SetupAttachment(RootComponent);
+
+	// GnuWeaponComponent
+	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
+	Combat->SetIsReplicated(true);
 }
 
 void AGnuMyCharacter::BeginPlay()
@@ -116,31 +125,33 @@ void AGnuMyCharacter::BeginPlay()
 	ZoomInTimeline.SetTimelineLength(0.3f);
 	// -------------------------------------------------------------------------------
 
-	
-	if (CrossHairWidgetClass) // 크로스헤어 UI 유효성 검사
-	{
-		// Create and add the CrossHair widget to the viewport
-		pCrossHair = CreateWidget<UCrossHair>(GetWorld(), CrossHairWidgetClass);
-		if (IsValid(pCrossHair))
-		{
-			pCrossHair->AddToViewport(); // 뷰포트 추가
-		}
-	}
+	// 기존
+	//if (CrossHairWidgetClass) // 크로스헤어 UI 유효성 검사
+	//{
+	//	// Create and add the CrossHair widget to the viewport
+	//	pCrossHair = CreateWidget<UCrossHair>(GetWorld(), CrossHairWidgetClass);
+	//	if (IsValid(pCrossHair))
+	//	{
+	//		pCrossHair->AddToViewport(); // 뷰포트 추가
+	//	}
+	//}
 
 	// Bind aim rate to CrossHair
-	if (AGnuMyCharacter* GnuMyCharacter = Cast<AGnuMyCharacter>(GetController() ? GetController()->GetPawn() : nullptr))
+	// 기존
+	/*if (AGnuMyCharacter* GnuMyCharacter = Cast<AGnuMyCharacter>(GetController() ? GetController()->GetPawn() : nullptr))
 	{
 		if (GnuMyCharacter)
 		{
 			pCrossHair->BindUserAimRate(GnuMyCharacter);
 		}
-	}
+	}*/
 
 	// Gun Actor Create
-	Gun = GetWorld()->SpawnActor<AGun>(GunClass);
+	// 기존
+	/*Gun = GetWorld()->SpawnActor<AGun>(GunClass);
 	Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("WeaponSocket"));
 	Gun->SetOwner(this);
-	Gun->UpdateAmmoDisplay();
+	Gun->UpdateAmmoDisplay();*/
 	
 	  // ������ �ʱ�ȭ�ϴ� �κ�
 	if (CharacterHealthWidgetClass)
@@ -173,6 +184,7 @@ void AGnuMyCharacter::Tick(float DeltaTime)
 	ZoomInTimeline.TickTimeline(DeltaTime);
 	// �� �����Ӹ��� UI ������Ʈ
 	UpdateUIHealthAndStamina();
+
 }
 
 void AGnuMyCharacter::SetCamera()
@@ -248,7 +260,8 @@ void AGnuMyCharacter::SetZoomIn()
 // ----------------------------------------- Sprint Replicate-----------------------------------
 void AGnuMyCharacter::ServerSprintStart_Implementation() // Ŭ���̾�Ʈ���� ������Ʈ ���� ��û�� ������ �������� ServerSprintStart_Implementation�� ����
 {
-	StopFire();
+	// 기존
+	//StopFire();
 	UpdateSprintState(true); //  �� �Լ��� ���������� ����
 	// ������ ��Ʈ��ũ���� ������ �� �ֵ��� ����
 }
@@ -357,7 +370,8 @@ void AGnuMyCharacter::ServerMontageOnDodge_Implementation(float Forward, float R
 		return;
 	}
 
-	isReload = false;
+	// 기존
+	/*isReload = false;*/
 	// ��Ÿ�� ����
 	SetDodgeMontage(Forward, Right);
 
@@ -443,7 +457,8 @@ void AGnuMyCharacter::ServerMontageOnReload_Implementation() // ������
 	}
 
 	isReload = true;
-	StopFire();
+	// 기존
+	//StopFire();
 	Gun->ServerMontageOnReload();
 	if (pCrossHair)
 	{
@@ -509,10 +524,11 @@ void AGnuMyCharacter::Aiming()
 		{
 			CameraBoom->TargetArmLength -= 10;
 		}
-		if (pCrossHair)
+		// 기존
+		/*if (pCrossHair)
 		{
 			pCrossHair->UpdateCrossHair(0.5);
-		}
+		}*/
 	}
 }
 
@@ -521,138 +537,139 @@ void AGnuMyCharacter::StopAiming()
 	if (GetController() != nullptr)
 	{
 		CameraBoom->TargetArmLength = 350.0f;
-		if (pCrossHair)
+		// 기존
+		/*if (pCrossHair)
 		{
 			pCrossHair->UpdateCrossHair(1);
-		}
+		}*/
 	}
 }
-
-void AGnuMyCharacter::Fire()
-{
-	
-	ServerFire();
-
-}
-
-void AGnuMyCharacter::ServerFire_Implementation()
-{
-	MultiCastFire();
-}
-
-void AGnuMyCharacter::MultiCastFire_Implementation()
-{
-	if (GetController() != nullptr)
-	{
-		if (!(isReload || isDodge))
-		{
-			if (isSprint) {
-				UpdateSprintState(false);
-			}
-			isFire = true;
-			UE_LOG(LogTemp, Warning, TEXT("fire!"));
-			if (pCrossHair)
-			{
-				pCrossHair->UpdateCrossHair(2); // 새로운 AimRate로 크로스헤어 업데이트
-
-			}
-			Gun->PullTrigger();
-		}
-	}
-}
-
-void AGnuMyCharacter::StopFire()
-{
-	ServerStopFire();
-}
-
-void AGnuMyCharacter::ServerStopFire_Implementation()
-{
-	MultiCastStopFire();
-}
-
-void AGnuMyCharacter::MultiCastStopFire_Implementation()
-{
-	if (GetController() != nullptr)
-	{
-		if (isReload != true) {
-			if (pCrossHair)
-			{
-				pCrossHair->UpdateCrossHair(1);
-			}
-		}
-		isFire = false;
-		Gun->ReleaseTrigger();
-	}
-}
-
-
-void AGnuMyCharacter::Interact()
-{
-	if (GetController() != nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Interact"));
-		AController* PlayerController = GetController();
-		if (PlayerController == nullptr)
-		{
-			return;
-		}
-
-		FVector Location;
-		FRotator Rotation;
-		PlayerController->GetPlayerViewPoint(Location, Rotation);
-
-		FVector End = Location + Rotation.Vector() * 1000;
-		// TODO: LineTrace 
-
-		FHitResult Hit;
-		bool bSuccess = GetWorld()->LineTraceSingleByChannel(Hit, Location, End, ECollisionChannel::ECC_GameTraceChannel1);
-
-
-		if (bSuccess)
-		{
-			// 히트된 액터가 존재하는지 확인
-			AActor* HitActor = Hit.GetActor();
-			if (HitActor)
-			{
-				// 액터에 특정 태그가 있는지 확인 (예: "WeaponSwitch")
-				if (HitActor->ActorHasTag(FName("WeaponSwitch")))
-				{
-					AWeaponSwitch* NewGun = Cast<AWeaponSwitch>(HitActor);
-					if (NewGun)
-					{
-						UE_LOG(LogTemp, Warning, TEXT("Switching Weapon..."));
-						TSubclassOf<AGun> NewGunClass = NewGun->Switching();
-						SwitchWeapon(NewGunClass);
-					}
-				}
-			}
-		}
-	}
-}
-
-void AGnuMyCharacter::SwitchWeapon(TSubclassOf<AGun> NewGunClass)
-{
-	if (NewGunClass)
-	{
-		GunClass = NewGunClass;
-
-		if (Gun)
-		{
-			Gun->RemoveAmmoDisplay();
-			Gun->Destroy();
-			Gun = nullptr;
-		}
-		Gun = GetWorld()->SpawnActor<AGun>(GunClass);
-
-		if (Gun)
-		{
-			Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("WeaponSocket"));
-			Gun->SetOwner(this);
-			Gun->UpdateAmmoDisplay();
-		}
-	}
-}
+// 기존
+//void AGnuMyCharacter::Fire()
+//{
+//	
+//	ServerFire();
+//
+//}
+//
+//void AGnuMyCharacter::ServerFire_Implementation()
+//{
+//	MultiCastFire();
+//}
+//
+//void AGnuMyCharacter::MultiCastFire_Implementation()
+//{
+//	if (GetController() != nullptr)
+//	{
+//		if (!(isReload || isDodge))
+//		{
+//			if (isSprint) {
+//				UpdateSprintState(false);
+//			}
+//			isFire = true;
+//			UE_LOG(LogTemp, Warning, TEXT("fire!"));
+//			if (pCrossHair)
+//			{
+//				pCrossHair->UpdateCrossHair(2); // 새로운 AimRate로 크로스헤어 업데이트
+//
+//			}
+//			Gun->PullTrigger();
+//		}
+//	}
+//}
+//
+//void AGnuMyCharacter::StopFire()
+//{
+//	ServerStopFire();
+//}
+//
+//void AGnuMyCharacter::ServerStopFire_Implementation()
+//{
+//	MultiCastStopFire();
+//}
+//
+//void AGnuMyCharacter::MultiCastStopFire_Implementation()
+//{
+//	if (GetController() != nullptr)
+//	{
+//		if (isReload != true) {
+//			if (pCrossHair)
+//			{
+//				pCrossHair->UpdateCrossHair(1);
+//			}
+//		}
+//		isFire = false;
+//		Gun->ReleaseTrigger();
+//	}
+//}
+//
+//
+//void AGnuMyCharacter::Interact()
+//{
+//	if (GetController() != nullptr)
+//	{
+//		UE_LOG(LogTemp, Warning, TEXT("Interact"));
+//		AController* PlayerController = GetController();
+//		if (PlayerController == nullptr)
+//		{
+//			return;
+//		}
+//
+//		FVector Location;
+//		FRotator Rotation;
+//		PlayerController->GetPlayerViewPoint(Location, Rotation);
+//
+//		FVector End = Location + Rotation.Vector() * 1000;
+//		// TODO: LineTrace 
+//
+//		FHitResult Hit;
+//		bool bSuccess = GetWorld()->LineTraceSingleByChannel(Hit, Location, End, ECollisionChannel::ECC_GameTraceChannel1);
+//
+//
+//		if (bSuccess)
+//		{
+//			// 히트된 액터가 존재하는지 확인
+//			AActor* HitActor = Hit.GetActor();
+//			if (HitActor)
+//			{
+//				// 액터에 특정 태그가 있는지 확인 (예: "WeaponSwitch")
+//				if (HitActor->ActorHasTag(FName("WeaponSwitch")))
+//				{
+//					AWeaponSwitch* NewGun = Cast<AWeaponSwitch>(HitActor);
+//					if (NewGun)
+//					{
+//						UE_LOG(LogTemp, Warning, TEXT("Switching Weapon..."));
+//						TSubclassOf<AGun> NewGunClass = NewGun->Switching();
+//						SwitchWeapon(NewGunClass);
+//					}
+//				}
+//			}
+//		}
+//	}
+//}
+//
+//void AGnuMyCharacter::SwitchWeapon(TSubclassOf<AGun> NewGunClass)
+//{
+//	if (NewGunClass)
+//	{
+//		GunClass = NewGunClass;
+//
+//		if (Gun)
+//		{
+//			Gun->RemoveAmmoDisplay();
+//			Gun->Destroy();
+//			Gun = nullptr;
+//		}
+//		Gun = GetWorld()->SpawnActor<AGun>(GunClass);
+//
+//		if (Gun)
+//		{
+//			Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("WeaponSocket"));
+//			Gun->SetOwner(this);
+//			Gun->UpdateAmmoDisplay();
+//		}
+//	}
+//}
 
 bool AGnuMyCharacter::GetIsCrouching() const
 {
@@ -706,6 +723,10 @@ void AGnuMyCharacter::SpawnHeal()
 // -------------------------------------------------------------------------
 
 
+
+
+
+
 //--------------------------- HP Update --------------------------------
 void AGnuMyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -716,6 +737,10 @@ void AGnuMyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME(AGnuMyCharacter, CurHP);
 	DOREPLIFETIME(AGnuMyCharacter, Health);
 	DOREPLIFETIME(AGnuMyCharacter, Stamina);
+
+	// GnuWeapon
+	DOREPLIFETIME_CONDITION(AGnuMyCharacter, OverlappingWeapon, COND_OwnerOnly);
+
 }
 
 
@@ -757,7 +782,32 @@ void AGnuMyCharacter::UpdateUIHealthAndStamina()
 	}
 }
 
+//
+// GnuWeapon
+//
+void AGnuMyCharacter::EquipButtonPressed()
+{
+	if (Combat)
+	{
+		if (HasAuthority())
+		{
+			Combat->EquipWeapon(OverlappingWeapon);
+		}
+		else
+		{
+			ServerEquipButtonPressed();
+		}
 
+	}
+}
+
+void AGnuMyCharacter::ServerEquipButtonPressed_Implementation()
+{
+	if (Combat)
+	{
+		Combat->EquipWeapon(OverlappingWeapon);
+	}
+}
 
 void AGnuMyCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
 {
@@ -818,16 +868,39 @@ void AGnuMyCharacter::ServerSetPlayerName_Implementation(const FString& PlayerNa
 	}
 }
 
+void AGnuMyCharacter::SetOverlappingWeapon(AGnuWeapon* Weapon)
+{
+	if (OverlappingWeapon)
+	{
+		OverlappingWeapon->ShowPickupWidget(false);
+	}
+	OverlappingWeapon = Weapon;
+	if (IsLocallyControlled())
+	{
+		if (OverlappingWeapon)
+		{
+			OverlappingWeapon->ShowPickupWidget(true);
+		}
+	}
+}
 
-// -------------------------------------------------------------------------
+void AGnuMyCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	if (Combat)
+	{
+		Combat->GnuCharacter = this;
+	}
+}
 
-
-/* ----------- ���� - Ŭ���̾�Ʈ ����ȭ ���� -------------------
-< ���ø����̼� ��� >
-������Ʈ: isSprint ������ �������� �����ϰ�, �� ���� ������ OnRep_IsSprinting�� ���� Ŭ���̾�Ʈ�� �˸��� ����. �� Ŭ���̾�Ʈ�� �����κ��� ���������� ���¸� ����ȭ����
-������ : isDodge ������ �ܼ� ���� ǥ�ÿ��̰�, ������ �ִϸ��̼��� ������ �� �� ó���ϰ� ��� Ŭ���̾�Ʈ���� ���� ����ǰԲ� ��Ƽĳ��Ʈ�� ���ĵ�
-
-< �Լ� ȣ�� ��� >
-������Ʈ: Ŭ���̾�Ʈ�� ������ ��û�� ������, ������ ���� Ŭ���̾�Ʈ���� �ٽ� ���¸� �����ϴ� ����� ��� ���
-������ : Ŭ���̾�Ʈ�� ������ ��û�ϸ�, ������ ��� Ŭ���̾�Ʈ�� ���ÿ� ������ �����ϴ� �� ���� ���� ���
-------------------------------------------------------------- */
+void AGnuMyCharacter::OnRep_OverlappingWeapon(AGnuWeapon* LastWeapon)
+{
+	if (OverlappingWeapon)
+	{
+		OverlappingWeapon->ShowPickupWidget(true);
+	}
+	if (LastWeapon)
+	{
+		LastWeapon->ShowPickupWidget(false);
+	}
+}

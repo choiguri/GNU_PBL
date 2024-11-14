@@ -68,7 +68,7 @@ void AGun::Fire()
 		}
 		
 		UGameplayStatics::SpawnEmitterAttached(MuzzleFlash, Mesh, TEXT("MuzzleFlashSocket"));
-
+		
 		ServerMontageOnFire();
 
 		FTransform fireposition = Mesh->GetSocketTransform(TEXT("FirePosition"), RTS_World);

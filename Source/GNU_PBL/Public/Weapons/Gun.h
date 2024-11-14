@@ -61,6 +61,8 @@ public:
 	UFUNCTION()
 	void Fire();
 
+	
+
 private:
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* Root;

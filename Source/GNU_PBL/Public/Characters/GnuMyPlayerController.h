@@ -99,6 +99,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = "input")
 	TObjectPtr<UInputAction> QuitAction;
 
+	UPROPERTY(EditAnywhere, Category = "input")
+	TObjectPtr<UInputAction> EquipAction;
+
 	// Weapon input
 	UPROPERTY(EditAnywhere, Category = "input")
 	TObjectPtr<UInputAction> AimingAction;
@@ -134,15 +137,17 @@ private:
 	void HealSkill(const struct FInputActionValue& InputActionValue); // �� ��ų
 
 	// ------------------ Weapon funtion -------------
-	void Aiming();
-	void StopAiming();
-	void Fire();
-	void StopFire();
-	void Reload();
-	void Interact(); // 상호작용 함수
+	// 기존
+	//void Aiming();
+	//void StopAiming();
+	//void Fire();
+	//void StopFire();
+	//void Reload();
+	//void Interact(); // 상호작용 함수
 	// -----------------------------------------------
 
-
+	// GnuWeapon
+	void EquipButtonPressed();
 //
 // 추가사항
 //

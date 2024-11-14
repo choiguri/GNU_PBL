@@ -258,9 +258,7 @@ private:
 
 
 public:
-	// 서버에서 수정 -> RepNotify -> 클라이언트 반응
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
+	
 	// Implementation으로 정의해서 밑줄이 뜨더라도 오류가 아님
 	UFUNCTION(Client, Reliable)
 	void ClientSetName(const FString& Name);
@@ -273,7 +271,8 @@ public:
 	//
 	void Elim();
 
-	UFUNCTION(Server, Reliable)
+	// 기존
+	/*UFUNCTION(Server, Reliable)
 	void ServerFire();
 
 	UFUNCTION(NetMulticast, Reliable)
@@ -283,7 +282,10 @@ public:
 	void ServerStopFire();
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MultiCastStopFire();
+	void MultiCastStopFire();*/
+
+	// 무기 장착
+	void EquipButtonPressed();
 
 protected:
 	UFUNCTION()
@@ -293,4 +295,27 @@ protected:
 	void UpdateHUDStamina();
 
 	
+
+////// GnuWeapon Start
+
+private:
+	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
+	class AGnuWeapon* OverlappingWeapon;
+
+	UFUNCTION()
+	void OnRep_OverlappingWeapon(AGnuWeapon* LastWeapon);
+
+	UPROPERTY(VisibleAnywhere)
+	class UCombatComponent* Combat;
+
+	UFUNCTION(Server, Reliable)
+	void ServerEquipButtonPressed();
+
+public:
+	// 복제를 위한 변수 저장
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	void SetOverlappingWeapon(AGnuWeapon* Weapon);
+
+	virtual void PostInitializeComponents() override;
 };
