@@ -14,9 +14,10 @@ class GNU_PBL_API UCombatComponent : public UActorComponent
 
 public:	
 	UCombatComponent();
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	friend class AGnuMyCharacter;
-
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	
 	void EquipWeapon(class AGnuWeapon* WeaponToEquip);
 
 protected:
@@ -25,6 +26,8 @@ protected:
 
 private:
 	class AGnuMyCharacter* GnuCharacter;
+
+	UPROPERTY(Replicated)
 	AGnuWeapon* EquippedWeapon;
 	
 	

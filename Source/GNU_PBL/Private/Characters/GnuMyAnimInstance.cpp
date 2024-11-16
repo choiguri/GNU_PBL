@@ -35,7 +35,7 @@ void UGnuMyAnimInstance::NativeInitializeAnimation()
 	CurDirectionAngle = 0.0f;
 	CurVelocity = FVector::Zero();
 	CurAcceleration = FVector::Zero();
-	EAnimState = EAnimationState::Rifle; // �� ������ �ʱ�ȭ
+	EAnimState = EAnimationState::Unarmed; // �� ������ �ʱ�ȭ
 	bIsCrouching = false;
 	bIsSprinting = false;
 }
@@ -59,6 +59,9 @@ void UGnuMyAnimInstance::NativeUpdateAnimation(float DeltaTime)
 		UpdateDirectionAndMovementInput();
 		bIsCrouching = MyCharacter->GetIsCrouching();
 		bIsSprinting = MyCharacter->GetIsSprinting();
+		bWeaponEquipped = MyCharacter->IsWeaponEquipped();
+		bIsCrouched = MyCharacter->bIsCrouched;
+		SetWeapon();
 	}
 
 }
@@ -152,15 +155,12 @@ void UGnuMyAnimInstance::SetTurnRate(float CurYaw) // GnuCharacterPlayerControll
 
 void UGnuMyAnimInstance::SetWeapon()
 {
-	if (EAnimState == EAnimationState::Unarmed)
-	{
-		EAnimState = EAnimationState::Pistol;
-	}
-	else if (EAnimState == EAnimationState::Pistol)
+
+	if (bWeaponEquipped)
 	{
 		EAnimState = EAnimationState::Rifle;
 	}
-	else if (EAnimState == EAnimationState::Rifle)
+	else if (!bWeaponEquipped)
 	{
 		EAnimState = EAnimationState::Unarmed;
 	}

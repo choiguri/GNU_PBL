@@ -95,12 +95,16 @@ private:
 	TObjectPtr<UInputAction> ZoomInAction; // ī�޶� ��
 
 
+
 	// 추가사항
 	UPROPERTY(EditAnywhere, Category = "input")
 	TObjectPtr<UInputAction> QuitAction;
 
 	UPROPERTY(EditAnywhere, Category = "input")
 	TObjectPtr<UInputAction> EquipAction;
+
+	UPROPERTY(EditAnywhere, Category = "input")
+	TObjectPtr<UInputAction> Crouch;
 
 	// Weapon input
 	UPROPERTY(EditAnywhere, Category = "input")
@@ -136,6 +140,7 @@ private:
 	void ArrowSkill(const struct FInputActionValue& InputActionValue); // ���ο� ��ų
 	void HealSkill(const struct FInputActionValue& InputActionValue); // �� ��ų
 
+
 	// ------------------ Weapon funtion -------------
 	// 기존
 	//void Aiming();
@@ -148,6 +153,7 @@ private:
 
 	// GnuWeapon
 	void EquipButtonPressed();
+	void CrouchButtonPressed();
 //
 // 추가사항
 //

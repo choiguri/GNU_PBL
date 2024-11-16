@@ -318,4 +318,6 @@ public:
 	void SetOverlappingWeapon(AGnuWeapon* Weapon);
 
 	virtual void PostInitializeComponents() override;
+
+	bool IsWeaponEquipped();
 };

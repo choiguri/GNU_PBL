@@ -166,6 +166,8 @@ void AGnuMyPlayerController::SetupInputComponent()
 	// 추가사항
 	EnhancedInputComponent->BindAction(QuitAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::ShowReturnToMainMenu);
 	EnhancedInputComponent->BindAction(EquipAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::EquipButtonPressed);
+	EnhancedInputComponent->BindAction(Crouch, ETriggerEvent::Started, this, &AGnuMyPlayerController::CrouchButtonPressed);
+	
 }
 
 // 추가사항
@@ -524,6 +526,37 @@ void AGnuMyPlayerController::EquipButtonPressed()
 				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("EquipButton")));
 			}
 			MyCharacter->EquipButtonPressed();
+		}
+	}
+}
+
+void AGnuMyPlayerController::CrouchButtonPressed()
+{
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, FString::Printf(TEXT("CrouchButtonPressed")));
+	}
+	if (APawn* ControlledPawn = GetPawn<APawn>())
+	{
+		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
+		if (MyCharacter)
+		{
+			if (MyCharacter->bIsCrouched)
+			{
+				if (GEngine)
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("uncrouch")));
+				}
+				MyCharacter->UnCrouch();
+			}
+			else
+			{
+				if (GEngine)
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("crouch")));
+				}
+				MyCharacter->Crouch();
+			}
 		}
 	}
 }

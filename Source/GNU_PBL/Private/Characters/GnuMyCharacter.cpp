@@ -99,6 +99,7 @@ AGnuMyCharacter::AGnuMyCharacter()
 	// GnuWeaponComponent
 	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	Combat->SetIsReplicated(true);
+	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 }
 
 void AGnuMyCharacter::BeginPlay()
@@ -891,6 +892,11 @@ void AGnuMyCharacter::PostInitializeComponents()
 	{
 		Combat->GnuCharacter = this;
 	}
+}
+
+bool AGnuMyCharacter::IsWeaponEquipped()
+{
+	return (Combat && Combat->EquippedWeapon);
 }
 
 void AGnuMyCharacter::OnRep_OverlappingWeapon(AGnuWeapon* LastWeapon)

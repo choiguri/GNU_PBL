@@ -90,6 +90,8 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Movement")
 	bool bIsSprinting;
 
+	
+
 public:
 	virtual void NativeUpdateAnimation(float DeltaTime) override;
 	virtual void NativeInitializeAnimation() override;
@@ -118,4 +120,9 @@ private:
 	void UpdateMovementState(); // �̵� ���� ������Ʈ
 	void UpdateDirectionAndMovementInput(); // ����� �̵� �Է��� ������Ʈ
 
+	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	bool bWeaponEquipped;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	bool bIsCrouched;
 };
