@@ -27,6 +27,9 @@ public:
 	UFUNCTION()
 	void StopBehaviorTree();
 
+
+	void AttackNumberInitialization();
+
 	//~ Begin IGenericTeamAgentInterface Interface.
 	/*virtual ETeamAttitude::Type GetTeamAttitudeTowards(const AActor& Other) const;*/
 	//~ End IGenericTeamAgentInterface Interface
@@ -69,4 +72,12 @@ private:
 	FTimerHandle TargetUpdateTimerHandle;
 
 	float TargetUpdateInterval;
+
+
+	// 재시도 쿨다운 타이머
+	FTimerHandle RetryCooldownTimerHandle;
+	bool bCanRetry = true;
+
+	// 재시도 쿨다운 설정 함수
+	void StartRetryCooldown();
 };

@@ -12,10 +12,6 @@
 AGnuMonsterAIController::AGnuMonsterAIController()
 {
     SetUpPerceptionComponent();
-
-    // 팀 아이디 1로 지정
-    /*SetGenericTeamId(FGenericTeamId(1));*/
-
 }
 
 void AGnuMonsterAIController::BeginPlay()
@@ -46,7 +42,7 @@ void AGnuMonsterAIController::Tick(float DeltaSeconds)
 
     // 플레이어 캐릭터를 감지하여 타겟을 업데이트
     // 현재 타겟 업데이트
-    ACharacter* CurrentTarget = Cast<ACharacter>(GetBlackboardComponent()->GetValueAsObject(FName("TargetActor")));
+    ACharacter* CurrentTarget = Cast<ACharacter>(GetBlackboardComponent()->GetValueAsObject(TEXT("TargetActor")));
 
     if (CurrentTarget)
     {
@@ -62,23 +58,19 @@ void AGnuMonsterAIController::Tick(float DeltaSeconds)
             float Distance = FVector::Dist(MonsterActor->GetActorLocation(), CurrentTarget->GetActorLocation());
 
             // DistToTarget 블랙보드 키에 저장
-            GetBlackboardComponent()->SetValueAsFloat(FName("DistToTarget"), Distance);
+            GetBlackboardComponent()->SetValueAsFloat(TEXT("DistToTarget"), Distance);
         }
     }
-}
+    else if (bCanRetry)
+    {
+        // 타겟이 없으면 재시도
+        UpdateTarget();
+        GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("No Target Detected. Retrying..."));
 
-//ETeamAttitude::Type AGnuMonsterAIController::GetTeamAttitudeTowards(const AActor& Other) const
-//{
-//    const APawn* PawnToCheck = Cast<const APawn>(&Other);
-//
-//    const IGenericTeamAgentInterface* OtherTeamAgent = Cast<IGenericTeamAgentInterface>(PawnToCheck->GetController());
-//
-//    if (OtherTeamAgent && OtherTeamAgent->GetGenericTeamId() != GetGenericTeamId())
-//    {
-//        return ETeamAttitude::Hostile;
-//    }
-//    return ETeamAttitude::Friendly;
-//}
+        // 재시도 제한 시작
+        StartRetryCooldown();
+    }
+}
 
 
 void AGnuMonsterAIController::StopBehaviorTree()
@@ -141,6 +133,37 @@ void AGnuMonsterAIController::OnTargetDetected(AActor* Actor, FAIStimulus const 
             }
         }
     }
+    else
+    {
+        // 타겟 상실 시 블랙보드에서 TargetActor와 PlayerLocation 초기화
+        GetBlackboardComponent()->ClearValue(FName("TargetActor"));
+        GetBlackboardComponent()->ClearValue(FName("PlayerLocation"));
+        GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Orange, TEXT("Perception Target loss"));
+    }
+}
+
+void AGnuMonsterAIController::StartRetryCooldown()
+{
+    bCanRetry = false; // 재시도 불가 상태로 변경
+
+    // 일정 시간이 지난 후 재시도 가능 상태로 변경
+    GetWorld()->GetTimerManager().SetTimer(
+        RetryCooldownTimerHandle,
+        [this]() { bCanRetry = true; },
+        0.5f, // 쿨다운 시간 (초)
+        false // 반복하지 않음
+    );
+}
+
+
+// AttackNumber cpp파일에서 불려졌을 때 AttackSelectNumber가 초기화 되는 함수
+void AGnuMonsterAIController::AttackNumberInitialization()
+{
+    UBlackboardComponent* BlackboardComp = GetBlackboardComponent();
+    if (BlackboardComp)
+    {
+        BlackboardComp->SetValueAsInt(TEXT("AttackSelectNumber"), 0);
+    }
 }
 
 
@@ -195,41 +218,3 @@ void AGnuMonsterAIController::UpdateTarget()
         SetNewTarget(NewTarget);
     }
 }
-
-
-
-//// 타겟 업데이트 함수
-//void AGnuMonsterAIController::UpdateTarget()
-//{
-//    TArray<AActor*> DetectedActors;
-//    AIPerceptionComponent->GetCurrentlyPerceivedActors(UAISense_Sight::StaticClass(), DetectedActors);
-//
-//    ACharacter* ClosestPlayer = nullptr;
-//    float ClosestDistance = FLT_MAX;
-//
-//    for (AActor* Actor : DetectedActors)
-//    {
-//        if (ACharacter* PlayerCharacter = Cast<ACharacter>(Actor))
-//        {
-//            float Distance = FVector::Dist(PlayerCharacter->GetActorLocation(), GetPawn()->GetActorLocation());
-//            if (Distance < ClosestDistance)
-//            {
-//                ClosestDistance = Distance;
-//                ClosestPlayer = PlayerCharacter;
-//            }
-//        }
-//    }
-//
-//    if (ClosestPlayer)
-//    {
-//        GetBlackboardComponent()->SetValueAsObject(FName("TargetActor"), ClosestPlayer);
-//        GetBlackboardComponent()->SetValueAsVector(TEXT("PlayerLocation"), ClosestPlayer->GetActorLocation());
-//    }
-//    else
-//    {
-//        // 타겟이 없을 경우 초기화
-//        GetBlackboardComponent()->ClearValue(FName("TargetActor"));
-//        GetBlackboardComponent()->ClearValue(TEXT("PlayerLocation"));
-//    }
-//}
-

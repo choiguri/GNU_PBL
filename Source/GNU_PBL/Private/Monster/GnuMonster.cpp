@@ -35,6 +35,10 @@ AGnuMonster::AGnuMonster()
 	// 컨트롤러의 회전 사용 여부
 	bUseControllerRotationYaw = false;
 
+	// 기본 캡슐 컴포넌트, 기본 스켈레탈 메쉬수정 가능하도록 설정
+	GetCapsuleComponent()->bEditableWhenInherited = true;
+	GetMesh()->bEditableWhenInherited = true;
+
 	// hp 구현
 	MaxHealth = 1000.f;
 	CurrentHealth = MaxHealth;
@@ -108,48 +112,7 @@ void AGnuMonster::Tick(float DeltaTime)
 		FirebreathActor->SetActorLocation(SpawnLocation + SpawnRotation.Vector() * 100); // 몬스터 앞쪽으로 이동
 		FirebreathActor->SetActorRotation(SpawnRotation); // 몬스터와 같은 방향으로 회전
 	}
-
-	//// 애니메이션 Notify 처리
-	//if (CurrentMontage)
-	//{
-	//	TArray<UAnimNotify*> NotifyArray;
-	//	CurrentMontage->GetNotifies(NotifyArray);
-	//	for (UAnimNotify* Notify : NotifyArray)
-	//	{
-	//		HandleAnimNotify(Notify);
-	//	}
-	//}
 }
-
-// 데미지 계산 부분
-//float AGnuMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
-//{
-//		// 부모 클래스에서의 TakeDamage를 호출하지 않고 직접 처리
-//		float ActualDamage = DamageAmount;  // DamageAmount를 그대로 사용 (필요 시 추가 계산 가능)
-//
-//		// 데미지 처리
-//		CurrentHealth -= ActualDamage;
-//		GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Red, FString::Printf(TEXT("Current Health : %f"), CurrentHealth));
-//		GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Red, FString::Printf(TEXT("Max Health : %f"), MaxHealth));
-//
-//		if (MonsterHealthWidget)
-//		{
-//			MonsterHealthWidget->UpdateBossHP(CurrentHealth, MaxHealth);  // HP 업데이트
-//		}
-//
-//		if (CurrentHealth <= 0)
-//		{
-//			Die();
-//		}
-//
-//		if (CurrentHealth <= MaxHealth * 0.5f && !bIsPhaseTwo)  // 여기서 `bIsPhaseTwo`가 false일 때만 Phase2로 들어가도록 수정
-//		{
-//			bIsPhaseTwo = true;
-//			EnterPhaseTwo();
-//		}
-//
-//		return ActualDamage;
-//}
 
 
 void AGnuMonster::OnRep_Health()
@@ -365,10 +328,10 @@ void AGnuMonster::SpawnFiretornado()
 
 		FRotator SpawnRotation1 = GetActorRotation();
 		
-		FRotator SpawnRotation2 = SpawnRotation1;
+		FRotator SpawnRotation2 = GetActorRotation();
 		SpawnRotation2.Yaw -= 30;
 
-		FRotator SpawnRotation3 = SpawnRotation1;
+		FRotator SpawnRotation3 = GetActorRotation();
 		SpawnRotation3.Yaw += 30;
 
 
@@ -430,9 +393,7 @@ void AGnuMonster::InitializeCollisionComponent(UBoxComponent*& CollisionComponen
 	//CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly); // 오버랩을 위해 QueryOnly로 설정
 }
 
-
-
-
+// 블루프린트에서 Attach Socket 설정 가능한 가변형 함수 사용시 주의해야함
 #if WITH_EDITOR
 void AGnuMonster::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {

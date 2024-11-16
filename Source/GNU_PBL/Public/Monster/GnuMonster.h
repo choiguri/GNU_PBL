@@ -31,8 +31,6 @@ public:
 	// TakeDamage 함수 오버라이드
 	//virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
-	
-
 	// HP 상황에 따라 상태 함수들
 	void Die(); // 사망 함수
 	void DelayedDestroy(); // 타이머가 만료되면 호출될 함수
@@ -44,6 +42,7 @@ public:
 	void SpawnFirebreath(); // 파이어브레스 소환 함수
 	void SpawnGroundAttack(); // 그라운드 돌 공격 소환 함수
 	
+
 
 protected:
 	// Called when the game starts or when spawned
