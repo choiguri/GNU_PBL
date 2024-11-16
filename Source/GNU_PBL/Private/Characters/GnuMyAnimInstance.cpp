@@ -38,6 +38,7 @@ void UGnuMyAnimInstance::NativeInitializeAnimation()
 	EAnimState = EAnimationState::Unarmed; // �� ������ �ʱ�ȭ
 	bIsCrouching = false;
 	bIsSprinting = false;
+	bIsCrouched = false;
 }
 
 void UGnuMyAnimInstance::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

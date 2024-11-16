@@ -106,6 +106,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = "input")
 	TObjectPtr<UInputAction> Crouch;
 
+	UPROPERTY(EditAnywhere, Category = "input")
+	TObjectPtr<UInputAction> FireAction;
+
 	// Weapon input
 	UPROPERTY(EditAnywhere, Category = "input")
 	TObjectPtr<UInputAction> AimingAction;
@@ -143,8 +146,8 @@ private:
 
 	// ------------------ Weapon funtion -------------
 	// 기존
-	//void Aiming();
-	//void StopAiming();
+	void Aiming();
+	void StopAiming();
 	//void Fire();
 	//void StopFire();
 	//void Reload();
@@ -154,6 +157,8 @@ private:
 	// GnuWeapon
 	void EquipButtonPressed();
 	void CrouchButtonPressed();
+	void FireButtonPressed();
+	void FireButtonReleased();
 //
 // 추가사항
 //

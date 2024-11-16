@@ -99,7 +99,8 @@ AGnuMyCharacter::AGnuMyCharacter()
 	// GnuWeaponComponent
 	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	Combat->SetIsReplicated(true);
-	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
+
+	MovementComponent->NavAgentProps.bCanCrouch = true;
 }
 
 void AGnuMyCharacter::BeginPlay()
@@ -802,6 +803,22 @@ void AGnuMyCharacter::EquipButtonPressed()
 	}
 }
 
+void AGnuMyCharacter::FireButtonPressed()
+{
+	if (Combat)
+	{
+		Combat->FireButtonPressed(true);
+	}
+}
+
+void AGnuMyCharacter::FireButtionReleased()
+{
+	if (Combat)
+	{
+		Combat->FireButtonPressed(false);
+	}
+}
+
 void AGnuMyCharacter::ServerEquipButtonPressed_Implementation()
 {
 	if (Combat)
@@ -897,6 +914,21 @@ void AGnuMyCharacter::PostInitializeComponents()
 bool AGnuMyCharacter::IsWeaponEquipped()
 {
 	return (Combat && Combat->EquippedWeapon);
+}
+
+void AGnuMyCharacter::PlayFireMontage()
+{
+	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && FireWeaponMontage)
+	{
+		AnimInstance->Montage_Play(FireWeaponMontage);
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("FireMontage")));
+		}
+	}
 }
 
 void AGnuMyCharacter::OnRep_OverlappingWeapon(AGnuWeapon* LastWeapon)

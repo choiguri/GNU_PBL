@@ -6,6 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "CombatComponent.generated.h"
 
+#define TRACE_LENGTH 10000.f
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class GNU_PBL_API UCombatComponent : public UActorComponent
@@ -24,13 +25,23 @@ protected:
 
 	virtual void BeginPlay() override;
 
+	void FireButtonPressed(bool bPressed);
+
+	UFUNCTION(Server, Reliable)
+	void ServerFire(const FVector_NetQuantize& TraceHitTarget);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiCastFire(const FVector_NetQuantize& TraceHitTarget);
+
+	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
+
 private:
 	class AGnuMyCharacter* GnuCharacter;
 
 	UPROPERTY(Replicated)
 	AGnuWeapon* EquippedWeapon;
 	
-	
+	bool bFireButtonPressed;
 
 		
 };

@@ -286,6 +286,8 @@ public:
 
 	// 무기 장착
 	void EquipButtonPressed();
+	void FireButtonPressed();
+	void FireButtionReleased();
 
 protected:
 	UFUNCTION()
@@ -311,6 +313,9 @@ private:
 	UFUNCTION(Server, Reliable)
 	void ServerEquipButtonPressed();
 
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	UAnimMontage* FireWeaponMontage;
+
 public:
 	// 복제를 위한 변수 저장
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
@@ -320,4 +325,6 @@ public:
 	virtual void PostInitializeComponents() override;
 
 	bool IsWeaponEquipped();
+
+	void PlayFireMontage();
 };

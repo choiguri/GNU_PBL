@@ -156,10 +156,10 @@ void AGnuMyPlayerController::SetupInputComponent()
 	// 기존
 	/*EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::Interact);
 	EnhancedInputComponent->BindAction(ShotAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::Fire);
-	EnhancedInputComponent->BindAction(ShotAction, ETriggerEvent::Completed, this, &AGnuMyPlayerController::StopFire);
-	EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::Aiming);
-	EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Completed, this, &AGnuMyPlayerController::StopAiming);
-	EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::Reload);*/
+	EnhancedInputComponent->BindAction(ShotAction, ETriggerEvent::Completed, this, &AGnuMyPlayerController::StopFire);*/
+	//EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::Aiming);
+	//EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Completed, this, &AGnuMyPlayerController::StopAiming);
+	//EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::Reload);
 	EnhancedInputComponent->BindAction(ArrowSkillAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::ArrowSkill);
 	EnhancedInputComponent->BindAction(HealSkillAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::HealSkill);
 
@@ -167,6 +167,8 @@ void AGnuMyPlayerController::SetupInputComponent()
 	EnhancedInputComponent->BindAction(QuitAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::ShowReturnToMainMenu);
 	EnhancedInputComponent->BindAction(EquipAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::EquipButtonPressed);
 	EnhancedInputComponent->BindAction(Crouch, ETriggerEvent::Started, this, &AGnuMyPlayerController::CrouchButtonPressed);
+	EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::FireButtonPressed);
+	EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::FireButtonReleased);
 	
 }
 
@@ -439,29 +441,29 @@ void AGnuMyPlayerController::StopJumping(const FInputActionValue& InputActionVal
 }
 
 // 기존
-//void AGnuMyPlayerController::Aiming()
-//{
-//	if (APawn* ControlledPawn = GetPawn<APawn>())
-//	{
-//		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
-//		if (MyCharacter)
-//		{
-//			MyCharacter->Aiming(); 
-//		}
-//	}
-//}
-//
-//void AGnuMyPlayerController::StopAiming()
-//{
-//	if (APawn* ControlledPawn = GetPawn<APawn>())
-//	{
-//		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
-//		if (MyCharacter)
-//		{
-//			MyCharacter->StopAiming(); 
-//		}
-//	}
-//}
+void AGnuMyPlayerController::Aiming()
+{
+	if (APawn* ControlledPawn = GetPawn<APawn>())
+	{
+		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
+		if (MyCharacter)
+		{
+			MyCharacter->Aiming(); 
+		}
+	}
+}
+
+void AGnuMyPlayerController::StopAiming()
+{
+	if (APawn* ControlledPawn = GetPawn<APawn>())
+	{
+		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
+		if (MyCharacter)
+		{
+			MyCharacter->StopAiming(); 
+		}
+	}
+}
 
 // 기존
 //void AGnuMyPlayerController::Fire()
@@ -521,10 +523,6 @@ void AGnuMyPlayerController::EquipButtonPressed()
 		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
 		if (MyCharacter)
 		{
-			if (GEngine)
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("EquipButton")));
-			}
 			MyCharacter->EquipButtonPressed();
 		}
 	}
@@ -557,6 +555,31 @@ void AGnuMyPlayerController::CrouchButtonPressed()
 				}
 				MyCharacter->Crouch();
 			}
+		}
+	}
+}
+
+void AGnuMyPlayerController::FireButtonPressed()
+{
+	if (APawn* ControlledPawn = GetPawn<APawn>())
+	{
+		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
+		if (MyCharacter)
+		{
+			MyCharacter->FireButtonPressed();
+		}
+	}
+
+}
+
+void AGnuMyPlayerController::FireButtonReleased()
+{
+	if (APawn* ControlledPawn = GetPawn<APawn>())
+	{
+		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
+		if (MyCharacter)
+		{
+			MyCharacter->FireButtionReleased();
 		}
 	}
 }
