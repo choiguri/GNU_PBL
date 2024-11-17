@@ -9,6 +9,10 @@
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
+#include "Characters/GnuMyPlayerController.h"
+#include "HUD/GNUHUD.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "TimerManager.h"
 
 
 UCombatComponent::UCombatComponent()
@@ -32,18 +36,22 @@ void UCombatComponent::BeginPlay()
 
 }
 
-void UCombatComponent::FireButtonPressed(bool bPressed)
+void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
-	bFireButtonPressed = bPressed;
-	
-	if (bFireButtonPressed)
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	SetHUDCrosshairs(DeltaTime);
+
+	// 실시간 LineTrace
+	if (GnuCharacter && GnuCharacter->IsLocallyControlled())
 	{
 		FHitResult HitResult;
 		TraceUnderCrosshairs(HitResult);
-		ServerFire(HitResult.ImpactPoint);
+		HitTarget = HitResult.ImpactPoint;
 	}
-
 }
+
+
 
 void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 {
@@ -53,23 +61,26 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 		GEngine->GameViewport->GetViewportSize(ViewportSize);
 	}
 
-	// viewport (화면) 중앙
 	FVector2D CrosshairLocation(ViewportSize.X / 2.f, ViewportSize.Y / 2.f);
 	FVector CrosshairWorldPosition;
 	FVector CrosshairWorldDirection;
-	// 2D-> 3D
 	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(
-		UGameplayStatics::GetPlayerController(this, 0), 
-		CrosshairLocation, 
-		CrosshairWorldPosition, 
-		CrosshairWorldDirection);
+		UGameplayStatics::GetPlayerController(this, 0),
+		CrosshairLocation,
+		CrosshairWorldPosition,
+		CrosshairWorldDirection
+	);
 
 	if (bScreenToWorld)
 	{
-		// 화면 중앙 3D
-		FVector Start = CrosshairWorldDirection;
+		FVector Start = CrosshairWorldPosition;
+		// 카메라와 캐릭터의 거리를 구하기
+		if (GnuCharacter)
+		{
+			float DistanceToCharacter = (GnuCharacter->GetActorLocation() - Start).Size();
+			Start += CrosshairWorldDirection * (DistanceToCharacter + 70.f);
+		}
 
-		// Start 지점을 십자방향으로 밀어내기 TRACE_LENGTH =  10000.f
 		FVector End = Start + CrosshairWorldDirection * TRACE_LENGTH;
 
 		GetWorld()->LineTraceSingleByChannel(
@@ -78,8 +89,131 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 			End,
 			ECollisionChannel::ECC_Visibility
 		);
-		
+		if (!TraceHitResult.bBlockingHit)
+		{
+			TraceHitResult.ImpactPoint = End;
+		}
 	}
+}
+
+void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
+{
+	if (GnuCharacter == nullptr || GnuCharacter->Controller == nullptr) return;
+	
+	Controller = Controller == nullptr ? Cast<AGnuMyPlayerController>(GnuCharacter->Controller) : Controller;
+	if (Controller)
+	{
+		
+		HUD = HUD == nullptr ? Cast<AGNUHUD>(Controller->GetHUD()) : HUD;
+		if (HUD)
+		{
+			FHUDPackage HUDPackage;
+			if (EquippedWeapon)
+			{
+				HUDPackage.CrosshairCenter = EquippedWeapon->CrosshairCenter;
+				HUDPackage.CrosshairLeft = EquippedWeapon->CrosshairLeft;
+				HUDPackage.CrosshairRight = EquippedWeapon->CrosshairRight;
+				HUDPackage.CrosshairTop = EquippedWeapon->CrosshairTop;
+				HUDPackage.CrosshairBottom = EquippedWeapon->CrosshairBottom;
+			}
+			else
+			{
+				HUDPackage.CrosshairCenter = nullptr;
+				HUDPackage.CrosshairLeft = nullptr;
+				HUDPackage.CrosshairRight = nullptr;
+				HUDPackage.CrosshairTop = nullptr;
+				HUDPackage.CrosshairBottom = nullptr;
+			}
+
+			// 십자선 퍼짐 계산
+			// Ex 캐릭터의 최저속도 0, 최고속도 500이면  => 최저속도 0, 최고속도 1
+			// 0과 1사이의 값으로 변환
+			
+			FVector2D WalkSpeedRange(0.f, GnuCharacter->GetCharacterMovement()->MaxWalkSpeed);
+			FVector2D VelocityMultiplierRange(0.f, 1.f);
+			FVector Velocity = GnuCharacter->GetVelocity();
+			Velocity.Z = 0.f;
+
+			CrosshairVelocityFactor = FMath::GetMappedRangeValueClamped(WalkSpeedRange, VelocityMultiplierRange, Velocity.Size());
+
+			if (GnuCharacter->GetCharacterMovement()->IsFalling())
+			{
+				CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 2.25f, DeltaTime, 2.25f);
+			}
+			else
+			{
+				CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 0.f, DeltaTime, 30.f);
+			}
+			if (bFireButtonPressed)
+			{
+				CrosshairInFireFactor = FMath::FInterpTo(CrosshairInFireFactor, 1.25f, DeltaTime, 1.25f);
+			}
+			else
+			{
+				CrosshairInFireFactor = FMath::FInterpTo(CrosshairInFireFactor, 0.f, DeltaTime, 30.f);
+			}
+
+			HUDPackage.CrosshairSpread = CrosshairVelocityFactor + CrosshairInAirFactor + CrosshairInFireFactor;
+
+			HUD->SetHUDPackage(HUDPackage);
+		}
+	}
+}
+
+void UCombatComponent::OnRep_EquippedWeapon()
+{
+	if (EquippedWeapon && GnuCharacter)
+	{
+		GnuCharacter->GetCharacterMovement()->bOrientRotationToMovement = false;
+		GnuCharacter->bUseControllerRotationYaw = true;
+	}
+}
+
+void UCombatComponent::FireButtonPressed(bool bPressed)
+{
+	bFireButtonPressed = bPressed;
+
+	if (bFireButtonPressed)
+	{
+		if (bCanFire)
+		{
+			bCanFire = false;
+			ServerFire(HitTarget);
+		}
+		StartFireTimer();
+	}
+
+}
+
+void UCombatComponent::StartFireTimer()
+{
+	if (EquippedWeapon == nullptr || GnuCharacter == nullptr) return;
+
+	GnuCharacter->GetWorldTimerManager().SetTimer(
+		FireTimer,
+		this,
+		&UCombatComponent::FireTimerFinished,
+		FireDelay
+	);
+}
+
+void UCombatComponent::FireTimerFinished()
+{
+	bCanFire = true;
+	if (bFireButtonPressed && bAutomatic)
+	{
+		if (bCanFire)
+		{
+			bCanFire = false;
+			ServerFire(HitTarget);
+		}
+		StartFireTimer();
+	}
+}
+
+void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
+{
+	MultiCastFire(TraceHitTarget);
 }
 
 void UCombatComponent::MultiCastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
@@ -91,20 +225,6 @@ void UCombatComponent::MultiCastFire_Implementation(const FVector_NetQuantize& T
 		EquippedWeapon->Fire(TraceHitTarget);
 	}
 }
-
-void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
-{
-	MultiCastFire(TraceHitTarget);
-}
-
-
-void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	
-}
-
 
 
 void UCombatComponent::EquipWeapon(AGnuWeapon* WeaponToEquip)

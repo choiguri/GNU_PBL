@@ -14,9 +14,13 @@ class GNU_PBL_API AProjectile : public AActor
 public:	
 	AProjectile();
 	virtual void Tick(float DeltaTime) override;
+	virtual void Destroyed() override;
 
 protected:
 	virtual void BeginPlay() override;
+
+	UFUNCTION()
+	virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 
 private:
@@ -31,7 +35,13 @@ private:
 	class UParticleSystem* Tracer;
 
 	class UParticleSystemComponent* TracerComponent;
-public:	
 
+	UPROPERTY(EditAnywhere)
+	UParticleSystem* ImpactParticles;
+
+	// »ç¿îµå
+	UPROPERTY(EditAnywhere)
+	class USoundCue* ImpactSound;
+public:	
 
 };

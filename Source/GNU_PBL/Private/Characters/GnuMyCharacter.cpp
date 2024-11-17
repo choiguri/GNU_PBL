@@ -186,6 +186,7 @@ void AGnuMyCharacter::Tick(float DeltaTime)
 	ZoomInTimeline.TickTimeline(DeltaTime);
 	// �� �����Ӹ��� UI ������Ʈ
 	UpdateUIHealthAndStamina();
+	HideCameraIfCharacterClose();
 
 }
 
@@ -725,10 +726,6 @@ void AGnuMyCharacter::SpawnHeal()
 // -------------------------------------------------------------------------
 
 
-
-
-
-
 //--------------------------- HP Update --------------------------------
 void AGnuMyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -931,6 +928,18 @@ void AGnuMyCharacter::PlayFireMontage()
 	}
 }
 
+AGnuWeapon* AGnuMyCharacter::GetEquippedWeapon()
+{
+	if (Combat == nullptr) return nullptr;
+	return Combat->EquippedWeapon;
+}
+
+FVector AGnuMyCharacter::GetHitTarget() const
+{
+	if (Combat == nullptr) return FVector();
+	return Combat->HitTarget;
+}
+
 void AGnuMyCharacter::OnRep_OverlappingWeapon(AGnuWeapon* LastWeapon)
 {
 	if (OverlappingWeapon)
@@ -940,5 +949,28 @@ void AGnuMyCharacter::OnRep_OverlappingWeapon(AGnuWeapon* LastWeapon)
 	if (LastWeapon)
 	{
 		LastWeapon->ShowPickupWidget(false);
+	}
+}
+
+// 카메라가 캐릭터에 너무 가까이 되면 캐릭터가 안 보이게 해서 시야 확보
+// 근데 줌 땡기면 자동으로 가까워져서 일단 써야할 지 보류
+void AGnuMyCharacter::HideCameraIfCharacterClose()
+{
+	if (!IsLocallyControlled()) return;
+	if ((TPPCamera->GetComponentLocation() - GetActorLocation()).Size() < 200.f)
+	{
+		GetMesh()->SetVisibility(false);
+		if (Combat && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh())
+		{
+			Combat->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = true;
+		}
+	}
+	else
+	{
+		GetMesh()->SetVisibility(true);
+		if (Combat && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh())
+		{
+			Combat->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = false;
+		}
 	}
 }

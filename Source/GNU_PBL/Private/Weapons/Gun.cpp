@@ -35,6 +35,7 @@ AGun::AGun()
 	SetReplicateMovement(true);
 } 
 
+// 총을 발사할 때 꾹누르면 일정 간격으로 총이 나가게 하는 
 void AGun::PullTrigger()
 {
 	if (!GetWorld()->GetTimerManager().IsTimerActive(FireTimerHandle))
@@ -129,7 +130,7 @@ void AGun::Fire()
 	UpdateAmmoDisplay();
 }
 
-
+// 탄퍼짐, 반동 관련
 float AGun::GetRecoilOffset()
 {
 	AGnuMyCharacter* GnuMyCharacter = Cast<AGnuMyCharacter>(GetOwner());

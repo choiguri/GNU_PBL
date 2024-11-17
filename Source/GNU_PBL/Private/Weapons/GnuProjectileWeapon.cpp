@@ -14,19 +14,22 @@ void AGnuProjectileWeapon::Fire(const FVector& HitTarget)
 	APawn* InstigatorPawn = Cast<APawn>(GetOwner());
 
 	const USkeletalMeshSocket* MuzzleFlashSocket = GetWeaponMesh()->GetSocketByName(FName("MuzzleFlashSocket"));
+
 	if (MuzzleFlashSocket)
 	{
 		FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
 
 		// Muzzle Flash Socket to hit Location from TraceUnderCrosshairs
-		FVector ToTarget = (HitTarget - SocketTransform.GetLocation()).GetSafeNormal(); //HitTarget - SocketTransform.GetLocation()
+		FVector ToTarget = HitTarget - SocketTransform.GetLocation(); //HitTarget - SocketTransform.GetLocation()
 		FRotator TargetRotation = ToTarget.Rotation();
+
 
 		if (ProjectileClass && InstigatorPawn)
 		{
 			FActorSpawnParameters SpawnParams;
 			SpawnParams.Owner = GetOwner();
 			SpawnParams.Instigator = InstigatorPawn;
+
 			UWorld* World = GetWorld();
 			if (World)
 			{
@@ -39,4 +42,5 @@ void AGnuProjectileWeapon::Fire(const FVector& HitTarget)
 			}
 		}
 	}
+
 }

@@ -108,8 +108,6 @@ void AGnuWeapon::OnRep_WeaponState()
 }
 
 
-
-
 void AGnuWeapon::ShowPickupWidget(bool bShowWidget)
 {
 	if (PickupWidget)

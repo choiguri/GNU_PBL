@@ -31,6 +31,21 @@ public:
 	
 	virtual void Fire(const FVector& HitTarget);
 
+	UPROPERTY(EditAnywhere, Category = "Crosshairs")
+	class UTexture2D* CrosshairCenter;
+
+	UPROPERTY(EditAnywhere, Category = "Crosshairs")
+	UTexture2D* CrosshairLeft;
+
+	UPROPERTY(EditAnywhere, Category = "Crosshairs")
+	UTexture2D* CrosshairRight;
+
+	UPROPERTY(EditAnywhere, Category = "Crosshairs")
+	UTexture2D* CrosshairTop;
+
+	UPROPERTY(EditAnywhere, Category = "Crosshairs")
+	UTexture2D* CrosshairBottom;
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -71,6 +86,8 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	class UAnimationAsset* FireAnimation;
+
+	
 
 public:	
 	void SetWeaponState(EWeaponState State);

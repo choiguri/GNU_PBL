@@ -316,6 +316,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	UAnimMontage* FireWeaponMontage;
 
+	void HideCameraIfCharacterClose();
+
+
 public:
 	// 복제를 위한 변수 저장
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
@@ -327,4 +330,8 @@ public:
 	bool IsWeaponEquipped();
 
 	void PlayFireMontage();
+
+	AGnuWeapon* GetEquippedWeapon();
+
+	FVector GetHitTarget() const;
 };

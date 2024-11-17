@@ -6,7 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "CombatComponent.generated.h"
 
-#define TRACE_LENGTH 10000.f
+#define TRACE_LENGTH 80000.f
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class GNU_PBL_API UCombatComponent : public UActorComponent
@@ -35,13 +35,38 @@ protected:
 
 	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
 
+	void SetHUDCrosshairs(float DeltaTime);
+
+	UFUNCTION()
+	void OnRep_EquippedWeapon();
+
 private:
 	class AGnuMyCharacter* GnuCharacter;
+	class AGnuMyPlayerController* Controller;
+	class AGNUHUD* HUD;
 
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
 	AGnuWeapon* EquippedWeapon;
 	
 	bool bFireButtonPressed;
 
-		
+	float CrosshairVelocityFactor;
+	float CrosshairInAirFactor;
+	float CrosshairInFireFactor;
+
+	FVector HitTarget;
+
+	FTimerHandle FireTimer;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	float FireDelay = .15f;
+	
+	void StartFireTimer();
+	void FireTimerFinished();
+
+	// 나중에 자동이 아닌 웨폰을 위해 false이면 단발로 
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	bool bAutomatic = true;
+
+	bool bCanFire = true;
 };

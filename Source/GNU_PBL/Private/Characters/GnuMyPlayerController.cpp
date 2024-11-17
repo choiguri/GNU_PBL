@@ -167,8 +167,8 @@ void AGnuMyPlayerController::SetupInputComponent()
 	EnhancedInputComponent->BindAction(QuitAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::ShowReturnToMainMenu);
 	EnhancedInputComponent->BindAction(EquipAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::EquipButtonPressed);
 	EnhancedInputComponent->BindAction(Crouch, ETriggerEvent::Started, this, &AGnuMyPlayerController::CrouchButtonPressed);
-	EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::FireButtonPressed);
-	EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::FireButtonReleased);
+	EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::FireButtonPressed);
+	EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &AGnuMyPlayerController::FireButtonReleased);
 	
 }
 
