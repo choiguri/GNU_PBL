@@ -75,7 +75,7 @@ void AGnuMonster::BeginPlay()
 		OnTakeAnyDamage.AddDynamic(this, &AGnuMonster::ReceiveDamage);
 	}
 	
-	
+
 }
 
 

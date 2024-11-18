@@ -64,7 +64,8 @@ private:
 	void StartFireTimer();
 	void FireTimerFinished();
 
-	// 나중에 자동이 아닌 웨폰을 위해 false이면 단발로 
+	// 나중에 자동이 아닌 웨폰을 위해 false이면 단발로
+	// 아마 GnuWeapon.h 로 옮겨야 함
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	bool bAutomatic = true;
 

@@ -316,6 +316,11 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	UAnimMontage* FireWeaponMontage;
 
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	UAnimMontage* HitReactMontage;
+
+	void PlayHitReactMontage();
+
 	void HideCameraIfCharacterClose();
 
 
@@ -334,4 +339,6 @@ public:
 	AGnuWeapon* GetEquippedWeapon();
 
 	FVector GetHitTarget() const;
+
+
 };

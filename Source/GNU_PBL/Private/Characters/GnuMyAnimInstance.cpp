@@ -36,10 +36,10 @@ void UGnuMyAnimInstance::NativeInitializeAnimation()
 	CurDirectionAngle = 0.0f;
 	CurVelocity = FVector::Zero();
 	CurAcceleration = FVector::Zero();
-	EAnimState = EAnimationState::Unarmed; // �� ������ �ʱ�ȭ
+	EAnimState = EAnimationState::Unarmed; // 시작했을 때 기본 자세
 	bIsCrouching = false;
 	bIsSprinting = false;
-	bIsCrouched = false;
+	bIsCrouched = false; // 나중에 지워야할 듯
 	
 }
 
@@ -180,6 +180,7 @@ void UGnuMyAnimInstance::SetTurnRate(float CurYaw) // GnuCharacterPlayerControll
 	TurnRate = CurYaw;
 }
 
+// 추후에 무기를 늘리거나 하면 수정해야 할 듯
 void UGnuMyAnimInstance::SetWeapon()
 {
 

@@ -41,6 +41,8 @@ void AGNUHUD::DrawHUD()
 {
 	Super::DrawHUD();
 
+	// 화면 중앙에 십자선 그리기, 퍼짐 방향에 따라 Spread 조정, SpreadScaled = 기본 퍼짐 정도
+	// 상황별 퍼짐 정도는 CombatComponent에서 Factor 수정
 	FVector2D ViewportSize;
 	if (GEngine)
 	{
@@ -94,7 +96,7 @@ void AGNUHUD::DrawCrosshair(UTexture2D* Texture, FVector2D ViewportCenter, FVect
 		0.f,
 		1.f,
 		1.f,
-		FLinearColor::Green
+		FLinearColor::Green // CrossHair 색상
 	);
 
 }

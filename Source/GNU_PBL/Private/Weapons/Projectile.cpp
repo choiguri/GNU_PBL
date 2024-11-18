@@ -8,6 +8,8 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "Particles/ParticleSystem.h"
 #include "Sound/SoundCue.h"
+#include "Characters/GnuMyCharacter.h"
+#include "GNU_PBL/GNU_PBL.h"
 
 
 AProjectile::AProjectile()
@@ -22,6 +24,10 @@ AProjectile::AProjectile()
 	CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	CollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 	CollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
+
+	// editor -> projectsettings -> object 검색 -> object channel 추가 -> skeletalmesh
+	// GNU_PBL.h ->  #define ECC_SkeletalMesh ECollisionChannel::ECC_GameTraceChannel1
+	CollisionBox->SetCollisionResponseToChannel(ECC_SkeletalMesh, ECollisionResponse::ECR_Block);
 
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
 	// 방향이 속도 따라감

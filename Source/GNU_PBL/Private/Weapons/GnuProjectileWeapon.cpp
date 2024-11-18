@@ -5,6 +5,8 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Weapons/Projectile.h"
 
+
+// CombatComponent 에서 LineTrace한 HitTarget 받아서 실행
 void AGnuProjectileWeapon::Fire(const FVector& HitTarget)
 {
 	Super::Fire(HitTarget);
@@ -20,7 +22,7 @@ void AGnuProjectileWeapon::Fire(const FVector& HitTarget)
 		FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
 
 		// Muzzle Flash Socket to hit Location from TraceUnderCrosshairs
-		FVector ToTarget = HitTarget - SocketTransform.GetLocation(); //HitTarget - SocketTransform.GetLocation()
+		FVector ToTarget = HitTarget - SocketTransform.GetLocation(); 
 		FRotator TargetRotation = ToTarget.Rotation();
 
 

@@ -31,6 +31,7 @@ public:
 	
 	virtual void Fire(const FVector& HitTarget);
 
+	// Crosshair 
 	UPROPERTY(EditAnywhere, Category = "Crosshairs")
 	class UTexture2D* CrosshairCenter;
 

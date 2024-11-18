@@ -31,6 +31,7 @@
 // GnuWeapon
 #include "Weapons/GnuWeapon.h"
 #include "Weapons/CombatComponent.h"
+#include "GNU_PBL/GNU_PBL.h"
 
 
 AGnuMyCharacter::AGnuMyCharacter()
@@ -101,6 +102,13 @@ AGnuMyCharacter::AGnuMyCharacter()
 	Combat->SetIsReplicated(true);
 
 	MovementComponent->NavAgentProps.bCanCrouch = true;
+
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	GetMesh()->SetCollisionObjectType(ECC_SkeletalMesh);
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+
+
 }
 
 void AGnuMyCharacter::BeginPlay()
@@ -800,6 +808,16 @@ void AGnuMyCharacter::EquipButtonPressed()
 	}
 }
 
+void AGnuMyCharacter::ServerEquipButtonPressed_Implementation()
+{
+	if (Combat)
+	{
+		Combat->EquipWeapon(OverlappingWeapon);
+	}
+}
+
+// FireButton 눌렸을 때 Combat에 있는 FireButtonPressed 호출
+// => bool 값을 넘겨서 버튼이 눌렸는지 확인 후 Fire
 void AGnuMyCharacter::FireButtonPressed()
 {
 	if (Combat)
@@ -816,18 +834,117 @@ void AGnuMyCharacter::FireButtionReleased()
 	}
 }
 
-void AGnuMyCharacter::ServerEquipButtonPressed_Implementation()
+// Overlap 되었을 때 Widget 보이기 (F-PickUP)
+void AGnuMyCharacter::SetOverlappingWeapon(AGnuWeapon* Weapon)
 {
+	if (OverlappingWeapon)
+	{
+		OverlappingWeapon->ShowPickupWidget(false);
+	}
+	OverlappingWeapon = Weapon;
+	if (IsLocallyControlled())
+	{
+		if (OverlappingWeapon)
+		{
+			OverlappingWeapon->ShowPickupWidget(true);
+		}
+	}
+}
+
+// Overlapping Weapon 값이 바뀔 때 마다 호출하여
+// Overlap 되었을 때 보이고 안 되었을 때 안 보이게
+void AGnuMyCharacter::OnRep_OverlappingWeapon(AGnuWeapon* LastWeapon)
+{
+	if (OverlappingWeapon)
+	{
+		OverlappingWeapon->ShowPickupWidget(true);
+	}
+	if (LastWeapon)
+	{
+		LastWeapon->ShowPickupWidget(false);
+	}
+}
+
+// 캐릭터 할당
+void AGnuMyCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
 	if (Combat)
 	{
-		Combat->EquipWeapon(OverlappingWeapon);
+		Combat->GnuCharacter = this;
+	}
+}
+
+// 무기 장착 중인지 확인
+bool AGnuMyCharacter::IsWeaponEquipped()
+{
+	return (Combat && Combat->EquippedWeapon);
+}
+
+// Fire Montage 실행
+void AGnuMyCharacter::PlayFireMontage()
+{
+	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && FireWeaponMontage)
+	{
+		AnimInstance->Montage_Play(FireWeaponMontage);
+	}
+}
+
+void AGnuMyCharacter::PlayHitReactMontage()
+{
+	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && HitReactMontage)
+	{
+		AnimInstance->Montage_Play(HitReactMontage);
+	}
+}
+
+AGnuWeapon* AGnuMyCharacter::GetEquippedWeapon()
+{
+	if (Combat == nullptr) return nullptr;
+	return Combat->EquippedWeapon;
+}
+
+FVector AGnuMyCharacter::GetHitTarget() const
+{
+	if (Combat == nullptr) return FVector();
+	return Combat->HitTarget;
+}
+
+
+
+// 카메라가 캐릭터에 너무 가까이 되면 캐릭터가 안 보이게 해서 시야 확보
+// 근데 줌 땡기면 자동으로 가까워져서 일단 써야할 지 보류
+void AGnuMyCharacter::HideCameraIfCharacterClose()
+{
+	if (!IsLocallyControlled()) return;
+	if ((TPPCamera->GetComponentLocation() - GetActorLocation()).Size() < 200.f)
+	{
+		GetMesh()->SetVisibility(false);
+		if (Combat && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh())
+		{
+			Combat->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = true;
+		}
+	}
+	else
+	{
+		GetMesh()->SetVisibility(true);
+		if (Combat && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh())
+		{
+			Combat->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = false;
+		}
 	}
 }
 
 void AGnuMyCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
 {
 	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
-	// 여기서 PlayHitReactMontage(); 와 같은 함수로 데미지를 입었을 때의 몽타주 출력 가능
+	PlayHitReactMontage();
 	UpdateHUDHealth();
 
 }
@@ -854,12 +971,13 @@ void AGnuMyCharacter::UpdateHUDStamina()
 
 void AGnuMyCharacter::OnRep_Health()
 {
+	PlayHitReactMontage();
 	UpdateHUDHealth();
 }
 
 void AGnuMyCharacter::OnRep_Stamina()
 {
-	
+
 }
 
 void AGnuMyCharacter::ClientSetName_Implementation(const FString& Name)
@@ -880,97 +998,5 @@ void AGnuMyCharacter::ServerSetPlayerName_Implementation(const FString& PlayerNa
 	{
 		PlayerController->PlayerState->SetPlayerName(PlayerName);
 		ClientSetName(PlayerName);
-	}
-}
-
-void AGnuMyCharacter::SetOverlappingWeapon(AGnuWeapon* Weapon)
-{
-	if (OverlappingWeapon)
-	{
-		OverlappingWeapon->ShowPickupWidget(false);
-	}
-	OverlappingWeapon = Weapon;
-	if (IsLocallyControlled())
-	{
-		if (OverlappingWeapon)
-		{
-			OverlappingWeapon->ShowPickupWidget(true);
-		}
-	}
-}
-
-void AGnuMyCharacter::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
-	if (Combat)
-	{
-		Combat->GnuCharacter = this;
-	}
-}
-
-bool AGnuMyCharacter::IsWeaponEquipped()
-{
-	return (Combat && Combat->EquippedWeapon);
-}
-
-void AGnuMyCharacter::PlayFireMontage()
-{
-	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
-
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (AnimInstance && FireWeaponMontage)
-	{
-		AnimInstance->Montage_Play(FireWeaponMontage);
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("FireMontage")));
-		}
-	}
-}
-
-AGnuWeapon* AGnuMyCharacter::GetEquippedWeapon()
-{
-	if (Combat == nullptr) return nullptr;
-	return Combat->EquippedWeapon;
-}
-
-FVector AGnuMyCharacter::GetHitTarget() const
-{
-	if (Combat == nullptr) return FVector();
-	return Combat->HitTarget;
-}
-
-void AGnuMyCharacter::OnRep_OverlappingWeapon(AGnuWeapon* LastWeapon)
-{
-	if (OverlappingWeapon)
-	{
-		OverlappingWeapon->ShowPickupWidget(true);
-	}
-	if (LastWeapon)
-	{
-		LastWeapon->ShowPickupWidget(false);
-	}
-}
-
-// 카메라가 캐릭터에 너무 가까이 되면 캐릭터가 안 보이게 해서 시야 확보
-// 근데 줌 땡기면 자동으로 가까워져서 일단 써야할 지 보류
-void AGnuMyCharacter::HideCameraIfCharacterClose()
-{
-	if (!IsLocallyControlled()) return;
-	if ((TPPCamera->GetComponentLocation() - GetActorLocation()).Size() < 200.f)
-	{
-		GetMesh()->SetVisibility(false);
-		if (Combat && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh())
-		{
-			Combat->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = true;
-		}
-	}
-	else
-	{
-		GetMesh()->SetVisibility(true);
-		if (Combat && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh())
-		{
-			Combat->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = false;
-		}
 	}
 }

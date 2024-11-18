@@ -42,7 +42,7 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 	SetHUDCrosshairs(DeltaTime);
 
-	// 실시간 LineTrace
+	// 실시간 LineTrace 값 HitTarget에 할당
 	if (GnuCharacter && GnuCharacter->IsLocallyControlled())
 	{
 		FHitResult HitResult;
@@ -52,7 +52,7 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 }
 
 
-
+// LineTrace
 void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 {
 	FVector2D ViewportSize;
@@ -185,6 +185,7 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 
 }
 
+// Automatic Fire
 void UCombatComponent::StartFireTimer()
 {
 	if (EquippedWeapon == nullptr || GnuCharacter == nullptr) return;
@@ -226,7 +227,7 @@ void UCombatComponent::MultiCastFire_Implementation(const FVector_NetQuantize& T
 	}
 }
 
-
+// 무기 장착
 void UCombatComponent::EquipWeapon(AGnuWeapon* WeaponToEquip)
 {
 	if (GnuCharacter == nullptr || WeaponToEquip == nullptr) return;
