@@ -57,14 +57,13 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	UAnimMontage* Reload_Montage;
-	
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	USkeletalMeshComponent* Mesh; // 블루프린트에서 쓰려고 바꿔놓음
 
 private:
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* Root;
-
-	UPROPERTY(VisibleAnywhere)
-	USkeletalMeshComponent* Mesh;
 
 	UPROPERTY(EditAnywhere)
 	UParticleSystem* MuzzleFlash;

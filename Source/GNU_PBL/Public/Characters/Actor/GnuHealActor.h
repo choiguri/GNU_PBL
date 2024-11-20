@@ -15,7 +15,7 @@ class GNU_PBL_API AGnuHealActor : public AGnuActorCollisionBase
 	
 public:
 	AGnuHealActor();
-    void HealOverTime();
+
 private:
     FTimerHandle DestructionTimerHandle; // 파괴 타이머 핸들
 

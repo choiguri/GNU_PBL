@@ -26,14 +26,6 @@ protected:
     UBoxComponent* BoxComponent;
 
     UPROPERTY(VisibleAnywhere)
-    UStaticMeshComponent* StaticMesh;
-
-    UPROPERTY(VisibleAnywhere)
-    UParticleSystemComponent* ParticleComponent;
-
-
-
-    UPROPERTY(VisibleAnywhere)
     UArrowComponent* ArrowComponent;
 
 	// Called when the game starts or when spawned

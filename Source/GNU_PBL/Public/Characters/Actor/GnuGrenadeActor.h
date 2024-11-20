@@ -4,40 +4,54 @@
 
 #include "CoreMinimal.h"
 #include "Characters/Actor/GnuActorCollisionBase.h"
-#include "GnuProjectileActor.generated.h"
-
-class UProjectileMovementComponent;
+#include "GnuGrenadeActor.generated.h"
 class UNiagaraComponent;
 class UNiagaraSystem;
 
 UCLASS()
-class GNU_PBL_API AGnuProjectileActor : public AGnuActorCollisionBase
+class GNU_PBL_API AGnuGrenadeActor : public AGnuActorCollisionBase
 {
-    GENERATED_BODY()
-
+	GENERATED_BODY()
 public:
-    AGnuProjectileActor();
-
+    AGnuGrenadeActor();
     void LaunchProjectile(AActor* IgnoredActor);  // 발사 함수
 
 private:
-    float Damage;
+    FTimerHandle DestructionTimerHandle; // 파괴 타이머 핸들
 
-    FTimerHandle TimerHandle; // 파괴 타이머 핸들
-
-    FVector PreviousLocation; // 나이아가라 이펙트의 이전 위치
-
+    // 타이머 핸들
+    FTimerHandle TimerHandle;
+    void SpawnEMPVortex(AActor* IgnoredActor);
     void DestroyActor(); // 엑터 삭제 함수
+
+    FVector PreviousLocation;
+
+    float Damage;
 
 protected:
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaTime) override;
 
+    UPROPERTY(EditAnywhere, Category = "Effects")
+    UNiagaraSystem* FlyingNiagaraSystem;
+
+    UPROPERTY(EditAnywhere, Category = "Effects")
+    UNiagaraSystem* MuzzleNiagaraSystem;
+
+    UPROPERTY(EditAnywhere, Category = "Effects")
+    UNiagaraSystem* TargetNiagaraSystem;
+
     UPROPERTY(VisibleAnywhere)
     UNiagaraComponent* NiagaraComponent;
 
-    UPROPERTY(VisibleAnywhere)
-    UBoxComponent* ProjectileBoxComponent;
+    FVector ProjectileOffset;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    USceneComponent* RootSceneComponent;
+
+    // 스폰할 액터 클래스 (BP_Projectile_EMP_Vortex)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grenade")
+    TSubclassOf<AActor> BP_Projectile_EMP_Vortex;
 
     UFUNCTION()
     void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);

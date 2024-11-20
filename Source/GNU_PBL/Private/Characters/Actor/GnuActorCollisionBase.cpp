@@ -12,13 +12,6 @@ AGnuActorCollisionBase::AGnuActorCollisionBase()
 	BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxCollision"));
 	BoxComponent->SetupAttachment(GetRootComponent());
 
-	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
-	StaticMesh->SetupAttachment(BoxComponent);
-
-	ParticleComponent = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ParticleSystem"));
-	ParticleComponent->SetupAttachment(BoxComponent);
-
-
 	ArrowComponent = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComponent"));
 	ArrowComponent->SetupAttachment(BoxComponent);
 	ArrowComponent->SetWorldRotation(FRotator(0.0f, 0.0f, 0.0f));  // Y축으로 90도 회전		
@@ -34,10 +27,6 @@ void AGnuActorCollisionBase::BeginPlay()
 	BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &AGnuActorCollisionBase::BeginOverlap);
 	BoxComponent->OnComponentEndOverlap.AddDynamic(this, &AGnuActorCollisionBase::EndOverlap);
 
-	if (ParticleComponent)
-	{
-		ParticleComponent->Activate();
-	}
 }
 
 void AGnuActorCollisionBase::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

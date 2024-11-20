@@ -111,6 +111,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = "input")
 	TObjectPtr<UInputAction> HealSkillAction;
 
+	UPROPERTY(EditAnywhere, Category = "input")
+	TObjectPtr<UInputAction> GrenadeSkillAction;
+
 	FVector2D CurrentMoveDirection; // 현재 이동 방향 Dodge할 때 사용
 
 
@@ -126,6 +129,7 @@ private:
 	void StopJumping(const struct FInputActionValue& InputActionValue); // 점프 끝
 	void ArrowSkill(const struct FInputActionValue& InputActionValue);
 	void HealSkill(const struct FInputActionValue& InputActionValue);
+	void GrenadeSkill(const struct FInputActionValue& InputActionValue);
 
 	// ------------------ Weapon funtion -------------
 	void Aiming();

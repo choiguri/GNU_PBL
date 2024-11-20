@@ -159,6 +159,7 @@ void AGnuMyPlayerController::SetupInputComponent()
 	EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::Reload);
 	EnhancedInputComponent->BindAction(ArrowSkillAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::ArrowSkill);
 	EnhancedInputComponent->BindAction(HealSkillAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::HealSkill);
+	EnhancedInputComponent->BindAction(GrenadeSkillAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::GrenadeSkill);
 
 	// 추가사항
 	EnhancedInputComponent->BindAction(QuitAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::ShowReturnToMainMenu);
@@ -506,5 +507,21 @@ void AGnuMyPlayerController::HealSkill(const FInputActionValue& InputActionValue
 		{
 			MyCharacter->SpawnHeal(); // 캐릭터의 StopJumping 메서드 호출
 		}
+	}
+}
+
+void AGnuMyPlayerController::GrenadeSkill(const FInputActionValue& InputActionValue)
+{
+	if (APawn* ControlledPawn = GetPawn<APawn>())
+	{
+		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
+		if (MyCharacter)
+		{
+			MyCharacter->SpawnGrenade(); // 캐릭터의 StopJumping 메서드 호출
+		}
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("No Binding GrenadeSkil(Controller Cpp)")));
 	}
 }

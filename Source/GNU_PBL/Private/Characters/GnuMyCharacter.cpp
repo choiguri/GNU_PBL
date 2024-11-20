@@ -26,6 +26,7 @@
 // Skill
 #include "Characters/Actor/GnuProjectileActor.h"
 #include "Characters/Actor/GnuHealActor.h"
+#include "Characters/Actor/GnuGrenadeActor.h"
 
 // Character 합치면서 추가
 #include "Components/WidgetComponent.h"
@@ -213,7 +214,7 @@ void AGnuMyCharacter::ZoomInFinished()
 void AGnuMyCharacter::SetZoomIn()
 {
 	isZoomIn = !isZoomIn; // 현재 상태를 반전시킴
-
+	
 	if (isZoomIn)
 	{
 		if (ZoomInCurve) // Null 체크
@@ -481,7 +482,6 @@ void AGnuMyCharacter::SpawnHeal()
 		if (Heal)
 		{
 			Heal->SetOwner(this); // 이거 안해주면 GnuHealActor에서 onwer가 누군지 몰라서 오류가 난다
-			Heal->HealOverTime();
 		}
 	}
 }
@@ -494,10 +494,32 @@ void AGnuMyCharacter::SpawnArrow()
 	{
 		FVector SpawnLocation = Gun->GetMesh()->GetSocketLocation("MuzzleFlashSocket");
 		FRotator SpawnRotation = Gun->GetMesh()->GetSocketRotation("MuzzleFlashSocket");
-		AGnuProjectileActor* Arrow = GetWorld()->SpawnActor<AGnuProjectileActor>(ArrowClass, SpawnLocation, SpawnRotation);
+		FTransform SpawnTransform(SpawnRotation, SpawnLocation);
+
+		AGnuProjectileActor* Arrow = GetWorld()->SpawnActor<AGnuProjectileActor>(ArrowClass, SpawnTransform);
 		if (Arrow)
 		{
+			Arrow->SetOwner(this);
 			Arrow->LaunchProjectile(this);
+		}
+	}
+}
+// -------------------------------------------------------------------------
+
+//--------------------------- Grenade Skill --------------------------------
+void AGnuMyCharacter::SpawnGrenade()
+{
+	if (GrenadeClass)
+	{
+		FVector SpawnLocation = Gun->GetMesh()->GetSocketLocation("MuzzleFlashSocket");
+		FRotator SpawnRotation = Gun->GetMesh()->GetSocketRotation("MuzzleFlashSocket");
+		FTransform SpawnTransform(SpawnRotation, SpawnLocation);
+
+		AGnuGrenadeActor* Grenade = GetWorld()->SpawnActor<AGnuGrenadeActor>(GrenadeClass, SpawnTransform);
+		if (Grenade)
+		{
+			Grenade->SetOwner(this);
+			Grenade->LaunchProjectile(this);
 		}
 	}
 }

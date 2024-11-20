@@ -16,6 +16,7 @@ class UFTimeline;
 class UCurveFloat;
 class AGnuProjectileActor;
 class AGnuHealActor;
+class AGnuGrenadeActor;
 class UGnuCharacterBaseWidget;
 
 // Monster class
@@ -137,6 +138,11 @@ public:
 	void SpawnHeal();
 	// -----------------------------------------------------------------------------------------
 
+	// ------------------------------------- Grenade Skill ----------------------------------------
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	TSubclassOf<class AGnuGrenadeActor> GrenadeClass;
+	void SpawnGrenade();
+	// -----------------------------------------------------------------------------------------
 
 	void SetCamera();
 
@@ -187,6 +193,7 @@ protected:
 	
 	UPROPERTY()
 	AGun* Gun; // Gun Actor
+
 
 	TSubclassOf<UUserWidget> CrossHairWidgetClass;
 
