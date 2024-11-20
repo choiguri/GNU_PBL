@@ -88,6 +88,23 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	class UAnimationAsset* FireAnimation;
 
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	UAnimationAsset* ReloadAnimation;
+
+	UPROPERTY(EditAnywhere)
+	int32 Ammo;
+
+	UPROPERTY(EditAnywhere)
+	int32 MaxAmmo = 30;
+
+	void SpendAmmo();
+
+	void UpdateAmmo();
+
+	UPROPERTY()
+	class AGnuMyCharacter* GnuOwnerCharacter;
+	UPROPERTY()
+	class AGnuMyPlayerController* GnuOwnerController;
 	
 
 public:	
@@ -95,4 +112,8 @@ public:
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; };
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; };
 
+
+	void Reload();
+
+	bool IsEmptyAmmo();
 };

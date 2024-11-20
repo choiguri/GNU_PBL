@@ -446,68 +446,68 @@ void AGnuMyCharacter::SetDodgeMontage(float Forward, float Right)
 
 // --------------------------------- Reload Replicate ------------------------------------
 
-void AGnuMyCharacter::Reload()
-{
-	if (GetController() != nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Reload!"));
-		if (pCrossHair)
-		{
-			pCrossHair->UpdateCrossHair(1); // 새로운 AimRate로 크로스헤어 업데이트
-		}
-		Gun->Reload();
-		isReload = false;
-	}
-}
-
-void AGnuMyCharacter::ServerMontageOnReload_Implementation() // �������� ������ �ִϸ��̼��� ó���ϴ� �Լ�
-{
-	if (isReload)
-	{
-		return;
-	}
-
-	isReload = true;
-	// 기존
-	//StopFire();
-	Gun->ServerMontageOnReload();
-	if (pCrossHair)
-	{
-		pCrossHair->UpdateCrossHair(3); // 새로운 AimRate로 크로스헤어 업데이트
-	}
-	if (Reload_Montage)
-	{
-		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-
-		PlayAnimMontage(Reload_Montage);
-
-		MultiCastMontage_Reload();
-	}
-}
-
-
-bool AGnuMyCharacter::ServerMontageOnReload_Validate()
-{
-	return true; // ���� ������ �ʿ��ϸ� �߰�
-}
-
-void AGnuMyCharacter::MultiCastMontage_Reload_Implementation() // ��� Ŭ���̾�Ʈ���� ������ ������ �ִϸ��̼��� ����ϵ��� �ϴ� ��Ƽĳ��Ʈ �Լ�. Ŭ���̾�Ʈ�� ���� ���� ����ȭ�� ���� ���
-{
-	if (isReload)
-	{
-		// ������ �߿� �ٽ� ȣ���ϸ� ����
-		return;
-	}
-
-	// ��Ÿ�ְ� ��ȿ�� ��� ���
-	if (Reload_Montage)
-	{
-		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-
-		PlayAnimMontage(Reload_Montage);
-
-	}
-}
+//void AGnuMyCharacter::Reload()
+//{
+//	if (GetController() != nullptr)
+//	{
+//		UE_LOG(LogTemp, Warning, TEXT("Reload!"));
+//		if (pCrossHair)
+//		{
+//			pCrossHair->UpdateCrossHair(1); // 새로운 AimRate로 크로스헤어 업데이트
+//		}
+//		Gun->Reload();
+//		isReload = false;
+//	}
+//}
+//
+//void AGnuMyCharacter::ServerMontageOnReload_Implementation() // �������� ������ �ִϸ��̼��� ó���ϴ� �Լ�
+//{
+//	if (isReload)
+//	{
+//		return;
+//	}
+//
+//	isReload = true;
+//	// 기존
+//	//StopFire();
+//	Gun->ServerMontageOnReload();
+//	if (pCrossHair)
+//	{
+//		pCrossHair->UpdateCrossHair(3); // 새로운 AimRate로 크로스헤어 업데이트
+//	}
+//	if (Reload_Montage)
+//	{
+//		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+//
+//		PlayAnimMontage(Reload_Montage);
+//
+//		MultiCastMontage_Reload();
+//	}
+//}
+//
+//
+//bool AGnuMyCharacter::ServerMontageOnReload_Validate()
+//{
+//	return true; // ���� ������ �ʿ��ϸ� �߰�
+//}
+//
+//void AGnuMyCharacter::MultiCastMontage_Reload_Implementation() // ��� Ŭ���̾�Ʈ���� ������ ������ �ִϸ��̼��� ����ϵ��� �ϴ� ��Ƽĳ��Ʈ �Լ�. Ŭ���̾�Ʈ�� ���� ���� ����ȭ�� ���� ���
+//{
+//	if (isReload)
+//	{
+//		// ������ �߿� �ٽ� ȣ���ϸ� ����
+//		return;
+//	}
+//
+//	// ��Ÿ�ְ� ��ȿ�� ��� ���
+//	if (Reload_Montage)
+//	{
+//		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+//
+//		PlayAnimMontage(Reload_Montage);
+//
+//	}
+//}
 
 //--------------------------- Arrow Skill --------------------------------
 void AGnuMyCharacter::SpawnArrow()
@@ -826,11 +826,19 @@ void AGnuMyCharacter::FireButtonPressed()
 	}
 }
 
-void AGnuMyCharacter::FireButtionReleased()
+void AGnuMyCharacter::FireButtonReleased()
 {
 	if (Combat)
 	{
 		Combat->FireButtonPressed(false);
+	}
+}
+
+void AGnuMyCharacter::ReloadButtonPressed()
+{
+	if (Combat)
+	{
+		Combat->ReloadButtonPressed();
 	}
 }
 
@@ -890,6 +898,27 @@ void AGnuMyCharacter::PlayFireMontage()
 	if (AnimInstance && FireWeaponMontage)
 	{
 		AnimInstance->Montage_Play(FireWeaponMontage);
+	}
+}
+
+void AGnuMyCharacter::PlayReloadMontage()
+{
+	ServerPlayReloadMontage();
+}
+
+void AGnuMyCharacter::ServerPlayReloadMontage_Implementation()
+{
+	MultiCastPlayReloadMontage();
+}
+
+void AGnuMyCharacter::MultiCastPlayReloadMontage_Implementation()
+{
+	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && ReloadWeaponMontage)
+	{
+		AnimInstance->Montage_Play(ReloadWeaponMontage);
 	}
 }
 

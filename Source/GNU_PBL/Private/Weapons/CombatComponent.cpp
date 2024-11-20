@@ -52,6 +52,8 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 }
 
 
+
+
 // LineTrace
 void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 {
@@ -175,7 +177,7 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 
 	if (bFireButtonPressed)
 	{
-		if (bCanFire)
+		if (CanFire())
 		{
 			bCanFire = false;
 			ServerFire(HitTarget);
@@ -203,13 +205,19 @@ void UCombatComponent::FireTimerFinished()
 	bCanFire = true;
 	if (bFireButtonPressed && bAutomatic)
 	{
-		if (bCanFire)
+		if (CanFire())
 		{
 			bCanFire = false;
 			ServerFire(HitTarget);
 		}
 		StartFireTimer();
 	}
+}
+
+bool UCombatComponent::CanFire()
+{
+	if (EquippedWeapon == nullptr) return false;
+	return !EquippedWeapon->IsEmptyAmmo() || !bCanFire;
 }
 
 void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
@@ -226,6 +234,24 @@ void UCombatComponent::MultiCastFire_Implementation(const FVector_NetQuantize& T
 		EquippedWeapon->Fire(TraceHitTarget);
 	}
 }
+
+
+
+
+void UCombatComponent::ReloadButtonPressed()
+{
+
+	if (EquippedWeapon == nullptr) return;
+	if (GnuCharacter && !bFireButtonPressed)
+	{
+		EquippedWeapon->Reload();
+		GnuCharacter->PlayReloadMontage();
+	}
+	
+	
+}
+
+
 
 // ¹«±â ÀåÂø
 void UCombatComponent::EquipWeapon(AGnuWeapon* WeaponToEquip)

@@ -95,13 +95,13 @@ public:
 	void SetCamera(); // ī�޶� ���� ��ȯ : 1��Ī <--> 3��Ī (��Ʈ�ѷ����� ȣ��)
 
 	//------------------ Weapon Funtion ---------------------------------------
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
-	bool isReload;
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerMontageOnReload(); // �������� ������ ��Ÿ�ָ� �����ϴ� �Լ� (��Ʈ�ѷ����� ȣ��)
-	UFUNCTION(NetMulticast, Reliable)
-	void MultiCastMontage_Reload(); // ������ ��Ÿ�� ��Ƽĳ��Ʈ (������ ȣ��Ǹ� �ڵ����� ȣ��)
-	void FinishReload();
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
+	//bool isReload;
+	//UFUNCTION(Server, Reliable, WithValidation)
+	//void ServerMontageOnReload(); // �������� ������ ��Ÿ�ָ� �����ϴ� �Լ� (��Ʈ�ѷ����� ȣ��)
+	//UFUNCTION(NetMulticast, Reliable)
+	//void MultiCastMontage_Reload(); // ������ ��Ÿ�� ��Ƽĳ��Ʈ (������ ȣ��Ǹ� �ڵ����� ȣ��)
+	//void FinishReload();
 	//---------------------------------------------------------------------
 
 	
@@ -115,7 +115,7 @@ public:
 
 	void Fire();
 	void StopFire();
-	void Reload();
+	//void Reload();
 	void Interact(); // 상호작용 함수
 	void SwitchWeapon(TSubclassOf<AGun> NewGunClass);
 
@@ -287,7 +287,8 @@ public:
 	// 무기 장착
 	void EquipButtonPressed();
 	void FireButtonPressed();
-	void FireButtionReleased();
+	void FireButtonReleased();
+	void ReloadButtonPressed();
 
 protected:
 	UFUNCTION()
@@ -317,6 +318,9 @@ private:
 	UAnimMontage* FireWeaponMontage;
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
+	UAnimMontage* ReloadWeaponMontage;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
 	UAnimMontage* HitReactMontage;
 
 	void PlayHitReactMontage();
@@ -335,6 +339,14 @@ public:
 	bool IsWeaponEquipped();
 
 	void PlayFireMontage();
+
+	void PlayReloadMontage();
+
+	UFUNCTION(Server, Reliable)
+	void ServerPlayReloadMontage();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiCastPlayReloadMontage();
 
 	AGnuWeapon* GetEquippedWeapon();
 

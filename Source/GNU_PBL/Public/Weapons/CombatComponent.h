@@ -33,6 +33,9 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void MultiCastFire(const FVector_NetQuantize& TraceHitTarget);
 
+	void ReloadButtonPressed();
+
+
 	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
 
 	void SetHUDCrosshairs(float DeltaTime);
@@ -49,6 +52,8 @@ private:
 	AGnuWeapon* EquippedWeapon;
 	
 	bool bFireButtonPressed;
+
+	bool bReloadButtonPressed;
 
 	float CrosshairVelocityFactor;
 	float CrosshairInAirFactor;
@@ -70,4 +75,6 @@ private:
 	bool bAutomatic = true;
 
 	bool bCanFire = true;
+
+	bool CanFire();
 };

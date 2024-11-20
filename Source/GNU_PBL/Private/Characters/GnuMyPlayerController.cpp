@@ -122,6 +122,20 @@ void AGnuMyPlayerController::SetHUDCombatTime(float CombatTime)
 	}
 }
 
+void AGnuMyPlayerController::SetHUDWeaponAmmo(int32 Ammo, int32 MaxAmmo)
+{
+	GNUHUD = GNUHUD == nullptr ? Cast<AGNUHUD>(GetHUD()) : GNUHUD;
+
+	bool bHUDValid = GNUHUD &&
+		GNUHUD->CharacterOverlay &&
+		GNUHUD->CharacterOverlay->AmmoText;
+	if (bHUDValid)
+	{
+		FString AmmoText = FString::Printf(TEXT("%d / %d"), Ammo, MaxAmmo);
+		GNUHUD->CharacterOverlay->AmmoText->SetText(FText::FromString(AmmoText));
+	}
+}
+
 
 void AGnuMyPlayerController::SetHUDTime()
 {
@@ -169,6 +183,7 @@ void AGnuMyPlayerController::SetupInputComponent()
 	EnhancedInputComponent->BindAction(Crouch, ETriggerEvent::Started, this, &AGnuMyPlayerController::CrouchButtonPressed);
 	EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::FireButtonPressed);
 	EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &AGnuMyPlayerController::FireButtonReleased);
+	EnhancedInputComponent->BindAction(WeaponReloadAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::ReloadButtonPressed);
 	
 }
 
@@ -579,7 +594,19 @@ void AGnuMyPlayerController::FireButtonReleased()
 		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
 		if (MyCharacter)
 		{
-			MyCharacter->FireButtionReleased();
+			MyCharacter->FireButtonReleased();
+		}
+	}
+}
+
+void AGnuMyPlayerController::ReloadButtonPressed()
+{
+	if (APawn* ControlledPawn = GetPawn<APawn>())
+	{
+		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
+		if (MyCharacter)
+		{
+			MyCharacter->ReloadButtonPressed();
 		}
 	}
 }

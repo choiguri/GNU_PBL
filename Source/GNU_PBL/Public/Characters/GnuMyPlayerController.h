@@ -31,6 +31,8 @@ public:
 
 	void SetHUDCombatTime(float CombatTime);
 
+	void SetHUDWeaponAmmo(int32 Ammo, int32 MaxAmmo);
+
 	virtual void Tick(float DeltaTime) override;
 	virtual float GetServertime();
 	virtual void ReceivedPlayer() override;
@@ -96,7 +98,7 @@ private:
 
 
 
-	// 추가사항
+	// 추가사항 GnuWeapon
 	UPROPERTY(EditAnywhere, Category = "input")
 	TObjectPtr<UInputAction> QuitAction;
 
@@ -108,6 +110,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "input")
 	TObjectPtr<UInputAction> FireAction;
+
+	UPROPERTY(EditAnywhere, Category = "input")
+	TObjectPtr<UInputAction> WeaponReloadAction;
 
 	// Weapon input
 	UPROPERTY(EditAnywhere, Category = "input")
@@ -159,6 +164,7 @@ private:
 	void CrouchButtonPressed();
 	void FireButtonPressed();
 	void FireButtonReleased();
+	void ReloadButtonPressed();
 //
 // 추가사항
 //

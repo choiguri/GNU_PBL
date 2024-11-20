@@ -8,6 +8,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Animation/AnimationAsset.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Characters/GnuMyPlayerController.h"
 
 
 AGnuWeapon::AGnuWeapon()
@@ -64,6 +65,8 @@ void AGnuWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifeti
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AGnuWeapon, WeaponState);
+
+
 }
 
 void AGnuWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedCompoonent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -84,6 +87,28 @@ void AGnuWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedCompoonent, A
 	}
 }
 
+void AGnuWeapon::SpendAmmo()
+{
+	Ammo = FMath::Clamp(Ammo - 1, 0, MaxAmmo);
+	UpdateAmmo();
+	
+}
+
+void AGnuWeapon::UpdateAmmo()
+{
+	GnuOwnerCharacter = GnuOwnerCharacter == nullptr ? Cast<AGnuMyCharacter>(GetOwner()) : GnuOwnerCharacter;
+	if (GnuOwnerCharacter)
+	{
+		GnuOwnerController = GnuOwnerController == nullptr ? Cast<AGnuMyPlayerController>(GnuOwnerCharacter->Controller) : GnuOwnerController;
+		if (GnuOwnerController)
+		{
+			GnuOwnerController->SetHUDWeaponAmmo(Ammo, MaxAmmo);
+		}
+	}
+}
+
+
+
 void AGnuWeapon::SetWeaponState(EWeaponState State)
 {
 	WeaponState = State;
@@ -94,6 +119,22 @@ void AGnuWeapon::SetWeaponState(EWeaponState State)
 		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		break;
 	}
+}
+
+void AGnuWeapon::Reload()
+{
+	Ammo = MaxAmmo;
+	if (ReloadAnimation)
+	{
+		WeaponMesh->PlayAnimation(ReloadAnimation, false);
+	}
+	UpdateAmmo();
+	
+}
+
+bool AGnuWeapon::IsEmptyAmmo()
+{
+	return Ammo <= 0;
 }
 
 
@@ -122,5 +163,6 @@ void AGnuWeapon::Fire(const FVector& HitTarget)
 	{
 		WeaponMesh->PlayAnimation(FireAnimation, false);
 	}
+	SpendAmmo();
 }
 
