@@ -78,7 +78,7 @@ AGnuMyCharacter::AGnuMyCharacter()
 	DodgeMontage = nullptr;
 	
 	// -------------------- CrossHair create -----------------
-	static ConstructorHelpers::FClassFinder<UUserWidget> CrossHairFinder(TEXT("/Game/GNU/weapon/UI_CrossHair.UI_CrossHair_C"));
+	static ConstructorHelpers::FClassFinder<UUserWidget> CrossHairFinder(TEXT("/Game/GNU/Character/weapon/UI_CrossHair.UI_CrossHair_C"));
 	if (CrossHairFinder.Succeeded())
 	{
 		CrossHairWidgetClass = CrossHairFinder.Class;
@@ -635,19 +635,43 @@ void AGnuMyCharacter::Interact()
 	}
 }
 
+void AGnuMyCharacter::ServerSwitchWeapon_Implementation(TSubclassOf<AGun> NewGunClass)
+{
+	SwitchWeapon(NewGunClass); // 서버에서만 무기 교체 로직 실행
+}
+
+bool AGnuMyCharacter::ServerSwitchWeapon_Validate(TSubclassOf<AGun> NewGunClass)
+{
+	return true; // 검증 로직 추가 가능
+}
+
 void AGnuMyCharacter::SwitchWeapon(TSubclassOf<AGun> NewGunClass)
+{
+	if (HasAuthority()) // 서버인지 확인
+	{
+		// 서버라면 로컬에서 실행
+		PerformSwitchWeapon(NewGunClass);
+	}
+	else
+	{
+		// 클라이언트라면 서버로 요청
+		ServerSwitchWeapon(NewGunClass);
+	}
+}
+
+void AGnuMyCharacter::PerformSwitchWeapon(TSubclassOf<AGun> NewGunClass)
 {
 	if (NewGunClass)
 	{
 		GunClass = NewGunClass;
 
 		if (Gun)
-
 		{
 			Gun->RemoveAmmoDisplay();
 			Gun->Destroy();
 			Gun = nullptr;
 		}
+
 		Gun = GetWorld()->SpawnActor<AGun>(GunClass);
 
 		if (Gun)
@@ -658,6 +682,30 @@ void AGnuMyCharacter::SwitchWeapon(TSubclassOf<AGun> NewGunClass)
 		}
 	}
 }
+
+//void AGnuMyCharacter::SwitchWeapon(TSubclassOf<AGun> NewGunClass)
+//{
+//	if (NewGunClass)
+//	{
+//		GunClass = NewGunClass;
+//
+//		if (Gun)
+//
+//		{
+//			Gun->RemoveAmmoDisplay();
+//			Gun->Destroy();
+//			Gun = nullptr;
+//		}
+//		Gun = GetWorld()->SpawnActor<AGun>(GunClass);
+//
+//		if (Gun)
+//		{
+//			Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("WeaponSocket"));
+//			Gun->SetOwner(this);
+//			Gun->UpdateAmmoDisplay();
+//		}
+//	}
+//}
 
 bool AGnuMyCharacter::GetIsCrouching() const
 {

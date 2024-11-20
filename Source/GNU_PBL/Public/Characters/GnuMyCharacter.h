@@ -117,7 +117,12 @@ public:
 	void StopFire();
 	void Reload();
 	void Interact(); // 상호작용 함수
+	
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerSwitchWeapon(TSubclassOf<AGun> NewGunClass);
 	void SwitchWeapon(TSubclassOf<AGun> NewGunClass);
+
+	void PerformSwitchWeapon(TSubclassOf<AGun> NewGunClass);
 
 	bool GetIsCrouching() const;
 	bool GetIsSprinting() const;
