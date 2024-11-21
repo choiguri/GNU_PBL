@@ -123,7 +123,6 @@ void AGnuWeapon::SetWeaponState(EWeaponState State)
 
 void AGnuWeapon::Reload()
 {
-	Ammo = MaxAmmo;
 	if (ReloadAnimation)
 	{
 		WeaponMesh->PlayAnimation(ReloadAnimation, false);
@@ -135,6 +134,12 @@ void AGnuWeapon::Reload()
 bool AGnuWeapon::IsEmptyAmmo()
 {
 	return Ammo <= 0;
+}
+
+void AGnuWeapon::ReloadFinished()
+{
+	Ammo = MaxAmmo;
+	UpdateAmmo();
 }
 
 

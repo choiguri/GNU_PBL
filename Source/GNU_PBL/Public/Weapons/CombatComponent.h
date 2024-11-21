@@ -21,6 +21,8 @@ public:
 	
 	void EquipWeapon(class AGnuWeapon* WeaponToEquip);
 
+	void ReloadFinished();
+
 protected:
 
 	virtual void BeginPlay() override;

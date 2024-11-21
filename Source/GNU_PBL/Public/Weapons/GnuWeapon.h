@@ -116,4 +116,6 @@ public:
 	void Reload();
 
 	bool IsEmptyAmmo();
+
+	void ReloadFinished();
 };

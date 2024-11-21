@@ -258,6 +258,8 @@ private:
 
 
 public:
+	UPROPERTY(VisibleAnywhere)
+	class UCombatComponent* Combat;
 	
 	// Implementation으로 정의해서 밑줄이 뜨더라도 오류가 아님
 	UFUNCTION(Client, Reliable)
@@ -308,8 +310,7 @@ private:
 	UFUNCTION()
 	void OnRep_OverlappingWeapon(AGnuWeapon* LastWeapon);
 
-	UPROPERTY(VisibleAnywhere)
-	class UCombatComponent* Combat;
+	
 
 	UFUNCTION(Server, Reliable)
 	void ServerEquipButtonPressed();

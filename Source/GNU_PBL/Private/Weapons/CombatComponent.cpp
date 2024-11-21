@@ -248,7 +248,12 @@ void UCombatComponent::ReloadButtonPressed()
 		GnuCharacter->PlayReloadMontage();
 	}
 	
-	
+}
+
+void UCombatComponent::ReloadFinished()
+{
+	if (EquippedWeapon == nullptr) return;
+	EquippedWeapon->ReloadFinished();
 }
 
 
@@ -272,4 +277,6 @@ void UCombatComponent::EquipWeapon(AGnuWeapon* WeaponToEquip)
 
 	
 }
+
+
 
