@@ -30,7 +30,7 @@
 
 // GnuWeapon
 #include "Weapons/GnuWeapon.h"
-#include "Weapons/CombatComponent.h"
+#include "Weapons/GnuCombatComponent.h"
 #include "GNU_PBL/GNU_PBL.h"
 
 
@@ -98,7 +98,7 @@ AGnuMyCharacter::AGnuMyCharacter()
 	OverHeadWidget->SetupAttachment(RootComponent);
 
 	// GnuWeaponComponent
-	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
+	Combat = CreateDefaultSubobject<UGnuCombatComponent>(TEXT("CombatComponent"));
 	Combat->SetIsReplicated(true);
 
 	MovementComponent->NavAgentProps.bCanCrouch = true;

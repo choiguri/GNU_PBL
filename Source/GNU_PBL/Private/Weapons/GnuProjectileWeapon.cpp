@@ -3,7 +3,7 @@
 
 #include "Weapons/GnuProjectileWeapon.h"
 #include "Engine/SkeletalMeshSocket.h"
-#include "Weapons/Projectile.h"
+#include "Weapons/GnuProjectile.h"
 
 
 // CombatComponent 에서 LineTrace한 HitTarget 받아서 실행
@@ -35,7 +35,7 @@ void AGnuProjectileWeapon::Fire(const FVector& HitTarget)
 			UWorld* World = GetWorld();
 			if (World)
 			{
-				World->SpawnActor<AProjectile>(
+				World->SpawnActor<AGnuProjectile>(
 					ProjectileClass,
 					SocketTransform.GetLocation(),
 					TargetRotation,

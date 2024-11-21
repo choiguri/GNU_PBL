@@ -67,28 +67,6 @@ void UGnuMyAnimInstance::NativeUpdateAnimation(float DeltaTime)
 		bIsCrouched = MyCharacter->bIsCrouched;
 		SetWeapon();
 		
-		// 나중에 다 주석 처리해야할듯?
-		// 보는 방향에 따라 무기 방향도 다르게 설정하는 법 && 현재 캐릭터의 시점, 실제로 총이 나가는 곳을 DebugLine으로 그리기
-		if (bWeaponEquipped && EquippedWeapon && EquippedWeapon->GetWeaponMesh() && MyCharacter->GetMesh())
-		{
-
-			if (MyCharacter->IsLocallyControlled())
-			{
-				FTransform RightHandTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("RightHand"), ERelativeTransformSpace::RTS_World);
-				RightHandRotation = UKismetMathLibrary::FindLookAtRotation(RightHandTransform.GetLocation(), RightHandTransform.GetLocation() + (RightHandTransform.GetLocation() - MyCharacter->GetHitTarget()));
-				/*RightHandRotation = UKismetMathLibrary::FindLookAtRotation(RightHandTransform.GetLocation(), MyCharacter->GetHitTarget());*/
-				FRotator RightHandAdjustment(-80.f, 14.f, 82.f);
-				RightHandRotation = RightHandRotation + RightHandAdjustment;
-			}
-
-			FTransform MuzzleTipTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("MuzzleFlashSocket"), ERelativeTransformSpace::RTS_World);
-			FVector MuzzleX(FRotationMatrix(MuzzleTipTransform.GetRotation().Rotator()).GetUnitAxis(EAxis::X));
-			DrawDebugLine(GetWorld(), MuzzleTipTransform.GetLocation(), MuzzleTipTransform.GetLocation() + MuzzleX * 1000.f, FColor::Red);
-			DrawDebugLine(GetWorld(), MuzzleTipTransform.GetLocation(), MyCharacter->GetHitTarget(), FColor::Yellow);
-			
-		}
-		
-
 	}
 
 }

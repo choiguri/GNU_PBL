@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Weapons/CombatComponent.h"
+#include "Weapons/GnuCombatComponent.h"
 #include "Weapons/GnuWeapon.h"
 #include "Characters/GnuMyCharacter.h"
 #include "Engine/SkeletalMeshSocket.h"
@@ -15,7 +15,7 @@
 #include "TimerManager.h"
 
 
-UCombatComponent::UCombatComponent()
+UGnuCombatComponent::UGnuCombatComponent()
 {
 	
 	PrimaryComponentTick.bCanEverTick = true;
@@ -23,20 +23,20 @@ UCombatComponent::UCombatComponent()
 	// ...
 }
 
-void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void UGnuCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(UCombatComponent, EquippedWeapon);
+	DOREPLIFETIME(UGnuCombatComponent, EquippedWeapon);
 }
 
-void UCombatComponent::BeginPlay()
+void UGnuCombatComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
 }
 
-void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UGnuCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
@@ -55,7 +55,7 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 
 // LineTrace
-void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
+void UGnuCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 {
 	FVector2D ViewportSize;
 	if (GEngine && GEngine->GameViewport)
@@ -98,7 +98,7 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 	}
 }
 
-void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
+void UGnuCombatComponent::SetHUDCrosshairs(float DeltaTime)
 {
 	if (GnuCharacter == nullptr || GnuCharacter->Controller == nullptr) return;
 	
@@ -162,7 +162,7 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 	}
 }
 
-void UCombatComponent::OnRep_EquippedWeapon()
+void UGnuCombatComponent::OnRep_EquippedWeapon()
 {
 	if (EquippedWeapon && GnuCharacter)
 	{
@@ -171,7 +171,7 @@ void UCombatComponent::OnRep_EquippedWeapon()
 	}
 }
 
-void UCombatComponent::FireButtonPressed(bool bPressed)
+void UGnuCombatComponent::FireButtonPressed(bool bPressed)
 {
 	bFireButtonPressed = bPressed;
 
@@ -188,19 +188,19 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 }
 
 // Automatic Fire
-void UCombatComponent::StartFireTimer()
+void UGnuCombatComponent::StartFireTimer()
 {
 	if (EquippedWeapon == nullptr || GnuCharacter == nullptr) return;
 
 	GnuCharacter->GetWorldTimerManager().SetTimer(
 		FireTimer,
 		this,
-		&UCombatComponent::FireTimerFinished,
+		&UGnuCombatComponent::FireTimerFinished,
 		FireDelay
 	);
 }
 
-void UCombatComponent::FireTimerFinished()
+void UGnuCombatComponent::FireTimerFinished()
 {
 	bCanFire = true;
 	if (bFireButtonPressed && bAutomatic)
@@ -214,18 +214,18 @@ void UCombatComponent::FireTimerFinished()
 	}
 }
 
-bool UCombatComponent::CanFire()
+bool UGnuCombatComponent::CanFire()
 {
 	if (EquippedWeapon == nullptr) return false;
 	return !EquippedWeapon->IsEmptyAmmo() || !bCanFire;
 }
 
-void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
+void UGnuCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
 {
 	MultiCastFire(TraceHitTarget);
 }
 
-void UCombatComponent::MultiCastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
+void UGnuCombatComponent::MultiCastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
 {
 	if (EquippedWeapon == nullptr) return;
 	if (GnuCharacter)
@@ -238,7 +238,7 @@ void UCombatComponent::MultiCastFire_Implementation(const FVector_NetQuantize& T
 
 
 
-void UCombatComponent::ReloadButtonPressed()
+void UGnuCombatComponent::ReloadButtonPressed()
 {
 
 	if (EquippedWeapon == nullptr) return;
@@ -250,7 +250,7 @@ void UCombatComponent::ReloadButtonPressed()
 	
 }
 
-void UCombatComponent::ReloadFinished()
+void UGnuCombatComponent::ReloadFinished()
 {
 	if (EquippedWeapon == nullptr) return;
 	EquippedWeapon->ReloadFinished();
@@ -259,8 +259,12 @@ void UCombatComponent::ReloadFinished()
 
 
 // ¹«±â ÀåÂø
-void UCombatComponent::EquipWeapon(AGnuWeapon* WeaponToEquip)
+void UGnuCombatComponent::EquipWeapon(AGnuWeapon* WeaponToEquip)
 {
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("EquipWeapon")));
+	}
 	if (GnuCharacter == nullptr || WeaponToEquip == nullptr) return;
 	if (EquippedWeapon != nullptr) return;
 

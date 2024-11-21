@@ -4,15 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Projectile.generated.h"
+#include "GnuProjectile.generated.h"
 
 UCLASS()
-class GNU_PBL_API AProjectile : public AActor
+class GNU_PBL_API AGnuProjectile : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
-	AProjectile();
+	AGnuProjectile();
 	virtual void Tick(float DeltaTime) override;
 	virtual void Destroyed() override;
 

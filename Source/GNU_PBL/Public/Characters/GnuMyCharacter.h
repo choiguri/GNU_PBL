@@ -259,7 +259,7 @@ private:
 
 public:
 	UPROPERTY(VisibleAnywhere)
-	class UCombatComponent* Combat;
+	class UGnuCombatComponent* Combat;
 	
 	// Implementation으로 정의해서 밑줄이 뜨더라도 오류가 아님
 	UFUNCTION(Client, Reliable)

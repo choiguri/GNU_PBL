@@ -19,5 +19,5 @@ public:
 
 private:
 	UPROPERTY(EditAnyWhere)
-	TSubclassOf<class AProjectile> ProjectileClass;
+	TSubclassOf<class AGnuProjectile> ProjectileClass;
 };

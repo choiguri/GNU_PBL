@@ -4,17 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "CombatComponent.generated.h"
+#include "GnuCombatComponent.generated.h"
 
 #define TRACE_LENGTH 80000.f
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class GNU_PBL_API UCombatComponent : public UActorComponent
+class GNU_PBL_API UGnuCombatComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:	
-	UCombatComponent();
+	UGnuCombatComponent();
 	friend class AGnuMyCharacter;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;

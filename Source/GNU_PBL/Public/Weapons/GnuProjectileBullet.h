@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Weapons/Projectile.h"
-#include "ProjectileBullet.generated.h"
+#include "Weapons/GnuProjectile.h"
+#include "GnuProjectileBullet.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class GNU_PBL_API AProjectileBullet : public AProjectile
+class GNU_PBL_API AGnuProjectileBullet : public AGnuProjectile
 {
 	GENERATED_BODY()
 	

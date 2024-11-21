@@ -3,7 +3,7 @@
 
 #include "Weapons/GnuReloadComplete.h"
 #include "Characters/GnuMyCharacter.h"
-#include "Weapons/CombatComponent.h"
+#include "Weapons/GnuCombatComponent.h"
 
 void UGnuReloadComplete::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {

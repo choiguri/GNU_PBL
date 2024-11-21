@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Weapons/Projectile.h"
+#include "Weapons/GnuProjectile.h"
 #include "Components/BoxComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -12,7 +12,7 @@
 #include "GNU_PBL/GNU_PBL.h"
 
 
-AProjectile::AProjectile()
+AGnuProjectile::AGnuProjectile()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
@@ -38,7 +38,7 @@ AProjectile::AProjectile()
 }
 
 
-void AProjectile::BeginPlay()
+void AGnuProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 	
@@ -56,23 +56,23 @@ void AProjectile::BeginPlay()
 
 	if (HasAuthority())
 	{
-		CollisionBox->OnComponentHit.AddDynamic(this, &AProjectile::OnHit); 
+		CollisionBox->OnComponentHit.AddDynamic(this, &AGnuProjectile::OnHit);
 	}
 }
 
-void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void AGnuProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	Destroy();
 }
 
 
-void AProjectile::Tick(float DeltaTime)
+void AGnuProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
 }
 
-void AProjectile::Destroyed()
+void AGnuProjectile::Destroyed()
 {
 	Super::Destroyed();
 
