@@ -7,6 +7,7 @@
 #include "Kismet/KismetMathLibrary.h" // VSizeXY(), NormalizeAxis(), NormalizedDeltaRotator()
 #include "Net/UnrealNetwork.h"
 #include "KismetAnimationLibrary.h"
+#include "Weapons/GnuWeapon.h"
 
 
 
@@ -35,9 +36,11 @@ void UGnuMyAnimInstance::NativeInitializeAnimation()
 	CurDirectionAngle = 0.0f;
 	CurVelocity = FVector::Zero();
 	CurAcceleration = FVector::Zero();
-	EAnimState = EAnimationState::Rifle;
+	EAnimState = EAnimationState::Unarmed; // 시작했을 때 기본 자세
 	bIsCrouching = false;
 	bIsSprinting = false;
+	bIsCrouched = false; // 나중에 지워야할 듯
+	
 }
 
 void UGnuMyAnimInstance::NativeUpdateAnimation(float DeltaTime)
@@ -51,8 +54,19 @@ void UGnuMyAnimInstance::NativeUpdateAnimation(float DeltaTime)
 		UpdateDirectionAndMovementInput();
 		bIsCrouching = MyCharacter->GetIsCrouching();
 		bIsSprinting = MyCharacter->GetIsSprinting();
+		bWeaponEquipped = MyCharacter->IsWeaponEquipped();
+		EquippedWeapon = MyCharacter->GetEquippedWeapon();
+		bIsCrouched = MyCharacter->bIsCrouched;
+		SetWeapon();
+		
 	}
 
+}
+
+void UGnuMyAnimInstance::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(UGnuMyAnimInstance, EAnimState);
 }
 
 void UGnuMyAnimInstance::UpdateMovementState()
@@ -141,3 +155,51 @@ void UGnuMyAnimInstance::SetTurnRate(float CurYaw) // GnuCharacterPlayerControll
 	TurnRate = CurYaw;
 }
 
+// 추후에 무기를 늘리거나 하면 수정해야 할 듯
+void UGnuMyAnimInstance::SetWeapon()
+{
+
+	if (bWeaponEquipped)
+	{
+		EAnimState = EAnimationState::Rifle;
+	}
+	else if (!bWeaponEquipped)
+	{
+		EAnimState = EAnimationState::Unarmed;
+	}
+}
+
+void UGnuMyAnimInstance::ServerSetAnimState_Implementation() // Ŭ���̾�Ʈ���� ������Ʈ ���� ��û�� ������ �������� ServerSprintStart_Implementation�� ����
+{
+	SetWeapon(); //  �� �Լ��� ���������� ����
+	if (GEngine)
+	{
+		FString s = FString::Printf(TEXT("Server SetWeapon called: %d"), (int32)EAnimState);
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, s);
+	}
+
+}
+
+bool UGnuMyAnimInstance::ServerSetAnimState_Validate()
+{
+	return true; // �ʿ��� ��ȿ�� �˻� ������ ���⿡ �߰�
+}
+
+
+void UGnuMyAnimInstance::ClientSetAnimState_Implementation() // Ŭ���̾�Ʈ�� ��� �ݿ��ϴ� ��������� ���� - Ŭ���̾�Ʈ �ϰ����� ������
+{
+	// �ּ��� Ǯ�� Ŭ���̾�Ʈ���� ������Ʈ ���¸� ������ �ݿ��� �� ������, �� ����� ������ ����� ��ٸ��� �ʱ� ������ ������ Ŭ���̾�Ʈ�� �ϰ����� ������ �� ����
+	// UpdateSprintState(true);
+}
+
+
+void UGnuMyAnimInstance::OnRep_SetAnimState() 	// Ŭ���̾�Ʈ�� ����ȭ �Ǵ� �Լ� -> �������� isSprint ���� ����� �� Ŭ���̾�Ʈ���� �� ��ȭ�� �����ϰ� ����Ǵ� �Լ� (��, ������ �����ϴ� ������Ʈ ���¸� Ŭ���̾�Ʈ�� ����ȭ �ϴ� ���)
+{
+	SetWeapon();
+	if (GEngine)
+	{
+		FString s = FString::Printf(TEXT("OnRep called: %d"), (int32)EAnimState);
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, s);
+	}
+
+}

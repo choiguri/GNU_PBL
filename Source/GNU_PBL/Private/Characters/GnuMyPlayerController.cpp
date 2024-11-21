@@ -20,6 +20,7 @@
 AGnuMyPlayerController::AGnuMyPlayerController()
 {
 	bReplicates = true;
+	SetReplicateMovement(true);
 
 	CurrentMoveDirection = { 0.0f, 0.0f }; // 구르기 방향 결정에 사용
 	// 생성자 정의
@@ -121,6 +122,20 @@ void AGnuMyPlayerController::SetHUDCombatTime(float CombatTime)
 	}
 }
 
+void AGnuMyPlayerController::SetHUDWeaponAmmo(int32 Ammo, int32 MaxAmmo)
+{
+	GNUHUD = GNUHUD == nullptr ? Cast<AGNUHUD>(GetHUD()) : GNUHUD;
+
+	bool bHUDValid = GNUHUD &&
+		GNUHUD->CharacterOverlay &&
+		GNUHUD->CharacterOverlay->AmmoText;
+	if (bHUDValid)
+	{
+		FString AmmoText = FString::Printf(TEXT("%d / %d"), Ammo, MaxAmmo);
+		GNUHUD->CharacterOverlay->AmmoText->SetText(FText::FromString(AmmoText));
+	}
+}
+
 
 void AGnuMyPlayerController::SetHUDTime()
 {
@@ -148,20 +163,29 @@ void AGnuMyPlayerController::SetupInputComponent()
 	EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::ToggleCrouch);
 	EnhancedInputComponent->BindAction(ToggleCameraAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::ToggleCamera);
 	EnhancedInputComponent->BindAction(ZoomInAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::ToggleZoomIn);
+	/*EnhancedInputComponent->BindAction(WeaponChangeAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::WeaponChange);*/
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::Jump);
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AGnuMyPlayerController::StopJumping);
 
-	EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::Interact);
+	// 기존
+	/*EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::Interact);
 	EnhancedInputComponent->BindAction(ShotAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::Fire);
-	EnhancedInputComponent->BindAction(ShotAction, ETriggerEvent::Completed, this, &AGnuMyPlayerController::StopFire);
-	EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::Aiming);
-	EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Completed, this, &AGnuMyPlayerController::StopAiming);
-	EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::Reload);
+	EnhancedInputComponent->BindAction(ShotAction, ETriggerEvent::Completed, this, &AGnuMyPlayerController::StopFire);*/
+	//EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::Aiming);
+	//EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Completed, this, &AGnuMyPlayerController::StopAiming);
+	//EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::Reload);
 	EnhancedInputComponent->BindAction(ArrowSkillAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::ArrowSkill);
 	EnhancedInputComponent->BindAction(HealSkillAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::HealSkill);
+	EnhancedInputComponent->BindAction(GrenadeSkillAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::GrenadeSkill);
 
 	// 추가사항
 	EnhancedInputComponent->BindAction(QuitAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::ShowReturnToMainMenu);
+	EnhancedInputComponent->BindAction(EquipAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::EquipButtonPressed);
+	EnhancedInputComponent->BindAction(Crouch, ETriggerEvent::Started, this, &AGnuMyPlayerController::CrouchButtonPressed);
+	EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::FireButtonPressed);
+	EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &AGnuMyPlayerController::FireButtonReleased);
+	EnhancedInputComponent->BindAction(WeaponReloadAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::ReloadButtonPressed);
+	
 }
 
 // 추가사항
@@ -198,6 +222,10 @@ void AGnuMyPlayerController::CheckTimeSync(float DeltaTime)
 
 	}
 }
+
+
+
+
 
 // 서버와 클라이언트 사이의 RoundTripTime 계산 하기 위한 함수들
 // 클라이언트가 요청하고 서버에 도착하는 시간, 서버에서 클라이언트로 응답하는 시간
@@ -386,6 +414,24 @@ void AGnuMyPlayerController::ToggleZoomIn(const FInputActionValue& InputActionVa
 	}
 }
 
+// 기존
+//void AGnuMyPlayerController::WeaponChange(const FInputActionValue& InputActionValue)
+//{
+//	if (APawn* ControlledPawn = GetPawn<APawn>())
+//	{
+//		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
+//		if (MyCharacter)
+//		{
+//			UGnuMyAnimInstance* AnimInstance = Cast<UGnuMyAnimInstance>(MyCharacter->GetMesh()->GetAnimInstance());
+//			if (AnimInstance != nullptr)
+//			{
+//				// SetTurnRate �Լ� ȣ�� (���� Yaw ���� ����)
+//				AnimInstance->ServerSetAnimState_Implementation();
+//			}
+//		}
+//	}
+//}
+
 void AGnuMyPlayerController::Jump(const FInputActionValue& InputActionValue)
 {
 	if (APawn* ControlledPawn = GetPawn<APawn>())
@@ -410,6 +456,7 @@ void AGnuMyPlayerController::StopJumping(const FInputActionValue& InputActionVal
 	}
 }
 
+// 기존
 void AGnuMyPlayerController::Aiming()
 {
 	if (APawn* ControlledPawn = GetPawn<APawn>())
@@ -434,53 +481,133 @@ void AGnuMyPlayerController::StopAiming()
 	}
 }
 
+// 기존
+//void AGnuMyPlayerController::Fire()
+//{
+//	if (APawn* ControlledPawn = GetPawn<APawn>())
+//	{
+//		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
+//		if (MyCharacter)
+//		{
+//			MyCharacter->Fire();
+//		}
+//	}
+//}
+//
+//void AGnuMyPlayerController::StopFire()
+//{
+//	if (APawn* ControlledPawn = GetPawn<APawn>())
+//	{
+//		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
+//		if (MyCharacter)
+//		{
+//			MyCharacter->StopFire();
+//		}
+//	}
+//}
+//
+//
+//void AGnuMyPlayerController::Reload()
+//{
+//	if (APawn* ControlledPawn = GetPawn<APawn>())
+//	{
+//		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
+//		if (MyCharacter)
+//		{
+//			MyCharacter->ServerMontageOnReload();
+//		}
+//	}
+//}
 
-void AGnuMyPlayerController::Fire()
+//
+//void AGnuMyPlayerController::Interact()
+//{
+//	if (APawn* ControlledPawn = GetPawn<APawn>())
+//	{
+//		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
+//		if (MyCharacter)
+//		{
+//			MyCharacter->Interact();
+//		}
+//	}
+//}
+
+void AGnuMyPlayerController::EquipButtonPressed()
 {
 	if (APawn* ControlledPawn = GetPawn<APawn>())
 	{
 		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
 		if (MyCharacter)
 		{
-			MyCharacter->Fire();
+			MyCharacter->EquipButtonPressed();
 		}
 	}
 }
 
-void AGnuMyPlayerController::StopFire()
+void AGnuMyPlayerController::CrouchButtonPressed()
 {
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, FString::Printf(TEXT("CrouchButtonPressed")));
+	}
 	if (APawn* ControlledPawn = GetPawn<APawn>())
 	{
 		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
 		if (MyCharacter)
 		{
-			MyCharacter->StopFire();
+			if (MyCharacter->bIsCrouched)
+			{
+				if (GEngine)
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("uncrouch")));
+				}
+				MyCharacter->UnCrouch();
+			}
+			else
+			{
+				if (GEngine)
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("crouch")));
+				}
+				MyCharacter->Crouch();
+			}
 		}
 	}
 }
 
-
-void AGnuMyPlayerController::Reload()
+void AGnuMyPlayerController::FireButtonPressed()
 {
 	if (APawn* ControlledPawn = GetPawn<APawn>())
 	{
 		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
 		if (MyCharacter)
 		{
-			MyCharacter->ServerMontageOnReload();
+			MyCharacter->FireButtonPressed();
+		}
+	}
+
+}
+
+void AGnuMyPlayerController::FireButtonReleased()
+{
+	if (APawn* ControlledPawn = GetPawn<APawn>())
+	{
+		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
+		if (MyCharacter)
+		{
+			MyCharacter->FireButtonReleased();
 		}
 	}
 }
 
-
-void AGnuMyPlayerController::Interact()
+void AGnuMyPlayerController::ReloadButtonPressed()
 {
 	if (APawn* ControlledPawn = GetPawn<APawn>())
 	{
 		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
 		if (MyCharacter)
 		{
-			MyCharacter->Interact();
+			MyCharacter->ReloadButtonPressed();
 		}
 	}
 }
@@ -506,5 +633,21 @@ void AGnuMyPlayerController::HealSkill(const FInputActionValue& InputActionValue
 		{
 			MyCharacter->SpawnHeal(); // 캐릭터의 StopJumping 메서드 호출
 		}
+	}
+}
+
+void AGnuMyPlayerController::GrenadeSkill(const FInputActionValue& InputActionValue)
+{
+	if (APawn* ControlledPawn = GetPawn<APawn>())
+	{
+		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
+		if (MyCharacter)
+		{
+			MyCharacter->SpawnGrenade(); // 캐릭터의 StopJumping 메서드 호출
+		}
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("No Binding GrenadeSkil(Controller Cpp)")));
 	}
 }

@@ -8,6 +8,7 @@
 
 class UProjectileMovementComponent;
 class UNiagaraComponent;
+class UNiagaraSystem;
 
 UCLASS()
 class GNU_PBL_API AGnuProjectileActor : public AGnuActorCollisionBase
@@ -20,29 +21,23 @@ public:
     void LaunchProjectile(AActor* IgnoredActor);  // 발사 함수
 
 private:
-    FTimerHandle DestructionTimerHandle; // 파괴 타이머 핸들
+    float Damage;
+
+    FTimerHandle TimerHandle; // 파괴 타이머 핸들
+
+    FVector PreviousLocation; // 나이아가라 이펙트의 이전 위치
 
     void DestroyActor(); // 엑터 삭제 함수
-
-    FVector PreviousLocation;
-
-    float Damage;
 
 protected:
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaTime) override;
 
     UPROPERTY(VisibleAnywhere)
-    UNiagaraComponent* FlyingNiagaraComponent;
+    UNiagaraComponent* NiagaraComponent;
 
     UPROPERTY(VisibleAnywhere)
-    UNiagaraComponent* MuzzleNiagaraComponent;
-
-    UPROPERTY(VisibleAnywhere)
-    UNiagaraComponent* TargetNiagaraComponent;
-
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projectile")
-    UProjectileMovementComponent* ProjectileMovementComponent;
+    UBoxComponent* ProjectileBoxComponent;
 
     UFUNCTION()
     void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);

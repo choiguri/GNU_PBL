@@ -17,6 +17,7 @@ class UFTimeline;
 class UCurveFloat;
 class AGnuProjectileActor;
 class AGnuHealActor;
+class AGnuGrenadeActor;
 class UGnuCharacterBaseWidget;
 
 // Monster class
@@ -96,13 +97,13 @@ public:
 
 
 	//------------------ Weapon Funtion ---------------------------------------
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
-	bool isReload;
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerMontageOnReload();
-	UFUNCTION(NetMulticast, Reliable)
-	void MultiCastMontage_Reload();
-	void FinishReload();
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
+	//bool isReload;
+	//UFUNCTION(Server, Reliable, WithValidation)
+	//void ServerMontageOnReload(); // �������� ������ ��Ÿ�ָ� �����ϴ� �Լ� (��Ʈ�ѷ����� ȣ��)
+	//UFUNCTION(NetMulticast, Reliable)
+	//void MultiCastMontage_Reload(); // ������ ��Ÿ�� ��Ƽĳ��Ʈ (������ ȣ��Ǹ� �ڵ����� ȣ��)
+	//void FinishReload();
 	//---------------------------------------------------------------------
 
 
@@ -113,11 +114,16 @@ public:
 	UPROPERTY(ReplicatedUsing = OnRep_IsCrouching, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	bool isFire = false;
 
-	void Fire();
-	void StopFire();
-	void Reload();
-	void Interact(); // 상호작용 함수
-	void SwitchWeapon(TSubclassOf<AGun> NewGunClass);
+	//void Fire();
+	//void StopFire();
+	////void Reload();
+	//void Interact(); // 상호작용 함수
+	//
+	//UFUNCTION(Server, Reliable, WithValidation)
+	//void ServerSwitchWeapon(TSubclassOf<AGun> NewGunClass);
+	//void SwitchWeapon(TSubclassOf<AGun> NewGunClass);
+
+	//void PerformSwitchWeapon(TSubclassOf<AGun> NewGunClass);
 
 	bool GetIsCrouching() const;
 	bool GetIsSprinting() const;
@@ -138,6 +144,11 @@ public:
 	void SpawnHeal();
 	// -----------------------------------------------------------------------------------------
 
+	// ------------------------------------- Grenade Skill ----------------------------------------
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	TSubclassOf<class AGnuGrenadeActor> GrenadeClass;
+	void SpawnGrenade();
+	// -----------------------------------------------------------------------------------------
 
 	void SetCamera();
 
@@ -196,6 +207,7 @@ protected:
 	UPROPERTY()
 	AGun* Gun; // Gun Actor
 
+
 	TSubclassOf<UUserWidget> CrossHairWidgetClass;
 
 	UPROPERTY()
@@ -239,9 +251,9 @@ private:
 
 
 public:
-	// 서버에서 수정 -> RepNotify -> 클라이언트 반응
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
+	UPROPERTY(VisibleAnywhere)
+	class UGnuCombatComponent* Combat;
+	
 	// Implementation으로 정의해서 밑줄이 뜨더라도 오류가 아님
 	UFUNCTION(Client, Reliable)
 	void ClientSetName(const FString& Name);
@@ -254,10 +266,85 @@ public:
 	//
 	void Elim();
 
+	// 기존
+	/*UFUNCTION(Server, Reliable)
+	void ServerFire();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiCastFire();
+
+	UFUNCTION(Server, Reliable)
+	void ServerStopFire();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiCastStopFire();*/
+
+	// 무기 장착
+	void EquipButtonPressed();
+	void FireButtonPressed();
+	void FireButtonReleased();
+	void ReloadButtonPressed();
+
 protected:
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
 	
 	void UpdateHUDHealth();
 	void UpdateHUDStamina();
+
+	
+
+////// GnuWeapon Start
+
+private:
+	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
+	class AGnuWeapon* OverlappingWeapon;
+
+	UFUNCTION()
+	void OnRep_OverlappingWeapon(AGnuWeapon* LastWeapon);
+
+	
+
+	UFUNCTION(Server, Reliable)
+	void ServerEquipButtonPressed();
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	UAnimMontage* FireWeaponMontage;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	UAnimMontage* ReloadWeaponMontage;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	UAnimMontage* HitReactMontage;
+
+	void PlayHitReactMontage();
+
+	void HideCameraIfCharacterClose();
+
+
+public:
+	// 복제를 위한 변수 저장
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	void SetOverlappingWeapon(AGnuWeapon* Weapon);
+
+	virtual void PostInitializeComponents() override;
+
+	bool IsWeaponEquipped();
+
+	void PlayFireMontage();
+
+	void PlayReloadMontage();
+
+	UFUNCTION(Server, Reliable)
+	void ServerPlayReloadMontage();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiCastPlayReloadMontage();
+
+	AGnuWeapon* GetEquippedWeapon();
+
+	FVector GetHitTarget() const;
+
+
 };

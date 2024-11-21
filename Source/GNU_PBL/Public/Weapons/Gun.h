@@ -21,6 +21,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -57,14 +58,13 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	UAnimMontage* Reload_Montage;
-	
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	USkeletalMeshComponent* Mesh; // 블루프린트에서 쓰려고 바꿔놓음
 
 private:
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* Root;
-
-	UPROPERTY(VisibleAnywhere)
-	USkeletalMeshComponent* Mesh;
 
 	UPROPERTY(EditAnywhere)
 	UParticleSystem* MuzzleFlash;
@@ -109,5 +109,7 @@ private:
 	void Fire();
 
 
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	class UAnimationAsset* FireAnimation;
 
 };

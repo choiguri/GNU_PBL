@@ -16,6 +16,6 @@ class GNU_PBL_API UReloadComplate : public UAnimNotify
 
 public:
 	// Notify 호출 시 실행될 함수
-	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) override;
+	/*virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) override;*/
 	
 };

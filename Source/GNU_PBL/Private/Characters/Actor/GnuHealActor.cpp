@@ -20,7 +20,6 @@ AGnuHealActor::AGnuHealActor()
 
     NiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraSystem"));
     NiagaraComponent->SetupAttachment(BoxComponent);
-
     Damage = 3.0f;
 }
 
@@ -73,11 +72,6 @@ void AGnuHealActor::EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
     //        GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::Printf(TEXT("Healing stopped!")));
     //    }
     //}
-}
-
-void AGnuHealActor::HealOverTime()
-{
-
 }
 
 void AGnuHealActor::DestroyHeal()

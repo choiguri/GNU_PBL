@@ -42,8 +42,8 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	EMovementInput MovementInput; // 캐릭터의 이동 방향을 저장하는 열거형 변수
 
-	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	EAnimationState EAnimState; // 캐릭터의 현재 애니메이션 상태를 저장하는 변수
+	//UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	//EAnimationState EAnimState; // 캐릭터의 현재 애니메이션 상태를 저장하는 변수
 
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	float GroundSpeed; // 캐릭터의 바닥 속도
@@ -90,14 +90,38 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Movement")
 	bool bIsSprinting;
 
+	
+
 public:
 	virtual void NativeUpdateAnimation(float DeltaTime) override;
 	virtual void NativeInitializeAnimation() override;
 
 	void SetTurnRate(float CurYaw);
+	void SetWeapon();
+
+	UPROPERTY(ReplicatedUsing = OnRep_SetAnimState, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	EAnimationState EAnimState;
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerSetAnimState();
+	UFUNCTION(Client, Reliable)
+	void ClientSetAnimState();
+	UFUNCTION()
+	void OnRep_SetAnimState();
 
 private:
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 	void UpdateMovementState(); // 이동 상태 업데이트
 	void UpdateDirectionAndMovementInput(); // 방향과 이동 입력을 업데이트
 
+	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	bool bWeaponEquipped;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	bool bIsCrouched;
+
+	class AGnuWeapon* EquippedWeapon;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	FRotator RightHandRotation;
 };
