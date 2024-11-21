@@ -63,6 +63,12 @@ void UGnuMyAnimInstance::NativeUpdateAnimation(float DeltaTime)
 
 }
 
+void UGnuMyAnimInstance::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(UGnuMyAnimInstance, EAnimState);
+}
+
 void UGnuMyAnimInstance::UpdateMovementState()
 {
 	//------------------------------ ShouldMove 확인 ----------------------------

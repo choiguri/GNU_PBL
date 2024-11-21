@@ -686,28 +686,7 @@ void AGnuMyCharacter::StopAiming()
 //	}
 //}
 //
-//void AGnuMyCharacter::SwitchWeapon(TSubclassOf<AGun> NewGunClass)
-//{
-//	if (NewGunClass)
-//	{
-//		GunClass = NewGunClass;
-//
-//		if (Gun)
-//		{
-//			Gun->RemoveAmmoDisplay();
-//			Gun->Destroy();
-//			Gun = nullptr;
-//		}
-//		Gun = GetWorld()->SpawnActor<AGun>(GunClass);
-//
-//		if (Gun)
-//		{
-//			Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("WeaponSocket"));
-//			Gun->SetOwner(this);
-//			Gun->UpdateAmmoDisplay();
-//		}
-//	}
-//}
+
 
 //void AGnuMyCharacter::SwitchWeapon(TSubclassOf<AGun> NewGunClass)
 //{

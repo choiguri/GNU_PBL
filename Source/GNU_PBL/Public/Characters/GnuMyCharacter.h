@@ -115,16 +115,16 @@ public:
 	UPROPERTY(ReplicatedUsing = OnRep_IsCrouching, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	bool isFire = false;
 
-	void Fire();
-	void StopFire();
-	//void Reload();
-	void Interact(); // 상호작용 함수
-	
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerSwitchWeapon(TSubclassOf<AGun> NewGunClass);
-	void SwitchWeapon(TSubclassOf<AGun> NewGunClass);
+	//void Fire();
+	//void StopFire();
+	////void Reload();
+	//void Interact(); // 상호작용 함수
+	//
+	//UFUNCTION(Server, Reliable, WithValidation)
+	//void ServerSwitchWeapon(TSubclassOf<AGun> NewGunClass);
+	//void SwitchWeapon(TSubclassOf<AGun> NewGunClass);
 
-	void PerformSwitchWeapon(TSubclassOf<AGun> NewGunClass);
+	//void PerformSwitchWeapon(TSubclassOf<AGun> NewGunClass);
 
 	bool GetIsCrouching() const;
 	bool GetIsSprinting() const;
