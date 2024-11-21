@@ -1,0 +1,88 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "Weapons/GnuProjectile.h"
+#include "Components/BoxComponent.h"
+#include "GameFramework/ProjectileMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "Particles/ParticleSystem.h"
+#include "Sound/SoundCue.h"
+#include "Characters/GnuMyCharacter.h"
+#include "GNU_PBL/GNU_PBL.h"
+
+
+AGnuProjectile::AGnuProjectile()
+{
+	PrimaryActorTick.bCanEverTick = true;
+	bReplicates = true;
+
+	CollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBox"));
+	SetRootComponent(CollisionBox);
+	CollisionBox->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
+	CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	CollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+	CollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
+
+	// editor -> projectsettings -> object 검색 -> object channel 추가 -> skeletalmesh
+	// GNU_PBL.h ->  #define ECC_SkeletalMesh ECollisionChannel::ECC_GameTraceChannel1
+	CollisionBox->SetCollisionResponseToChannel(ECC_SkeletalMesh, ECollisionResponse::ECR_Block);
+
+	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
+	// 방향이 속도 따라감
+	// 블루프린트에서 속도 설정하면 됨 Set Velocity In Blueprint
+	ProjectileMovementComponent->bRotationFollowsVelocity = true;
+
+
+}
+
+
+void AGnuProjectile::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	if (Tracer)
+	{
+		TracerComponent = UGameplayStatics::SpawnEmitterAttached(
+			Tracer,
+			CollisionBox,
+			FName(),
+			GetActorLocation(), //getactor locatoin
+			GetActorRotation(),
+			EAttachLocation::KeepWorldPosition
+		);
+	}
+
+	if (HasAuthority())
+	{
+		CollisionBox->OnComponentHit.AddDynamic(this, &AGnuProjectile::OnHit);
+	}
+}
+
+void AGnuProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	Destroy();
+}
+
+
+void AGnuProjectile::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+}
+
+void AGnuProjectile::Destroyed()
+{
+	Super::Destroyed();
+
+	if (ImpactParticles)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, GetActorTransform());
+	}
+	if (ImpactSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
+	}
+}
+

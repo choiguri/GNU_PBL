@@ -31,6 +31,8 @@ public:
 
 	void SetHUDCombatTime(float CombatTime);
 
+	void SetHUDWeaponAmmo(int32 Ammo, int32 MaxAmmo);
+
 	virtual void Tick(float DeltaTime) override;
 	virtual float GetServertime();
 	virtual void ReceivedPlayer() override;
@@ -62,6 +64,7 @@ protected:
 	float TimeSyncRunningTime = 0.0f;
 	void CheckTimeSync(float DeltaTime);
 
+
 private:
 	UPROPERTY(EditAnywhere, Category = "input")
 	TObjectPtr<UInputMappingContext> MyCharacterContext;
@@ -91,9 +94,22 @@ private:
 	TObjectPtr<UInputAction> ZoomInAction; // 카메라 줌
 
 
-	// 추가사항
+
+	// 추가사항 GnuWeapon
 	UPROPERTY(EditAnywhere, Category = "input")
 	TObjectPtr<UInputAction> QuitAction;
+
+	UPROPERTY(EditAnywhere, Category = "input")
+	TObjectPtr<UInputAction> EquipAction;
+
+	UPROPERTY(EditAnywhere, Category = "input")
+	TObjectPtr<UInputAction> Crouch;
+
+	UPROPERTY(EditAnywhere, Category = "input")
+	TObjectPtr<UInputAction> FireAction;
+
+	UPROPERTY(EditAnywhere, Category = "input")
+	TObjectPtr<UInputAction> WeaponReloadAction;
 
 	// Weapon input
 	UPROPERTY(EditAnywhere, Category = "input")
@@ -131,16 +147,23 @@ private:
 	void HealSkill(const struct FInputActionValue& InputActionValue);
 	void GrenadeSkill(const struct FInputActionValue& InputActionValue);
 
+
 	// ------------------ Weapon funtion -------------
+	// 기존
 	void Aiming();
 	void StopAiming();
-	void Fire();
-	void StopFire();
-	void Reload();
-	void Interact(); // 상호작용 함수
+	//void Fire();
+	//void StopFire();
+	//void Reload();
+	//void Interact(); // 상호작용 함수
 	// -----------------------------------------------
 
-
+	// GnuWeapon
+	void EquipButtonPressed();
+	void CrouchButtonPressed();
+	void FireButtonPressed();
+	void FireButtonReleased();
+	void ReloadButtonPressed();
 //
 // 추가사항
 //

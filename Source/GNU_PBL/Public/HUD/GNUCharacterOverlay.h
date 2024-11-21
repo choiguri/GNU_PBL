@@ -31,6 +31,9 @@ public:
 	class UTextBlock* CombatTimeText;
 
 	UPROPERTY(meta = (BindWidget))
+	UTextBlock* AmmoText;
+
+	UPROPERTY(meta = (BindWidget))
 	class UImage* HighPingImage;
 
 	UPROPERTY(meta = (BindWidgetAnim), Transient)

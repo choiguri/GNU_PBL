@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "Characters/GnuBaseCharacter.h"
 #include "Components/TimelineComponent.h" // FTimeline
+
+
 #include "GameFramework/PlayerState.h"
 #include "GnuMyCharacter.generated.h"
 
@@ -96,13 +98,13 @@ public:
 
 
 	//------------------ Weapon Funtion ---------------------------------------
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
-	bool isReload;
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerMontageOnReload();
-	UFUNCTION(NetMulticast, Reliable)
-	void MultiCastMontage_Reload();
-	void FinishReload();
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
+	//bool isReload;
+	//UFUNCTION(Server, Reliable, WithValidation)
+	//void ServerMontageOnReload(); // �������� ������ ��Ÿ�ָ� �����ϴ� �Լ� (��Ʈ�ѷ����� ȣ��)
+	//UFUNCTION(NetMulticast, Reliable)
+	//void MultiCastMontage_Reload(); // ������ ��Ÿ�� ��Ƽĳ��Ʈ (������ ȣ��Ǹ� �ڵ����� ȣ��)
+	//void FinishReload();
 	//---------------------------------------------------------------------
 
 
@@ -115,7 +117,7 @@ public:
 
 	void Fire();
 	void StopFire();
-	void Reload();
+	//void Reload();
 	void Interact(); // 상호작용 함수
 	
 	UFUNCTION(Server, Reliable, WithValidation)
@@ -243,9 +245,9 @@ private:
 
 
 public:
-	// 서버에서 수정 -> RepNotify -> 클라이언트 반응
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
+	UPROPERTY(VisibleAnywhere)
+	class UGnuCombatComponent* Combat;
+	
 	// Implementation으로 정의해서 밑줄이 뜨더라도 오류가 아님
 	UFUNCTION(Client, Reliable)
 	void ClientSetName(const FString& Name);
@@ -258,10 +260,85 @@ public:
 	//
 	void Elim();
 
+	// 기존
+	/*UFUNCTION(Server, Reliable)
+	void ServerFire();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiCastFire();
+
+	UFUNCTION(Server, Reliable)
+	void ServerStopFire();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiCastStopFire();*/
+
+	// 무기 장착
+	void EquipButtonPressed();
+	void FireButtonPressed();
+	void FireButtonReleased();
+	void ReloadButtonPressed();
+
 protected:
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
 	
 	void UpdateHUDHealth();
 	void UpdateHUDStamina();
+
+	
+
+////// GnuWeapon Start
+
+private:
+	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
+	class AGnuWeapon* OverlappingWeapon;
+
+	UFUNCTION()
+	void OnRep_OverlappingWeapon(AGnuWeapon* LastWeapon);
+
+	
+
+	UFUNCTION(Server, Reliable)
+	void ServerEquipButtonPressed();
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	UAnimMontage* FireWeaponMontage;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	UAnimMontage* ReloadWeaponMontage;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	UAnimMontage* HitReactMontage;
+
+	void PlayHitReactMontage();
+
+	void HideCameraIfCharacterClose();
+
+
+public:
+	// 복제를 위한 변수 저장
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	void SetOverlappingWeapon(AGnuWeapon* Weapon);
+
+	virtual void PostInitializeComponents() override;
+
+	bool IsWeaponEquipped();
+
+	void PlayFireMontage();
+
+	void PlayReloadMontage();
+
+	UFUNCTION(Server, Reliable)
+	void ServerPlayReloadMontage();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiCastPlayReloadMontage();
+
+	AGnuWeapon* GetEquippedWeapon();
+
+	FVector GetHitTarget() const;
+
+
 };

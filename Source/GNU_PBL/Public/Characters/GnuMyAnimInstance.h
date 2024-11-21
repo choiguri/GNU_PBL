@@ -90,6 +90,8 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Movement")
 	bool bIsSprinting;
 
+	
+
 public:
 	virtual void NativeUpdateAnimation(float DeltaTime) override;
 	virtual void NativeInitializeAnimation() override;
@@ -100,4 +102,14 @@ private:
 	void UpdateMovementState(); // 이동 상태 업데이트
 	void UpdateDirectionAndMovementInput(); // 방향과 이동 입력을 업데이트
 
+	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	bool bWeaponEquipped;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	bool bIsCrouched;
+
+	class AGnuWeapon* EquippedWeapon;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	FRotator RightHandRotation;
 };
