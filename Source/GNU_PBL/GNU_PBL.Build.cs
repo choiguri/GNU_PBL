@@ -19,7 +19,8 @@ public class GNU_PBL : ModuleRules
             "AIModule",
 			"GNUMultiplayerSessions", 
 			"OnlineSubsystem", 
-			"OnlineSubsystemSteam" 
+			"OnlineSubsystemSteam",
+			"GameplayCameras"
         });
 	}
 }

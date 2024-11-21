@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Characters/GnuBaseCharacter.h"
 #include "Components/TimelineComponent.h" // FTimeline
+#include "Camera/CameraShakeBase.h"
 #include "GameFramework/PlayerState.h"
 #include "GnuMyCharacter.generated.h"
 
@@ -139,6 +140,13 @@ public:
 
 
 	void SetCamera();
+
+
+	UPROPERTY(EditDefaultsOnly, Category = "Camera")
+	TSubclassOf<UCameraShakeBase> RoarCameraShake; // 카메라 쉐이크 클래스
+
+	UFUNCTION(BlueprintCallable, Category = "Camera")
+	void PlayCameraShake(); // 카메라 쉐이크 함수
 
 protected:
 	virtual void BeginPlay() override;

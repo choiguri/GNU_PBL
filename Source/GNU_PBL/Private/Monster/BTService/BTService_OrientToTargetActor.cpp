@@ -3,6 +3,7 @@
 
 #include "Monster/BTService/BTService_OrientToTargetActor.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Monster/GnuMonsterAnimInstance.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "AIController.h"
 #include "GameFramework/Pawn.h"
@@ -12,7 +13,7 @@ UBTService_OrientToTargetActor::UBTService_OrientToTargetActor()
 {
 	NodeName = TEXT("Native Orient Rotation To Target Actor");
 
-	RotationInterpSpeed = 5.f;
+	RotationInterpSpeed = 2.f;
 	Interval = 0.f;
 	RandomDeviation = 0.f;
 

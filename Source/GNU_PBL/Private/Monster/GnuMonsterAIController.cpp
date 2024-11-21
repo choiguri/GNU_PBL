@@ -18,6 +18,8 @@ void AGnuMonsterAIController::BeginPlay()
 {
     Super::BeginPlay();
 
+
+    // BehaviorTree 실행
     if (AIBehavior != nullptr)
     {
         RunBehaviorTree(AIBehavior);
@@ -61,7 +63,7 @@ void AGnuMonsterAIController::Tick(float DeltaSeconds)
             GetBlackboardComponent()->SetValueAsFloat(TEXT("DistToTarget"), Distance);
         }
     }
-    else if (bCanRetry)
+    else if (bCanRetry && CurrentTarget == nullptr)
     {
         // 타겟이 없으면 재시도
         UpdateTarget();
@@ -89,10 +91,10 @@ void AGnuMonsterAIController::SetUpPerceptionComponent()
     {
         AIPerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AIPerceptionComponent"));
 
-        SightConfig->SightRadius = 3000.f; // 감지 반경
-        SightConfig->LoseSightRadius = 4000.0f; // 감지 상실 반경
-        SightConfig->PeripheralVisionAngleDegrees = 140.0f; // 시야 각도
-        SightConfig->SetMaxAge(10.0f); // 감지 정보 최대 시간
+        SightConfig->SightRadius = 4000.f; // 감지 반경
+        SightConfig->LoseSightRadius = 5000.0f; // 감지 상실 반경
+        SightConfig->PeripheralVisionAngleDegrees = 360.0f; // 시야 각도
+        SightConfig->SetMaxAge(60.0f); // 감지 정보 최대 시간
         SightConfig->DetectionByAffiliation.bDetectEnemies = true; // 적 감지
         SightConfig->DetectionByAffiliation.bDetectNeutrals = true; // 중립 감지
         SightConfig->DetectionByAffiliation.bDetectFriendlies = true; // 아군 감지
@@ -101,9 +103,7 @@ void AGnuMonsterAIController::SetUpPerceptionComponent()
         AIPerceptionComponent->SetDominantSense(SightConfig->GetSenseImplementation());
 
         // 감지 이벤트 연결
-        /*AIPerceptionComponent->OnTargetPerceptionUpdated.AddUniqueDynamic(this, &ThisClass::OnTargetDetected);*/
-        AIPerceptionComponent->OnTargetPerceptionUpdated.AddUniqueDynamic(this, &AGnuMonsterAIController::OnTargetDetected);
-
+        AIPerceptionComponent->OnTargetPerceptionUpdated.AddUniqueDynamic(this, &ThisClass::OnTargetDetected);
     }
 }
 
@@ -132,13 +132,53 @@ void AGnuMonsterAIController::OnTargetDetected(AActor* Actor, FAIStimulus const 
                 SetNewTarget(SensedCharacter);
             }
         }
+
+        // 콜리전 활성화 시키기
+        APawn* ControlledPawn = GetPawn(); // AI가 컨트롤하는 Pawn
+        AGnuMonster* GnuMonster = Cast<AGnuMonster>(ControlledPawn);
+        if (GnuMonster)
+        {
+            GnuMonster->ActivateSkeletalMesh();
+            GnuMonster->ActivateCapsuleComp();
+        }
+        else
+        {
+            GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Blue, TEXT("Failed ActivateCollision!!"));
+        }
+        
+        // 인트로 몽타주 설정
+        if (ControlledPawn)
+        {
+            // 몬스터 캐스트
+            AGnuMonster* ControlledMonster = Cast<AGnuMonster>(ControlledPawn);
+            if (ControlledMonster)
+            {
+                // AnimInstance 가져오기
+                UGnuMonsterAnimInstance* AnimInstance = Cast<UGnuMonsterAnimInstance>(ControlledMonster->GetMesh()->GetAnimInstance());
+                if (AnimInstance && AnimInstance->bIsPlayIntro == false)
+                {
+                    // Intro Montage 실행
+                    AnimInstance->PlayIntroMontage();
+                }
+            }
+        }
     }
     else
     {
         // 타겟 상실 시 블랙보드에서 TargetActor와 PlayerLocation 초기화
-        GetBlackboardComponent()->ClearValue(FName("TargetActor"));
+        /*GetBlackboardComponent()->ClearValue(FName("TargetActor"));
         GetBlackboardComponent()->ClearValue(FName("PlayerLocation"));
-        GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Orange, TEXT("Perception Target loss"));
+        GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Orange, TEXT("Perception Target loss"));*/
+
+        APawn* ControlledPawn = GetPawn(); // AI가 컨트롤하는 Pawn
+        AGnuMonster* GnuMonster = Cast<AGnuMonster>(ControlledPawn);
+        if (GnuMonster)
+        {
+            GnuMonster->DeactivateCapsuleComp();
+            GnuMonster->DeactivateSkeletalMesh();
+        }
+        
+        UpdateTarget();
     }
 }
 
@@ -155,16 +195,6 @@ void AGnuMonsterAIController::StartRetryCooldown()
     );
 }
 
-
-// AttackNumber cpp파일에서 불려졌을 때 AttackSelectNumber가 초기화 되는 함수
-void AGnuMonsterAIController::AttackNumberInitialization()
-{
-    UBlackboardComponent* BlackboardComp = GetBlackboardComponent();
-    if (BlackboardComp)
-    {
-        BlackboardComp->SetValueAsInt(TEXT("AttackSelectNumber"), 0);
-    }
-}
 
 
 // 새 타겟 지정

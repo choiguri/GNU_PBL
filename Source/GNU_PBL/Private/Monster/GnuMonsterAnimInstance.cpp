@@ -3,9 +3,12 @@
 
 #include "Monster/GnuMonsterAnimInstance.h"
 #include "Monster/GnuMonster.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Actor.h"
 #include "AIController.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "KismetAnimationLibrary.h"
+#include "MotionWarpingComponent.h"
 
 
 // 애니메이션 상태 업데이트 로직 작성하는 곳
@@ -13,15 +16,32 @@ void UGnuMonsterAnimInstance::NativeInitializeAnimation()
 {
     Super::NativeInitializeAnimation();
 
-    // 몬스터의 소유자를 설정합니다. 
-    if (MonsterOwner == nullptr)
+    MonsterOwner = Cast<AGnuMonster>(TryGetPawnOwner());
+
+    if (MonsterOwner)
     {
-        MonsterOwner = Cast<AGnuMonster>(TryGetPawnOwner());
+        MosnterMovementComponent = MonsterOwner->GetCharacterMovement();
     }
 
     // 초기값 설정
     bIsMontageEnded = true;
+
+    // 일단 true로 만들어서 안나오게
+    // 계속 들으니까 귀찮음
+    bIsPlayIntro = true;
 }
+
+void UGnuMonsterAnimInstance::NativeThreadSafeUpdateAnimation(float DeltaSeconds)
+{
+    if (!MonsterOwner || !MosnterMovementComponent)
+    {
+        return;
+    }
+
+    GroundSpeed = MonsterOwner->GetVelocity().Size2D();
+    Direction = UKismetAnimationLibrary::CalculateDirection(MonsterOwner->GetVelocity(), MonsterOwner->GetActorRotation());
+}
+
 
 
 void UGnuMonsterAnimInstance::PlayMontage(UAnimMontage* MontageToPlay)
@@ -61,8 +81,6 @@ void UGnuMonsterAnimInstance::OnMontageEnded(UAnimMontage* Montage, bool bInterr
     GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Blue, bInterrupted ? TEXT("Montage Interrupted!") : TEXT("Montage Ended Successfully!"));
 }
 
-
-
 // 각 몽타주 실행
 void UGnuMonsterAnimInstance::PlayFireballAttackMontage()
 {
@@ -94,9 +112,24 @@ void UGnuMonsterAnimInstance::PlayGroundAttackMontage()
     PlayMontage(GroundAttackMontage);
 }
 
+void UGnuMonsterAnimInstance::PlayGroundSpikeAttackMontage()
+{
+    PlayMontage(GroundSpikeAttackMontage);
+}
+
 void UGnuMonsterAnimInstance::PlayDieMontage()
 {
     PlayMontage(DragonDieMontage);
+}
+
+// 처음 한번만 실행하도록 bool형 선언
+void UGnuMonsterAnimInstance::PlayIntroMontage()
+{
+    if (bIsPlayIntro == false)
+    {
+        PlayMontage(IntroShoutingMontage);
+        bIsPlayIntro = true;
+    }
 }
 
 void UGnuMonsterAnimInstance::PlayExampleMontage()

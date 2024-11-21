@@ -7,6 +7,9 @@
 #include "GameFramework/SpringArmComponent.h" // SpringArm
 #include "Camera/CameraComponent.h" // TPP, FPP Camera
 
+// 몬스터 카메라 쉐이크 구현 추가 코드
+#include "Camera/PlayerCameraManager.h" // 플레이어 카메라 관리 헤더 추가
+
 // Weapon
 #include "Weapons/Gun.h"
 #include "Weapons/CrossHair.h"
@@ -90,6 +93,14 @@ AGnuMyCharacter::AGnuMyCharacter()
 	// 추가 사항
 	OverHeadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverHeadWidget"));
 	OverHeadWidget->SetupAttachment(RootComponent);
+}
+
+void AGnuMyCharacter::PlayCameraShake()
+{
+	if (RoarCameraShake)
+	{
+		GetWorld()->GetFirstPlayerController()->ClientStartCameraShake(RoarCameraShake);
+	}
 }
 
 void AGnuMyCharacter::BeginPlay()

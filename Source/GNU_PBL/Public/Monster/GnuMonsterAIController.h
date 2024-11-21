@@ -23,16 +23,13 @@ public:
 
 	virtual void Tick(float DeltaSecond) override;
 
-	// BehaviorTree 종료 함수 (몬스턱 죽었을 때 호출)
+	// BehaviorTree 종료 함수 (몬스터 죽었을 때 호출)
 	UFUNCTION()
 	void StopBehaviorTree();
 
-
-	void AttackNumberInitialization();
-
-	//~ Begin IGenericTeamAgentInterface Interface.
-	/*virtual ETeamAttitude::Type GetTeamAttitudeTowards(const AActor& Other) const;*/
-	//~ End IGenericTeamAgentInterface Interface
+	//// 몬스터를 참조하기 위한 변수
+	//UPROPERTY()
+	//AGnuMonster* GnuMonster;
 
 protected:
 	virtual void BeginPlay() override;
@@ -69,12 +66,12 @@ protected:
 
 private:
 	
+	// 타겟 변경 타이머
 	FTimerHandle TargetUpdateTimerHandle;
-
 	float TargetUpdateInterval;
 
 
-	// 재시도 쿨다운 타이머
+	// Tick 에서 타겟 변경 재시도 쿨다운 타이머
 	FTimerHandle RetryCooldownTimerHandle;
 	bool bCanRetry = true;
 
