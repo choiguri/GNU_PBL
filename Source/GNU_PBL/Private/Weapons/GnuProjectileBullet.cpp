@@ -13,6 +13,7 @@ void AGnuProjectileBullet::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActo
 		AController* OwnerController = OwnerCharacter->Controller;
 		if (OwnerController)
 		{
+
 			UGameplayStatics::ApplyDamage(OtherActor, Damage, OwnerController, this, UDamageType::StaticClass());
 		}
 	}

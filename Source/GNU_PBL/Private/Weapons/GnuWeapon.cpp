@@ -164,6 +164,12 @@ void AGnuWeapon::ShowPickupWidget(bool bShowWidget)
 
 void AGnuWeapon::Fire(const FVector& HitTarget)
 {
+	GnuOwnerCharacter = GnuOwnerCharacter == nullptr ? Cast<AGnuMyCharacter>(GetOwner()) : GnuOwnerCharacter;
+	if (GnuOwnerCharacter)
+	{
+		GnuOwnerCharacter->AddControllerYawInput(FMath::RandRange(-0.25f, 0.25f));
+		GnuOwnerCharacter->AddControllerPitchInput(FMath::RandRange(-0.25f, 0.25f));
+	}
 	if (FireAnimation)
 	{
 		WeaponMesh->PlayAnimation(FireAnimation, false);
