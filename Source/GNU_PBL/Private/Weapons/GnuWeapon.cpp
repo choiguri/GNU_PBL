@@ -9,11 +9,12 @@
 #include "Animation/AnimationAsset.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Characters/GnuMyPlayerController.h"
+#include "Weapons/GnuCombatComponent.h"
 
 
 AGnuWeapon::AGnuWeapon()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
 
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
@@ -58,6 +59,7 @@ void AGnuWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	SetRecoil(DeltaTime);
 }
 
 void AGnuWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -164,16 +166,26 @@ void AGnuWeapon::ShowPickupWidget(bool bShowWidget)
 
 void AGnuWeapon::Fire(const FVector& HitTarget)
 {
-	GnuOwnerCharacter = GnuOwnerCharacter == nullptr ? Cast<AGnuMyCharacter>(GetOwner()) : GnuOwnerCharacter;
-	if (GnuOwnerCharacter)
-	{
-		GnuOwnerCharacter->AddControllerYawInput(FMath::RandRange(-0.25f, 0.25f));
-		GnuOwnerCharacter->AddControllerPitchInput(FMath::RandRange(-0.25f, 0.25f));
-	}
 	if (FireAnimation)
 	{
 		WeaponMesh->PlayAnimation(FireAnimation, false);
 	}
 	SpendAmmo();
+}
+
+
+void AGnuWeapon::SetRecoil(float DeltaTime)
+{
+
+	GnuOwnerCharacter = GnuOwnerCharacter == nullptr ? Cast<AGnuMyCharacter>(GetOwner()) : GnuOwnerCharacter;
+	if (GnuOwnerCharacter)
+	{
+		if (GnuOwnerCharacter->Combat->bFireButtonPressed)
+		{
+			GnuOwnerCharacter->AddControllerPitchInput(FMath::RandRange(-0.03f, 0.f));
+			GnuOwnerCharacter->AddControllerYawInput(FMath::RandRange(-0.1f, 0.1f));
+		}
+		
+	}
 }
 

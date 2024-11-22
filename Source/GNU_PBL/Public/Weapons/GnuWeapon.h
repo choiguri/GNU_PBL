@@ -106,6 +106,10 @@ private:
 	UPROPERTY()
 	class AGnuMyPlayerController* GnuOwnerController;
 	
+	void SetRecoil(float DeltaTime);
+
+	float Pitch = 0;
+	float Yaw = 0;
 
 public:	
 	void SetWeaponState(EWeaponState State);

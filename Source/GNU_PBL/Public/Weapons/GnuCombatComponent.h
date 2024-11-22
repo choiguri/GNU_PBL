@@ -23,6 +23,10 @@ public:
 
 	void ReloadFinished(bool bPressed);
 
+	bool bFireButtonPressed;
+
+	bool bReloadButtonPressed;
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -53,9 +57,7 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
 	AGnuWeapon* EquippedWeapon;
 	
-	bool bFireButtonPressed;
-
-	bool bReloadButtonPressed;
+	
 
 	float CrosshairVelocityFactor;
 	float CrosshairInAirFactor;
