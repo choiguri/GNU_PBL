@@ -194,6 +194,7 @@ void AGnuMyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	ZoomInTimeline.TickTimeline(DeltaTime);
+	HideCameraIfCharacterClose();
 }
 
 void AGnuMyCharacter::SetCamera()
