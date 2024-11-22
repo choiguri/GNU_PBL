@@ -21,7 +21,7 @@ public:
 	
 	void EquipWeapon(class AGnuWeapon* WeaponToEquip);
 
-	void ReloadFinished();
+	void ReloadFinished(bool bPressed);
 
 protected:
 
@@ -35,7 +35,7 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void MultiCastFire(const FVector_NetQuantize& TraceHitTarget);
 
-	void ReloadButtonPressed();
+	void ReloadButtonPressed(bool bPressed);
 
 
 	void TraceUnderCrosshairs(FHitResult& TraceHitResult);

@@ -13,7 +13,7 @@ void UGnuReloadComplete::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceB
 	{
 		if (Character->Combat)
 		{
-			Character->Combat->ReloadFinished();
+			Character->Combat->ReloadFinished(false);
 		}
 	}
 }

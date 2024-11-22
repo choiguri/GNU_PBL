@@ -783,7 +783,15 @@ void AGnuMyCharacter::ServerEquipButtonPressed_Implementation()
 // => bool 값을 넘겨서 버튼이 눌렸는지 확인 후 Fire
 void AGnuMyCharacter::FireButtonPressed()
 {
-	if (Combat)
+	// 재장전 중이면 사격 불가
+	if (!Combat || Combat->bReloadButtonPressed) return;
+
+	// 뛰고 있으면 걷는 상태로 바꾼 후 사격
+	if (isSprint)
+	{
+		UpdateSprintState(false);
+	}
+	if (Combat && !isSprint)
 	{
 		Combat->FireButtonPressed(true);
 	}
@@ -801,7 +809,7 @@ void AGnuMyCharacter::ReloadButtonPressed()
 {
 	if (Combat)
 	{
-		Combat->ReloadButtonPressed();
+		Combat->ReloadButtonPressed(true);
 	}
 }
 

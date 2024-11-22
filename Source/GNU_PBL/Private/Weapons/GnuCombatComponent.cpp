@@ -175,7 +175,12 @@ void UGnuCombatComponent::FireButtonPressed(bool bPressed)
 {
 	bFireButtonPressed = bPressed;
 
-	if (bFireButtonPressed)
+	if (GnuCharacter->isSprint)
+	{
+		bFireButtonPressed = false;
+	}
+	
+	if (bFireButtonPressed && !bReloadButtonPressed)
 	{
 		if (CanFire())
 		{
@@ -191,6 +196,10 @@ void UGnuCombatComponent::FireButtonPressed(bool bPressed)
 void UGnuCombatComponent::StartFireTimer()
 {
 	if (EquippedWeapon == nullptr || GnuCharacter == nullptr) return;
+	if (GnuCharacter->isSprint)
+	{
+		bFireButtonPressed = false;
+	}
 
 	GnuCharacter->GetWorldTimerManager().SetTimer(
 		FireTimer,
@@ -203,6 +212,10 @@ void UGnuCombatComponent::StartFireTimer()
 void UGnuCombatComponent::FireTimerFinished()
 {
 	bCanFire = true;
+	if (GnuCharacter->isSprint)
+	{
+		bFireButtonPressed = false;
+	}
 	if (bFireButtonPressed && bAutomatic)
 	{
 		if (CanFire())
@@ -238,11 +251,11 @@ void UGnuCombatComponent::MultiCastFire_Implementation(const FVector_NetQuantize
 
 
 
-void UGnuCombatComponent::ReloadButtonPressed()
+void UGnuCombatComponent::ReloadButtonPressed(bool bPressed)
 {
-
+	bReloadButtonPressed = bPressed;
 	if (EquippedWeapon == nullptr) return;
-	if (GnuCharacter && !bFireButtonPressed)
+	if (GnuCharacter && !bFireButtonPressed) // !bFireButtonPressed 조건을 빼면 좌클릭(발사)을 떼지 않아도 바로 재장전 가능
 	{
 		EquippedWeapon->Reload();
 		GnuCharacter->PlayReloadMontage();
@@ -250,10 +263,11 @@ void UGnuCombatComponent::ReloadButtonPressed()
 	
 }
 
-void UGnuCombatComponent::ReloadFinished()
+void UGnuCombatComponent::ReloadFinished(bool bPressed)
 {
 	if (EquippedWeapon == nullptr) return;
 	EquippedWeapon->ReloadFinished();
+	bReloadButtonPressed = bPressed;
 }
 
 
