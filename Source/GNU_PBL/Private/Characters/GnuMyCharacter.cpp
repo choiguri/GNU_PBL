@@ -36,6 +36,8 @@
 #include "HUD/GNUOverHeadWidget.h"
 #include "Characters/GnuMyPlayerController.h"
 #include "GameModes/GNUGameMode.h"
+#include "HUD/GnuReplicatedHealth.h"
+#include "Components/ProgressBar.h"
 
 // GnuWeapon
 #include "Weapons/GnuWeapon.h"
@@ -101,6 +103,9 @@ AGnuMyCharacter::AGnuMyCharacter()
 	// 추가 사항
 	OverHeadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverHeadWidget"));
 	OverHeadWidget->SetupAttachment(RootComponent);
+
+	ReplicatedHealthWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("ReplicatedHealthWidget"));
+	ReplicatedHealthWidget->SetupAttachment(RootComponent);
 
 	// GnuWeaponComponent
 	Combat = CreateDefaultSubobject<UGnuCombatComponent>(TEXT("CombatComponent"));
@@ -183,6 +188,17 @@ void AGnuMyCharacter::BeginPlay()
 		GNUPlayerController->SetHUDHealth(Health, MaxHealth);
 		GNUPlayerController->SetHUDStamina(Stamina, MaxStaminaa);
 
+	}
+	if (ReplicatedHealthWidget)
+	{
+		UGnuReplicatedHealth* HealthWidget = Cast<UGnuReplicatedHealth>(ReplicatedHealthWidget->GetWidget());
+		if (HealthWidget)
+		{
+			const float HealthPercent = Health / MaxHealth;
+			HealthWidget->ReplicatedHealth->SetPercent(HealthPercent);
+			FString HealthText = FString::Printf(TEXT("%d / %d"), FMath::CeilToInt(Health), FMath::CeilToInt(MaxHealth));
+			HealthWidget->ReplicatedHealthText->SetText(FText::FromString(HealthText));
+		}
 	}
 	if (HasAuthority())
 	{
@@ -956,6 +972,14 @@ void AGnuMyCharacter::UpdateHUDHealth()
 	{
 		GNUPlayerController->SetHUDHealth(Health, MaxHealth);
 	}
+	if (ReplicatedHealthWidget)
+	{
+		UGnuReplicatedHealth* HealthWidget = Cast<UGnuReplicatedHealth>(ReplicatedHealthWidget->GetWidget());
+		if (HealthWidget)
+		{
+			ServerSetHealth();
+		}
+	}
 }
 
 void AGnuMyCharacter::UpdateHUDStamina()
@@ -978,6 +1002,26 @@ void AGnuMyCharacter::OnRep_Health()
 void AGnuMyCharacter::OnRep_Stamina()
 {
 
+}
+
+void AGnuMyCharacter::ServerSetHealth_Implementation()
+{
+	MultiCastSetHealth();
+}
+
+void AGnuMyCharacter::MultiCastSetHealth_Implementation()
+{
+	if (ReplicatedHealthWidget)
+	{
+		UGnuReplicatedHealth* HealthWidget = Cast<UGnuReplicatedHealth>(ReplicatedHealthWidget->GetWidget());
+		if (HealthWidget)
+		{
+			const float HealthPercent = Health / MaxHealth;
+			HealthWidget->ReplicatedHealth->SetPercent(HealthPercent);
+			FString HealthText = FString::Printf(TEXT("%d / %d"), FMath::CeilToInt(Health), FMath::CeilToInt(MaxHealth));
+			HealthWidget->ReplicatedHealthText->SetText(FText::FromString(HealthText));
+		}
+	}
 }
 
 void AGnuMyCharacter::ClientSetName_Implementation(const FString& Name)

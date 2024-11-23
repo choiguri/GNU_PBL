@@ -225,12 +225,15 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UWidgetComponent* OverHeadWidget;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UWidgetComponent* ReplicatedHealthWidget;
+
 	// HP바 설정
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 	float MaxHealth = 100.f;
 
 	UPROPERTY(ReplicatedUsing = OnRep_Health, VisibleAnywhere, Category = "Player Stats")
-	float Health = 1.f;
+	float Health = 100.f;
 
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 	float MaxStaminaa = 100.f;
@@ -260,6 +263,12 @@ public:
 
 	UFUNCTION(Server, Reliable)
 	void ServerSetPlayerName(const FString& PlayerName);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiCastSetHealth();
+
+	UFUNCTION(Server, Reliable)
+	void ServerSetHealth();
 
 	//
 	// GNUGameMode와 관련
