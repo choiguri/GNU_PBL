@@ -3,13 +3,14 @@
 
 #include "Monster/BTTask/BTTask_MonsterAttack.h"
 #include "Monster/GnuMonster.h"
+#include "Monster/GnuMonsterAnimInstance.h"
 #include "AIController.h"
 #include "Animation/AnimInstance.h"
 
 
 UBTTask_MonsterAttack::UBTTask_MonsterAttack()
 {
-	NodeName = TEXT("FireballAttack");
+	NodeName = TEXT("Monster Attack");
 	// TickTask 활성화
 	bNotifyTick = true;
 }
@@ -33,7 +34,7 @@ EBTNodeResult::Type UBTTask_MonsterAttack::ExecuteTask(UBehaviorTreeComponent& O
 	UGnuMonsterAnimInstance* AnimInstance = Cast<UGnuMonsterAnimInstance>(Monster->GetMesh()->GetAnimInstance());
 	if (AnimInstance)
 	{
-		AnimInstance->PlayFireballAttackMontage(); // Fireball 공격 몽타주 실행
+		AnimInstance->PlayMontage(AttackMontage); // 공격 몽타주 실행
 		// 몽타주가 끝날 때까지 기다리기 위해 Latent Task가 끝나기를 기다림
 		return EBTNodeResult::InProgress;
 	}
@@ -41,8 +42,6 @@ EBTNodeResult::Type UBTTask_MonsterAttack::ExecuteTask(UBehaviorTreeComponent& O
 	{
 		return EBTNodeResult::Failed;
 	}
-
-	
 }
 
 void UBTTask_MonsterAttack::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)

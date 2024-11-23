@@ -53,6 +53,19 @@ public:
 
 
     // 애니메이션 몽타주 공격 지정
+    // 
+    // 근거리 공격
+    UPROPERTY(EditDefaultsOnly, Category = "Attack")
+    UAnimMontage* ClawAttackMontage;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Attack")
+    UAnimMontage* TailAttackMontage;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Attack")
+    UAnimMontage* BodyAttackMontage;
+
+
+    // 원거리 공격
     UPROPERTY(EditDefaultsOnly, Category = "Attack")
     UAnimMontage* FireballAttackMontage;
 
@@ -61,12 +74,6 @@ public:
 
     UPROPERTY(EditDefaultsOnly, Category = "Attack")
     UAnimMontage* FirebreathAttackMontage;
-
-    UPROPERTY(EditDefaultsOnly, Category = "Attack")
-    UAnimMontage* ClawAttackMontage;
-
-    UPROPERTY(EditDefaultsOnly, Category = "Attack")
-    UAnimMontage* TailAttackMontage;
 
     UPROPERTY(EditDefaultsOnly, Category = "Attack")
     UAnimMontage* GroundAttackMontage;
@@ -87,15 +94,6 @@ public:
     
 
 protected:
-    // 애니메이션 몽타주 시작 함수
-    UFUNCTION(BlueprintCallable, Category = "Animation")
-    void PlayMontage(UAnimMontage* MontageToPlay);
-
-    // 몽타주 애니메이션 끝났을 때 호출 될 함수
-    UFUNCTION()
-    void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
-
-
     // 몬스터 데이터 (속도, 각도)
     UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "AnimData")
     float GroundSpeed;
@@ -106,7 +104,26 @@ protected:
 private:
 
 public:
+    // 애니메이션 몽타주 시작 함수
+    UFUNCTION(BlueprintCallable, Category = "Animation")
+    void PlayMontage(UAnimMontage* MontageToPlay);
+
+    // 몽타주 애니메이션 끝났을 때 호출 될 함수
+    UFUNCTION()
+    void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+
     // 공격 몽타주 실행 함수
+    // 근거리 공격
+    UFUNCTION(BlueprintCallable)
+    void PlayClawAttackMontage();
+
+    UFUNCTION(BlueprintCallable)
+    void PlayTailAttackMontage();
+
+    UFUNCTION(BlueprintCallable)
+    void PlayBodyAttackMontage();
+
+    // 원거리 공격
     UFUNCTION(BlueprintCallable)
     void PlayFireballAttackMontage();
 
@@ -115,12 +132,6 @@ public:
 
     UFUNCTION(BlueprintCallable)
     void PlayFirebreathAttackMontage();
-
-    UFUNCTION(BlueprintCallable)
-    void PlayClawAttackMontage();
-
-    UFUNCTION(BlueprintCallable)
-    void PlayTailAttackMontage();
 
     UFUNCTION(BlueprintCallable)
     void PlayGroundAttackMontage();

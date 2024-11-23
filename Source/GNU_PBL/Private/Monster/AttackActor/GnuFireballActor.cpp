@@ -73,7 +73,7 @@ void AGnuFireballActor::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
     {
         // 충돌한 액터가 벽이나 캐릭터일 때 파이어볼 삭제
         GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, TEXT("Overlap with: ") + OtherActor->GetName());
-        Destroy();
+        /*Destroy();*/
     }
 }
 

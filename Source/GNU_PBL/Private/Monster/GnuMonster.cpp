@@ -485,6 +485,48 @@ void AGnuMonster::SpawnGroundSpikeAttack()
 	}
 }
 
+void AGnuMonster::BodyAttack()
+{
+	float SphereRadius = 220.0f; // Sphere Trace 반경
+	FVector Start = GetActorLocation();
+
+	FRotator Rotation = GetActorRotation(); // 몬스터의 현재 회전
+	Rotation.Yaw -= 40.f;                  // Yaw 방향 -40도
+
+	FVector ForwardDirection = Rotation.Vector(); // 회전된 방향의 벡터를 가져옴
+
+	FVector End = Start + (ForwardDirection * 1800.0f); // 1800.0 전방 이동
+	FHitResult HitResult;
+
+	// Trace 실행
+	bool bHit = GetWorld()->SweepSingleByChannel(
+		HitResult,
+		Start,
+		End,
+		FQuat::Identity,
+		ECC_Pawn,
+		FCollisionShape::MakeSphere(SphereRadius) // 220cm 반경
+	);
+
+	// 디버그: Sphere Trace의 경로를 표시
+	DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 2.0f, 0, 2.0f); // 시작점과 끝점을 잇는 선
+	DrawDebugSphere(GetWorld(), Start, SphereRadius, 12, FColor::Blue, false, 2.0f); // 시작점에 구체 표시
+	DrawDebugSphere(GetWorld(), End, SphereRadius, 12, FColor::Red, false, 2.0f);   // 끝점에 구체 표시
+
+	if (bHit)
+	{
+		AActor* HitActor = HitResult.GetActor();
+		if (HitActor && HitActor != this)
+		{
+			// 데미지 적용
+			// UGameplayStatics::ApplyDamage(HitActor, DamageAmount, GetController(), this, DamageTypeClass);
+
+			// 디버그: 충돌한 Actor의 위치에 구체 표시
+			DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, SphereRadius, 12, FColor::Yellow, false, 2.0f);
+		}
+	}
+}
+
 //ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ Attack 관련 끝 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
 

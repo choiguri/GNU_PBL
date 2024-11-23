@@ -49,6 +49,8 @@ public:
 	void SpawnGroundAttack(); // 그라운드 돌 공격 소환 함수
 	void SpawnGroundSpikeAttack(); // 그라운드 5방향 스파이크 소환 함수
 
+	void BodyAttack();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

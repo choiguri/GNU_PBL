@@ -107,6 +107,11 @@ void UGnuMonsterAnimInstance::PlayTailAttackMontage()
     PlayMontage(TailAttackMontage);
 }
 
+void UGnuMonsterAnimInstance::PlayBodyAttackMontage()
+{
+    PlayMontage(BodyAttackMontage);
+}
+
 void UGnuMonsterAnimInstance::PlayGroundAttackMontage()
 {
     PlayMontage(GroundAttackMontage);
@@ -136,5 +141,3 @@ void UGnuMonsterAnimInstance::PlayExampleMontage()
 {
     PlayMontage(ExampleAttackMontage);
 }
-
-
