@@ -293,9 +293,13 @@ void AGnuMyCharacter::ServerSprintStart_Implementation() // 클라이언트에�
 {
 	// 기존
 	//StopFire();
+	/*if (!HasAuthority())
+	{
+		ClientSprintStart();
+
+	}*/
 	UpdateSprintState(true); //  �� �Լ��� ���������� ����
 	// ������ ��Ʈ��ũ���� ������ �� �ֵ��� ����
-	ClientSprintStart();
 	
 }
 
@@ -307,8 +311,12 @@ bool AGnuMyCharacter::ServerSprintStart_Validate()
 void AGnuMyCharacter::ServerSprintEnd_Implementation()
 {
 	
+	/*if (!HasAuthority())
+	{
+		ClientSprintEnd();
+
+	}*/
 	UpdateSprintState(false);
-	ClientSprintEnd();
 
 }
 
@@ -321,10 +329,7 @@ void AGnuMyCharacter::ClientSprintStart_Implementation() // 클라이언트에 �
 {
 	// 주석을 풀면 클라이언트에서 스프린트 상태를 빠르게 반영할 수 있지만, 이 방식은 서버의 명령을 기다리지 않기 때문에 서버와 클라이언트의 일관성이 떨어질 수 있음
 	 UpdateSprintState(true);
-	 if (GEngine)
-	 {
-		 GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("ClientSprintStart")));
-	 }
+	
 }
 
 void AGnuMyCharacter::ClientSprintEnd_Implementation()

@@ -34,6 +34,7 @@ void UGnuCombatComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	
 }
 
 void UGnuCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -49,6 +50,7 @@ void UGnuCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 		TraceUnderCrosshairs(HitResult);
 		HitTarget = HitResult.ImpactPoint;
 	}
+
 }
 
 
@@ -174,6 +176,8 @@ void UGnuCombatComponent::OnRep_EquippedWeapon()
 
 void UGnuCombatComponent::FireButtonPressed(bool bPressed)
 {
+	if (EquippedWeapon == nullptr) return;
+
 	bFireButtonPressed = bPressed;
 
 	if (GnuCharacter->isSprint)
