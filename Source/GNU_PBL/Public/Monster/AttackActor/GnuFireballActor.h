@@ -19,6 +19,17 @@ public:
 
     void LaunchProjectile(AActor* IgnoredActor);  // 발사 함수
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projectile")
+    UProjectileMovementComponent* ProjectileMovement;
+
+    //이 발사체가 가할 대미지 타입과 대미지
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Damage")
+    TSubclassOf<class UDamageType> DamageType;
+
+    //이 발사체가 가하는 대미지
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Damage")
+    float Damage;
+
 private:
     FTimerHandle DestructionTimerHandle; // 파괴 타이머 핸들
 
@@ -27,16 +38,12 @@ private:
 protected:
     virtual void BeginPlay() override;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projectile")
-    UProjectileMovementComponent* ProjectileMovement;
+    UFUNCTION(Category = "Projectile")
+    void OnProjectileImpact(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
     UFUNCTION()
     void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
-
     virtual void BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
         UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
-
-    virtual void EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-        UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) override;
 };

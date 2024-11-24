@@ -7,8 +7,13 @@
 #include "GameFramework/SpringArmComponent.h" // SpringArm
 #include "Camera/CameraComponent.h" // TPP, FPP Camera
 
-// 몬스터 카메라 쉐이크 구현 추가 코드
-#include "Camera/PlayerCameraManager.h" // 플레이어 카메라 관리 헤더 추가
+// Monster
+#include "Monster/AttackActor/GnuFireballActor.h"
+#include "Monster/AttackActor/GnuFirebreathActor.h"	
+#include "Monster/AttackActor/GnuFiretornadoActor.h"
+#include "Monster/AttackActor/GnuGroundActor.h"
+#include "Monster/AttackActor/GnuGroundSpikeCollisionActor.h"
+#include "Camera/PlayerCameraManager.h" // Shake Camera (intro Action)
 
 // Weapon
 #include "Weapons/Gun.h"
@@ -114,7 +119,7 @@ AGnuMyCharacter::AGnuMyCharacter()
 	MovementComponent->NavAgentProps.bCanCrouch = true;
 
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
-	GetMesh()->SetCollisionObjectType(ECC_SkeletalMesh);
+	/*GetMesh()->SetCollisionObjectType(ECC_SkeletalMesh);*/
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 

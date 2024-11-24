@@ -28,6 +28,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include <Net/UnrealNetwork.h>
+#include "GNU_PBL/GNU_PBL.h"
 
 
 AGnuMonster::AGnuMonster()
@@ -46,7 +47,6 @@ AGnuMonster::AGnuMonster()
 	//InitializeCollisionComponent(ClawCollision, TEXT("ClawCollision"));	// 손톱 공격 콜리전
 	//InitializeCollisionComponent(TailCollision, TEXT("TailCollision")); // 꼬리 공격 콜리전
 
-
 	ClawCollision = CreateDefaultSubobject<UBoxComponent>("ClawCollision");
 	ClawCollision->SetupAttachment(GetMesh());
 	ClawCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
@@ -58,6 +58,8 @@ AGnuMonster::AGnuMonster()
 	TailCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	TailCollision->bEditableWhenInherited = true; // 블루프린트 값이 우선되게 함
 	TailCollision->OnComponentBeginOverlap.AddDynamic(this, &AGnuMonster::OnTailOverlapBegin);
+
+	GetMesh()->SetCollisionObjectType(ECC_SkeletalMesh);
 
 	// hp 구현
 	MaxHealth = 1000.f;
@@ -72,11 +74,9 @@ void AGnuMonster::BeginPlay()
 {
 	Super::BeginPlay();
 
-
 	// 타겟 인식 전 콜리전 비활성화
 	DeactivateSkeletalMesh();
 	DeactivateCapsuleComp();
-
 
 	// Health 위젯이 설정되어 있으면 생성하여 화면에 추가
 	// 플레이어를 인식하면 UI가 뜨도록 변경해야함 (추후 수정)
@@ -194,6 +194,7 @@ void AGnuMonster::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamag
 		GEngine->AddOnScreenDebugMessage(1, 3.f, FColor::Blue, FString::Printf(TEXT("HasAuthority")));
 
 	}
+
 	// 몬스터 죽음 처리
 	if (CurrentHealth <= 0)
 	{
@@ -253,7 +254,6 @@ void AGnuMonster::KnockbackPlayer(AGnuMyCharacter* PlayerCharacter)
 
 	// 캐릭터를 뒤로 밀어내기
 	PlayerCharacter->LaunchCharacter(KnockbackDirection * KnockbackStrength, true, true);
-
 }
 
 void AGnuMonster::StartRetryCooldown()
@@ -367,8 +367,14 @@ void AGnuMonster::SpawnFireball()
 		FVector SpawnLocation = HeadLoaction + GetActorForwardVector() * 100;  // 몬스터 앞에 생성
 		FRotator SpawnRotation = GetActorRotation();
 
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;                         // Fireball의 소유자를 현재 몬스터로 설정
+		SpawnParams.Instigator = Cast<APawn>(this);       // Instigator를 현재 몬스터로 설정
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+
 		// 파이어볼 액터를 스폰
-		AGnuFireballActor* Fireball = GetWorld()->SpawnActor<AGnuFireballActor>(FireballClass, SpawnLocation, SpawnRotation);
+		AGnuFireballActor* Fireball = GetWorld()->SpawnActor<AGnuFireballActor>(FireballClass, SpawnLocation, SpawnRotation, SpawnParams);
 		if (Fireball)
 		{
 			// 파이어볼을 발사하는 메서드 호출
