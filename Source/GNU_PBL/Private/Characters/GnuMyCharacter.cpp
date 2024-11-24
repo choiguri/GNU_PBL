@@ -295,6 +295,8 @@ void AGnuMyCharacter::ServerSprintStart_Implementation() // 클라이언트에�
 	//StopFire();
 	UpdateSprintState(true); //  �� �Լ��� ���������� ����
 	// ������ ��Ʈ��ũ���� ������ �� �ֵ��� ����
+	ClientSprintStart();
+	
 }
 
 bool AGnuMyCharacter::ServerSprintStart_Validate()
@@ -304,7 +306,10 @@ bool AGnuMyCharacter::ServerSprintStart_Validate()
 
 void AGnuMyCharacter::ServerSprintEnd_Implementation()
 {
+	
 	UpdateSprintState(false);
+	ClientSprintEnd();
+
 }
 
 bool AGnuMyCharacter::ServerSprintEnd_Validate()
@@ -315,13 +320,17 @@ bool AGnuMyCharacter::ServerSprintEnd_Validate()
 void AGnuMyCharacter::ClientSprintStart_Implementation() // 클라이언트에 즉시 반영하는 방식이지만 서버 - 클라이언트 일관성이 떨어짐
 {
 	// 주석을 풀면 클라이언트에서 스프린트 상태를 빠르게 반영할 수 있지만, 이 방식은 서버의 명령을 기다리지 않기 때문에 서버와 클라이언트의 일관성이 떨어질 수 있음
-	// UpdateSprintState(true);
+	 UpdateSprintState(true);
+	 if (GEngine)
+	 {
+		 GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("ClientSprintStart")));
+	 }
 }
 
 void AGnuMyCharacter::ClientSprintEnd_Implementation()
 {
 
-	// UpdateSprintState(false);
+	 UpdateSprintState(false);
 }
 
 void AGnuMyCharacter::OnRep_IsSprinting()// 클라이언트가 동기화 되는 함수 -> 서버에서 isSprint 값이 변경될 때 클라이언트에서 그 변화를 감지하고 실행되는 함수 (즉, 서버가 관리하는 스프린트 상태를 클라이언트가 동기화 하는 방식)
@@ -810,7 +819,8 @@ void AGnuMyCharacter::FireButtonPressed()
 	// 뛰고 있으면 걷는 상태로 바꾼 후 사격
 	if (isSprint)
 	{
-		UpdateSprintState(false);
+		//UpdateSprintState(false);
+		ServerSprintEnd();
 	}
 	if (Combat && !isSprint)
 	{

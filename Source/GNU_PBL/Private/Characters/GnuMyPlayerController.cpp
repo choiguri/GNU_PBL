@@ -347,6 +347,7 @@ void AGnuMyPlayerController::Sprint(const FInputActionValue& InputActionValue)
 			{
 				// 서버에서 스프린트 시작 호출
 				MyCharacter->ServerSprintStart();
+				
 			}
 		}
 	}
@@ -364,6 +365,7 @@ void AGnuMyPlayerController::SprintStop(const FInputActionValue& InputActionValu
 			{
 				// 서버에서 스프린트 종료 호출
 				MyCharacter->ServerSprintEnd();
+				
 			}
 		}
 	}
