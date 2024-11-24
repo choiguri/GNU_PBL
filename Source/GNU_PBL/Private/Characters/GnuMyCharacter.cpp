@@ -972,14 +972,8 @@ void AGnuMyCharacter::UpdateHUDHealth()
 	{
 		GNUPlayerController->SetHUDHealth(Health, MaxHealth);
 	}
-	if (ReplicatedHealthWidget)
-	{
-		UGnuReplicatedHealth* HealthWidget = Cast<UGnuReplicatedHealth>(ReplicatedHealthWidget->GetWidget());
-		if (HealthWidget)
-		{
-			ServerSetHealth();
-		}
-	}
+	
+	SetReplicatedHealth();
 }
 
 void AGnuMyCharacter::UpdateHUDStamina()
@@ -1004,10 +998,11 @@ void AGnuMyCharacter::OnRep_Stamina()
 
 }
 
-void AGnuMyCharacter::ServerSetHealth_Implementation()
+void AGnuMyCharacter::SetReplicatedHealth()
 {
 	MultiCastSetHealth();
 }
+
 
 void AGnuMyCharacter::MultiCastSetHealth_Implementation()
 {
@@ -1020,6 +1015,7 @@ void AGnuMyCharacter::MultiCastSetHealth_Implementation()
 			HealthWidget->ReplicatedHealth->SetPercent(HealthPercent);
 			FString HealthText = FString::Printf(TEXT("%d / %d"), FMath::CeilToInt(Health), FMath::CeilToInt(MaxHealth));
 			HealthWidget->ReplicatedHealthText->SetText(FText::FromString(HealthText));
+			
 		}
 	}
 }

@@ -264,11 +264,11 @@ public:
 	UFUNCTION(Server, Reliable)
 	void ServerSetPlayerName(const FString& PlayerName);
 
+	void SetReplicatedHealth();
+
 	UFUNCTION(NetMulticast, Reliable)
 	void MultiCastSetHealth();
 
-	UFUNCTION(Server, Reliable)
-	void ServerSetHealth();
 
 	//
 	// GNUGameMode와 관련
