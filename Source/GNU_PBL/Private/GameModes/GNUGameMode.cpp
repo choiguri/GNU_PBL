@@ -4,14 +4,17 @@
 #include "GameModes/GNUGameMode.h"
 #include "Characters/GnuMyCharacter.h"
 #include "Characters/GnuMyPlayerController.h"
-// #include "GnuMonster.h"
+#include "Monster/GnuMonster.h"
 
 AGNUGameMode::AGNUGameMode()
 {
-	bDelayedStart = true;
+	bDelayedStart = false;
 }
 
-void AGNUGameMode::PlayerEliminated(AGnuCharacter* ElimmedCharacter, AGNUPlayerController* VictimController, AGNUPlayerController* Monster)
+void AGNUGameMode::PlayerEliminated(AGnuMyCharacter* ElimmedCharacter, AGnuMyPlayerController* VictimController, AController* Monster)
 {
-
+	if (ElimmedCharacter)
+	{
+		ElimmedCharacter->Elim();
+	}
 }

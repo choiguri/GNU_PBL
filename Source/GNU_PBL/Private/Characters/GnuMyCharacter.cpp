@@ -343,10 +343,6 @@ void AGnuMyCharacter::OnRep_IsSprinting()// 클라이언트가 동기화 되는 
 	// Client의 Implementation 함수에서만 써도 동일한 기능이 작동된다.
 	// -> 다만 Clint 함수 내부에서 사용하면 좀 더 반응 속도가 빠른 반면, OnRep 함수에서 쓰면 서버와 클라이언트간의 일관성을 유지할 수 있다.
 	UpdateSprintState(isSprint); // 스프린트 상태가 변경된 것을 클라이언트에서 반영
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Blue, FString::Printf(TEXT("OnRep_IsSprinting")));
-	}
 }
 
 void AGnuMyCharacter::UpdateSprintState(bool bIsSprinting)
@@ -944,6 +940,15 @@ void AGnuMyCharacter::PlayHitReactMontage()
 	}
 }
 
+void AGnuMyCharacter::PlayElimMontage()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && ElimMontage)
+	{
+		AnimInstance->Montage_Play(ElimMontage);
+	}
+}
+
 AGnuWeapon* AGnuMyCharacter::GetEquippedWeapon()
 {
 	if (Combat == nullptr) return nullptr;
@@ -987,6 +992,16 @@ void AGnuMyCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UD
 	PlayHitReactMontage();
 	UpdateHUDHealth();
 
+	if (Health == 0.f)
+	{
+		AGNUGameMode* GnuGameMode = GetWorld()->GetAuthGameMode<AGNUGameMode>();
+		if (GnuGameMode)
+		{
+			GNUPlayerController = GNUPlayerController == nullptr ? Cast<AGnuMyPlayerController>(Controller) : GNUPlayerController;
+			AController* MonsterController = Cast<AController>(InstigatorController);
+			GnuGameMode->PlayerEliminated(this, GNUPlayerController, MonsterController);
+		}
+	}
 }
 
 void AGnuMyCharacter::UpdateHUDHealth()
@@ -1027,7 +1042,6 @@ void AGnuMyCharacter::SetReplicatedHealth()
 	MultiCastSetHealth();
 }
 
-
 void AGnuMyCharacter::MultiCastSetHealth_Implementation()
 {
 	if (ReplicatedHealthWidget)
@@ -1042,6 +1056,11 @@ void AGnuMyCharacter::MultiCastSetHealth_Implementation()
 			
 		}
 	}
+}
+
+void AGnuMyCharacter::Elim_Implementation()
+{
+	PlayElimMontage();
 }
 
 void AGnuMyCharacter::ClientSetName_Implementation(const FString& Name)

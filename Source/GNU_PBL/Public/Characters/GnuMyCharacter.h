@@ -273,6 +273,7 @@ public:
 	//
 	// GNUGameMode와 관련
 	//
+	UFUNCTION(NetMulticast, Reliable)
 	void Elim();
 
 	// 기존
@@ -330,6 +331,9 @@ private:
 
 	void HideCameraIfCharacterClose();
 
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	UAnimMontage* ElimMontage;
+
 
 public:
 	// 복제를 위한 변수 저장
@@ -355,5 +359,6 @@ public:
 
 	FVector GetHitTarget() const;
 
+	void PlayElimMontage();
 
 };
