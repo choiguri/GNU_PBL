@@ -183,6 +183,7 @@ void UGnuCombatComponent::FireButtonPressed(bool bPressed)
 	if (GnuCharacter->isSprint)
 	{
 		GnuCharacter->ServerSprintEnd();
+		//GnuCharacter->UpdateSprintState(false);
 	}
 	
 	if (bFireButtonPressed && !bReloadButtonPressed)
@@ -204,6 +205,7 @@ void UGnuCombatComponent::StartFireTimer()
 	if (GnuCharacter->isSprint)
 	{
 		GnuCharacter->ServerSprintEnd();
+		//GnuCharacter->UpdateSprintState(false);
 	}
 
 	GnuCharacter->GetWorldTimerManager().SetTimer(
@@ -220,6 +222,7 @@ void UGnuCombatComponent::FireTimerFinished()
 	if (GnuCharacter->isSprint)
 	{
 		GnuCharacter->ServerSprintEnd();
+		//GnuCharacter->UpdateSprintState(false);
 	}
 	if (bFireButtonPressed && bAutomatic)
 	{

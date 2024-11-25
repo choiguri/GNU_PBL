@@ -343,6 +343,10 @@ void AGnuMyCharacter::OnRep_IsSprinting()// 클라이언트가 동기화 되는 
 	// Client의 Implementation 함수에서만 써도 동일한 기능이 작동된다.
 	// -> 다만 Clint 함수 내부에서 사용하면 좀 더 반응 속도가 빠른 반면, OnRep 함수에서 쓰면 서버와 클라이언트간의 일관성을 유지할 수 있다.
 	UpdateSprintState(isSprint); // 스프린트 상태가 변경된 것을 클라이언트에서 반영
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Blue, FString::Printf(TEXT("OnRep_IsSprinting")));
+	}
 }
 
 void AGnuMyCharacter::UpdateSprintState(bool bIsSprinting)
@@ -819,15 +823,15 @@ void AGnuMyCharacter::ServerEquipButtonPressed_Implementation()
 void AGnuMyCharacter::FireButtonPressed()
 {
 	// 재장전 중이면 사격 불가
-	if (!Combat || Combat->bReloadButtonPressed) return;
+	if (!Combat || Combat->bReloadButtonPressed || GetEquippedWeapon() == nullptr) return;
 
 	// 뛰고 있으면 걷는 상태로 바꾼 후 사격
-	if (isSprint)
-	{
-		//UpdateSprintState(false);
-		ServerSprintEnd();
-	}
-	if (Combat && !isSprint)
+	//if (isSprint)
+	//{
+	//	//UpdateSprintState(false);
+	//	ServerSprintEnd();
+	//}
+	if (Combat)
 	{
 		Combat->FireButtonPressed(true);
 	}
