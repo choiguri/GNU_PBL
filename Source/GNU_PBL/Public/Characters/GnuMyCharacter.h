@@ -270,11 +270,6 @@ public:
 	void MultiCastSetHealth();
 
 
-	//
-	// GNUGameMode와 관련
-	//
-	UFUNCTION(NetMulticast, Reliable)
-	void Elim();
 
 	// 기존
 	/*UFUNCTION(Server, Reliable)
@@ -359,6 +354,21 @@ public:
 
 	FVector GetHitTarget() const;
 
+	//
+	// GNUGameMode와 관련
+	//
+	void Elim();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiCastElim();
+
 	void PlayElimMontage();
 
+	FTimerHandle ElimTimer;
+
+	// 부활 시간
+	UPROPERTY(EditDefaultsOnly)
+	float ElimDelay = 3.f;
+
+	void ElimTimerFinished();
 };
