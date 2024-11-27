@@ -46,6 +46,17 @@ void UGnuMonsterAnimInstance::NativeThreadSafeUpdateAnimation(float DeltaSeconds
 
 void UGnuMonsterAnimInstance::PlayMontage(UAnimMontage* MontageToPlay)
 {
+    Server_PlayMontage(MontageToPlay);
+}
+
+void UGnuMonsterAnimInstance::Server_PlayMontage_Implementation(UAnimMontage* MontageToPlay)
+{
+    Multicast_PlayMontage(MontageToPlay);
+}
+
+
+void UGnuMonsterAnimInstance::Multicast_PlayMontage_Implementation(UAnimMontage* MontageToPlay)
+{
     if (MontageToPlay == nullptr)
     {
         return;

@@ -4,6 +4,8 @@
 #include "Monster/AttackActor/GnuFiretornadoActor.h"
 #include "Monster/GnuMonster.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "GameFramework/DamageType.h"
+#include "Kismet/GameplayStatics.h"
 #include "Components/StaticMeshComponent.h"
 
 AGnuFiretornadoActor::AGnuFiretornadoActor()
@@ -23,20 +25,12 @@ AGnuFiretornadoActor::AGnuFiretornadoActor()
     if (BoxComponent)
     {
         BoxComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-        BoxComponent->SetCollisionResponseToAllChannels(ECR_Block); // 모든 채널에 대해 충돌 허용
+        BoxComponent->SetCollisionResponseToAllChannels(ECR_Ignore); // 모든 채널에 대해 무시
         BoxComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap); // 캐릭터에 대해 오버랩 허용
     }
-}
 
-void AGnuFiretornadoActor::LaunchProjectile(AActor* IgnoredActor)
-{
-    if (ProjectileMovement)
-    {
-        BoxComponent->IgnoreActorWhenMoving(IgnoredActor, true); // 몬스터와 충돌 무시
-
-        FVector ForwardVector = Arrow->GetForwardVector();
-        ProjectileMovement->Velocity = ForwardVector * ProjectileMovement->InitialSpeed; // 각 방향, 속도로 발사
-    }
+    DamageType = UDamageType::StaticClass();
+    Damage = 20.0f;
 }
 
 void AGnuFiretornadoActor::BeginPlay()
@@ -53,25 +47,42 @@ void AGnuFiretornadoActor::BeginPlay()
     if (BoxComponent)
     {
         BoxComponent->IgnoreActorWhenMoving(this, true);    // 자신과의 충돌 무시
-        BoxComponent->OnComponentHit.AddDynamic(this, &AGnuFiretornadoActor::OnHit);    // 충돌 이벤트 바인딩
+        BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &AGnuFiretornadoActor::BeginOverlap);    // 겹침 이벤트 바인딩
     }
 
     // 10초 이후 firball actor 삭제 위한 타이머 설정
     GetWorld()->GetTimerManager().SetTimer(DestructionTimerHandle, this, &AGnuFiretornadoActor::DestroyFiretornado, 10.0f, false);
 }
 
-void AGnuFiretornadoActor::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void AGnuFiretornadoActor::LaunchProjectile(AActor* IgnoredActor)
 {
-    if (OtherActor && (OtherActor != this))
+    if (ProjectileMovement)
     {
-        // 충돌한 액터가 벽이나 캐릭터일 때 파이어토네이도 삭제
-        GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Green, TEXT("Overlap with : ") + OtherActor->GetName());
-        DestroyFiretornado();
+        BoxComponent->IgnoreActorWhenMoving(IgnoredActor, true); // 몬스터와 충돌 무시
+
+        FVector ForwardVector = Arrow->GetForwardVector();
+        ProjectileMovement->Velocity = ForwardVector * ProjectileMovement->InitialSpeed; // 각 방향, 속도로 발사
     }
 }
-
 
 void AGnuFiretornadoActor::DestroyFiretornado()
 {
     Destroy();
+}
+
+void AGnuFiretornadoActor::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+    if (OtherActor && (OtherActor != this))
+    {
+        // 충돌한 액터가 벽이나 캐릭터일 때
+        ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+        if (OwnerCharacter)
+        {
+            AController* OwnerController = OwnerCharacter->Controller;
+            UGameplayStatics::ApplyDamage(OtherActor, Damage, OwnerController, this, DamageType);
+            GEngine->AddOnScreenDebugMessage(-1, 4, FColor::Black, TEXT("Apply Damage!!"));
+        }
+
+        GEngine->AddOnScreenDebugMessage(-1, 4, FColor::Yellow, TEXT("Begin Overlap with : ") + OtherActor->GetName());
+    }
 }

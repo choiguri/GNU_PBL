@@ -108,6 +108,12 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Animation")
     void PlayMontage(UAnimMontage* MontageToPlay);
 
+    UFUNCTION(Server, Reliable)
+    void Server_PlayMontage(UAnimMontage* MontageToPlay);
+
+    UFUNCTION(NetMulticast, Reliable)
+    void Multicast_PlayMontage(UAnimMontage* MontageToPlay);
+
     // 몽타주 애니메이션 끝났을 때 호출 될 함수
     UFUNCTION()
     void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);

@@ -19,6 +19,14 @@ public:
 	// Sets default values for this actor's properties
 	AGnuAttackCollisionActor();
 
+	//이 발사체가 가할 대미지 타입과 대미지
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Damage")
+	TSubclassOf<class UDamageType> DamageType;
+
+	//이 발사체가 가하는 대미지
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Damage")
+	float Damage = 1.0f;
+
 protected:
 	virtual void BeginPlay() override;
 

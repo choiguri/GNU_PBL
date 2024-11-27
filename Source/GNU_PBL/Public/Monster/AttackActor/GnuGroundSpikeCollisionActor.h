@@ -22,6 +22,9 @@ public:
 
     void LaunchProjectile(AActor* IgnoredActor);  // 발사 함수
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projectile")
+    UProjectileMovementComponent* ProjectileMovement;
+
 private:
     FTimerHandle DestructionTimerHandle; // 파괴 타이머 핸들
 
@@ -29,9 +32,6 @@ private:
 
 protected:
     virtual void BeginPlay() override;
-
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projectile")
-    UProjectileMovementComponent* ProjectileMovement;
 
     virtual void BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
         UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;

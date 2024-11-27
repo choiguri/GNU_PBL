@@ -4,6 +4,8 @@
 #include "Monster/AttackActor/GnuGroundSpikeCollisionActor.h"
 #include "Monster/GnuMonster.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "GameFramework/DamageType.h"
+#include "Kismet/GameplayStatics.h"
 #include "Components/StaticMeshComponent.h"
 
 AGnuGroundSpikeCollisionActor::AGnuGroundSpikeCollisionActor()
@@ -22,9 +24,12 @@ AGnuGroundSpikeCollisionActor::AGnuGroundSpikeCollisionActor()
     if (BoxComponent)
     {
         BoxComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-        BoxComponent->SetCollisionResponseToAllChannels(ECR_Block); // 모든 채널에 대해 무시
+        BoxComponent->SetCollisionResponseToAllChannels(ECR_Ignore); // 모든 채널에 대해 무시
         BoxComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap); // 캐릭터에 대해 오버랩 허용
     }
+
+    DamageType = UDamageType::StaticClass();
+    Damage = 25.0f;
 }
 
 void AGnuGroundSpikeCollisionActor::BeginPlay()
@@ -62,7 +67,15 @@ void AGnuGroundSpikeCollisionActor::BeginOverlap(UPrimitiveComponent* Overlapped
 {
     if (OtherActor && (OtherActor != this))
     {
-        // 충돌한 액터가 벽이나 캐릭터일 때 확인
-        GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Orange, TEXT("Overlap with: ") + OtherActor->GetName());
+        // 충돌한 액터가 벽이나 캐릭터일 때
+        ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+        if (OwnerCharacter)
+        {
+            AController* OwnerController = OwnerCharacter->Controller;
+            UGameplayStatics::ApplyDamage(OtherActor, Damage, OwnerController, this, DamageType);
+            GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Black, TEXT("Apply Damage!!"));
+        }
+
+        GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Yellow, TEXT("Begin Overlap with : ") + OtherActor->GetName());
     }
 }

@@ -2,6 +2,7 @@
 
 
 #include "Monster/AttackActor/GnuFirebreathActor.h"
+#include "Monster/GnuMonster.h"
 #include "NiagaraComponent.h" // UNiagaraComponent 헤더 추가
 #include "NiagaraFunctionLibrary.h" // Niagara 기능을 위한 헤더
 #include "GameFramework/ProjectileMovementComponent.h"
@@ -12,6 +13,7 @@
 AGnuFirebreathActor::AGnuFirebreathActor()
 {
 	PrimaryActorTick.bCanEverTick = true;
+    
 
     // SecondaryBoxComponent 생성
     ProjectileBoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("ProjectileBoxComponent"));
@@ -21,7 +23,6 @@ AGnuFirebreathActor::AGnuFirebreathActor()
     {
         // ProjectileBoxComponent 충돌 설정
         ProjectileBoxComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics); // 충돌과 물리 활성화
-        ProjectileBoxComponent->SetCollisionObjectType(ECC_GameTraceChannel1);          // 필요시 새로운 채널로 설정
         ProjectileBoxComponent->SetCollisionResponseToAllChannels(ECR_Ignore);          // 모든 채널 무시
         ProjectileBoxComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);   // 캐릭터와 오버랩
         ProjectileBoxComponent->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block); // 정적 물체는 Block
@@ -48,9 +49,9 @@ AGnuFirebreathActor::AGnuFirebreathActor()
         //BoxComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap); // 캐릭터에 대해 오버랩 허용
     }
 
-    // OnHit 델리게이트 바인딩
-    ProjectileBoxComponent->OnComponentHit.AddDynamic(this, &AGnuFirebreathActor::OnHit);
-    ProjectileBoxComponent->OnComponentBeginOverlap.AddDynamic(this, &AGnuFirebreathActor::BeginOverlap);
+    // 상속 받아 데미지 정의
+    DamageType = UDamageType::StaticClass();
+    Damage = 15.0f;
 }
 
 void AGnuFirebreathActor::BeginPlay()
@@ -65,23 +66,12 @@ void AGnuFirebreathActor::BeginPlay()
 
     if (ProjectileBoxComponent)
     {
-        // OnHit 델리게이트 바인딩
-        ProjectileBoxComponent->OnComponentHit.AddDynamic(this, &AGnuFirebreathActor::OnHit);
+        // BeginOverlap 이벤트 바인딩
         ProjectileBoxComponent->OnComponentBeginOverlap.AddDynamic(this, &AGnuFirebreathActor::BeginOverlap);
     }
 }
 
-void AGnuFirebreathActor::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
-{
-    GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, TEXT("OnHit Overlap with: ") + OtherActor->GetName());
-}
-
-void AGnuFirebreathActor::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-    GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, TEXT("Overlap with: ") + OtherActor->GetName());
-}
-
-void AGnuFirebreathActor::LaunchProjectile(FVector* Location, FRotator* Rotation)
+void AGnuFirebreathActor::LaunchProjectile(AActor* IgnoredActor, FVector* Location, FRotator* Rotation)
 {
     if (ProjectileBoxComponent && ProjectileMovement)
     {
@@ -90,6 +80,8 @@ void AGnuFirebreathActor::LaunchProjectile(FVector* Location, FRotator* Rotation
         {
             ProjectileBoxComponent->SetWorldLocation(*Location);
         }
+        
+        ProjectileBoxComponent->IgnoreActorWhenMoving(IgnoredActor, true); // 자신과 충돌 무시
 
         // 회전 설정: FRotator를 FVector로 변환하여 발사 방향 설정
         FVector LaunchDirection = Rotation->Vector();  // FRotator를 FVector로 변환
@@ -114,4 +106,21 @@ void AGnuFirebreathActor::DestroyFirebreath()
 void AGnuFirebreathActor::DestroyActor()
 {
     Destroy(); // 액터 삭제
+}
+
+void AGnuFirebreathActor::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+    if (OtherActor && (OtherActor != this))
+    {
+        // 충돌한 액터가 벽이나 캐릭터일 때 파이어볼 삭제
+        ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+        if (OwnerCharacter)
+        {
+            AController* OwnerController = OwnerCharacter->Controller;
+            UGameplayStatics::ApplyDamage(OtherActor, Damage, OwnerController, this, DamageType);
+            GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Black, TEXT("Apply Damage!!"));
+        }
+
+        GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Yellow, TEXT("Begin Overlap with : ") + OtherActor->GetName());
+    }
 }

@@ -43,7 +43,13 @@ public:
 	void DeactivateCapsuleComp(); // 캡슐 컴포넌트 비활성화
 
 	// 몬스터 공격 함수
-	void SpawnFireball();  // 파이어볼 소환 함수
+	UFUNCTION()
+	void SpawnFireball(); // 파이어볼 소환 함수
+	UFUNCTION(Server, Reliable)
+	void Server_SpawnFireball();
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_SpawnFireball();
+
 	void SpawnFiretornado(); // 파이어토네이도 소환 함수
 	void SpawnFirebreath(); // 파이어브레스 소환 함수
 	void SpawnGroundAttack(); // 그라운드 돌 공격 소환 함수
@@ -136,7 +142,7 @@ public:
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
 
-
+	// 멀티 관련
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 
@@ -174,5 +180,4 @@ public:
 	void ActivateTailCollision();
 	UFUNCTION()
 	void DeactivateTailCollision();
-
 };

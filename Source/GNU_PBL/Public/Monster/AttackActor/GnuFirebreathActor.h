@@ -23,7 +23,14 @@ public:
 
     void DestroyFirebreath(); // 파이어브레스 삭제 함수
 
-    void LaunchProjectile(FVector* Location, FRotator* Rotation);  // 발사 함수
+    void LaunchProjectile(AActor* IgnoredActor, FVector* Location, FRotator* Rotation);  // 발사 함수
+
+    // 추가된 BoxComponent (발사체로 사용)
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    UBoxComponent* ProjectileBoxComponent;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projectile")
+    UProjectileMovementComponent* ProjectileMovement;
 
 private:
     FTimerHandle DestructionTimerHandle;    // 타이머 핸들
@@ -35,20 +42,8 @@ private:
 protected:
     virtual void BeginPlay() override;
 
-    // 기본 BoxComponent
-
-    // 추가된 BoxComponent (발사체로 사용)
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-    UBoxComponent* ProjectileBoxComponent;
-
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projectile")
-    UProjectileMovementComponent* ProjectileMovement;
-
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "VFX")
     UNiagaraComponent* NiagaraComponent;
-
-    UFUNCTION()
-    void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
     virtual void BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
         UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;

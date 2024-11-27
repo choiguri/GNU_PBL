@@ -6,7 +6,6 @@
 #include "Monster/AttackActor/GnuAttackCollisionActor.h"
 #include "GnuFiretornadoActor.generated.h"
 
-
 class UProjectileMovementComponent;
 
 
@@ -20,19 +19,17 @@ public:
 
     void LaunchProjectile(AActor* IgnoredActor);  // 발사 함수
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projectile")
+    UProjectileMovementComponent* ProjectileMovement;
+
 private:
     FTimerHandle DestructionTimerHandle;    // 타이머 핸들
 
     void DestroyFiretornado(); // 파이어토네이도 삭제 함수
 
-
 protected:
     virtual void BeginPlay() override;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projectile")
-    UProjectileMovementComponent* ProjectileMovement;
-
-    UFUNCTION()
-    void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
-
+    virtual void BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+        UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
 };
