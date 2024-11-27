@@ -126,11 +126,8 @@ AGnuMyCharacter::AGnuMyCharacter()
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 
-<<<<<<< Updated upstream
 	SpawnCollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-=======
 	isHealCoolDown = false;
->>>>>>> Stashed changes
 }
 
 void AGnuMyCharacter::PlayCameraShake()
