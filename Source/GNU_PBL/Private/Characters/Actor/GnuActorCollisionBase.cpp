@@ -2,6 +2,7 @@
 
 
 #include "Characters/Actor/GnuActorCollisionBase.h"
+#include "GNU_PBL/GNU_PBL.h"
 
 // Sets default values
 AGnuActorCollisionBase::AGnuActorCollisionBase()
@@ -11,6 +12,15 @@ AGnuActorCollisionBase::AGnuActorCollisionBase()
 
 	BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxCollision"));
 	BoxComponent->SetupAttachment(GetRootComponent());
+
+
+	BoxComponent->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
+	BoxComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	BoxComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	BoxComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+	BoxComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
+	BoxComponent->SetCollisionResponseToChannel(ECC_SkeletalMesh, ECollisionResponse::ECR_Block);
+
 
 	ArrowComponent = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComponent"));
 	ArrowComponent->SetupAttachment(BoxComponent);

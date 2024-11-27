@@ -37,6 +37,9 @@ protected:
     UPROPERTY(VisibleAnywhere)
     UNiagaraComponent* NiagaraComponent;
 
+    UPROPERTY(EditAnywhere)
+    UNiagaraSystem* NiagaraSystem;
+
     UPROPERTY(VisibleAnywhere, Category = "Components")
     UProjectileMovementComponent* ProjectileMovementComp;
 

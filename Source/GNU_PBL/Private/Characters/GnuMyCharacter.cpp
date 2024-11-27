@@ -592,7 +592,7 @@ void AGnuMyCharacter::EndCooldown()
 //--------------------------- Arrow Skill --------------------------------
 void AGnuMyCharacter::SpawnArrow()
 {
-	if (ArrowClass)
+	if (ArrowClass && GetEquippedWeapon())
 	{
 		FVector SpawnLocation = Combat->EquippedWeapon->GetMesh()->GetSocketLocation("MuzzleFlashSocket");
 		FRotator SpawnRotation = Combat->EquippedWeapon->GetMesh()->GetSocketRotation("MuzzleFlashSocket");
