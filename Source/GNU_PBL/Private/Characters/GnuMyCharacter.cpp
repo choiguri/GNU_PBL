@@ -594,16 +594,18 @@ void AGnuMyCharacter::SpawnArrow()
 {
 	if (ArrowClass)
 	{
-		if (GunClass)
+		FVector SpawnLocation = Combat->EquippedWeapon->GetMesh()->GetSocketLocation("MuzzleFlashSocket");
+		FRotator SpawnRotation = Combat->EquippedWeapon->GetMesh()->GetSocketRotation("MuzzleFlashSocket");
+		FTransform SpawnTransform(SpawnRotation, SpawnLocation);
+			
+		
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = GetOwner();
+		SpawnParams.Instigator = this;
+		UWorld* World = GetWorld();
+		if (World)
 		{
-			FVector SpawnLocation = Combat->EquippedWeapon->GetMesh()->GetSocketLocation("MuzzleFlashSocket");
-			FRotator SpawnRotation = Combat->EquippedWeapon->GetMesh()->GetSocketRotation("MuzzleFlashSocket");
-
-			/*FVector SpawnLocation = Gun->GetMesh()->GetSocketLocation("MuzzleFlashSocket");
-			FRotator SpawnRotation = Gun->GetMesh()->GetSocketRotation("MuzzleFlashSocket");*/
-			FTransform SpawnTransform(SpawnRotation, SpawnLocation);
-
-			AGnuProjectileActor* Arrow = GetWorld()->SpawnActor<AGnuProjectileActor>(ArrowClass, SpawnTransform);
+			AGnuProjectileActor* Arrow = World->SpawnActor<AGnuProjectileActor>(ArrowClass, SpawnTransform, SpawnParams);
 			if (Arrow)
 			{
 				Arrow->SetOwner(this);
