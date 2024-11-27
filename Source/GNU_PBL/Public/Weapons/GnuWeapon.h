@@ -70,6 +70,9 @@ protected:
 	);
 
 private:
+	UPROPERTY(VisibleAnywhere)
+	USceneComponent* Root;
+
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 	USkeletalMeshComponent* WeaponMesh;
 
@@ -92,7 +95,7 @@ private:
 	UAnimationAsset* ReloadAnimation;
 
 	UPROPERTY(EditAnywhere)
-	int32 Ammo;
+	int32 Ammo = 30;
 
 	UPROPERTY(EditAnywhere)
 	int32 MaxAmmo = 30;

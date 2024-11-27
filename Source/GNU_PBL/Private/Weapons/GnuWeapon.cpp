@@ -17,23 +17,26 @@ AGnuWeapon::AGnuWeapon()
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
 
-	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
-	SetRootComponent(WeaponMesh);
+	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+	SetRootComponent(Root);
 
-	// Ãæµ¹ ¼³Á¤
+	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
+	WeaponMesh->SetupAttachment(Root);
+
+	// ï¿½æµ¹ ï¿½ï¿½ï¿½ï¿½
 	WeaponMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
 	WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
 	WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-	// Ä³¸¯ÅÍ¿Í °ãÄ¡´Â ºÎºÐ ¹«±â ÁÖ¿ï ¶§ »ç¿ëÇÒ Sphere
+	// Ä³ï¿½ï¿½ï¿½Í¿ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½Îºï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ö¿ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ Sphere
 	AreaSphere = CreateDefaultSubobject<USphereComponent>(TEXT("AreaSphere"));
-	AreaSphere->SetupAttachment(RootComponent);
+	AreaSphere->SetupAttachment(WeaponMesh);
 	AreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-	// ÁÖ¿ï ¶§ ³ª¿À´Â Å° ¼³¸í À§Á¬
+	// ï¿½Ö¿ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Å° ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	PickupWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("PickupWidget"));
-	PickupWidget->SetupAttachment(RootComponent);
+	PickupWidget->SetupAttachment(WeaponMesh);
 }
 
 
