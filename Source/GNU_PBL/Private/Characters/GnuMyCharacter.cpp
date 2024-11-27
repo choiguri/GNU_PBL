@@ -40,7 +40,6 @@
 #include "Components/WidgetComponent.h"
 #include "HUD/GNUOverHeadWidget.h"
 #include "Characters/GnuMyPlayerController.h"
-#include "GameModes/GNUGameMode.h"
 #include "HUD/GnuReplicatedHealth.h"
 #include "Components/ProgressBar.h"
 
@@ -49,6 +48,10 @@
 #include "Weapons/GnuCombatComponent.h"
 #include "GNU_PBL/GNU_PBL.h"
 
+
+// GameMode
+#include "GameModes/GNUGameMode.h"
+#include "TimerManager.h"
 
 AGnuMyCharacter::AGnuMyCharacter()
 {
@@ -123,7 +126,7 @@ AGnuMyCharacter::AGnuMyCharacter()
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 
-
+	SpawnCollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 }
 
 void AGnuMyCharacter::PlayCameraShake()
@@ -193,6 +196,13 @@ void AGnuMyCharacter::BeginPlay()
 		GNUPlayerController->SetHUDHealth(Health, MaxHealth);
 		GNUPlayerController->SetHUDStamina(Stamina, MaxStaminaa);
 
+	}
+	else
+	{
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("No PlayerController")));
+		}
 	}
 	if (ReplicatedHealthWidget)
 	{
@@ -949,6 +959,8 @@ void AGnuMyCharacter::PlayElimMontage()
 	}
 }
 
+
+
 AGnuWeapon* AGnuMyCharacter::GetEquippedWeapon()
 {
 	if (Combat == nullptr) return nullptr;
@@ -1058,10 +1070,33 @@ void AGnuMyCharacter::MultiCastSetHealth_Implementation()
 	}
 }
 
-void AGnuMyCharacter::Elim_Implementation()
+void AGnuMyCharacter::Elim()
+{
+	MultiCastElim();
+
+	// GameMode는 서버에서만 값을 가짐 
+	GetWorldTimerManager().SetTimer(
+		ElimTimer,
+		this,
+		&AGnuMyCharacter::ElimTimerFinished,
+		ElimDelay
+	);
+}
+
+void AGnuMyCharacter::MultiCastElim_Implementation()
 {
 	PlayElimMontage();
 }
+
+void AGnuMyCharacter::ElimTimerFinished()
+{
+	AGNUGameMode* GnuGameMode = GetWorld()->GetAuthGameMode<AGNUGameMode>();
+	if (GnuGameMode)
+	{
+		GnuGameMode->RequestRespawn(this, Controller);
+	}
+}
+
 
 void AGnuMyCharacter::ClientSetName_Implementation(const FString& Name)
 {

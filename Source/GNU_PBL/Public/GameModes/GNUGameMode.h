@@ -18,5 +18,5 @@ public:
 	AGNUGameMode();
 	virtual void PlayerEliminated(class AGnuMyCharacter* ElimmedCharacter, class AGnuMyPlayerController* VictimController, AController* Monster);
 
-	
+	virtual void RequestRespawn(ACharacter* ElimedCharacter, AController* ElimedController);
 };
