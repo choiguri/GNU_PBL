@@ -126,7 +126,11 @@ AGnuMyCharacter::AGnuMyCharacter()
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 
+<<<<<<< Updated upstream
 	SpawnCollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+=======
+	isHealCoolDown = false;
+>>>>>>> Stashed changes
 }
 
 void AGnuMyCharacter::PlayCameraShake()
@@ -556,20 +560,36 @@ void AGnuMyCharacter::SpawnHeal()
 {
 	if (HealClass)
 	{
-	
-		FVector SpawnLocation = GetActorLocation() + FVector(0, 0, 500.0f);
-		FRotator SpawnRotation = GetActorRotation();
-
-		FTransform SpawnTransform(SpawnRotation, SpawnLocation);
-
-		AGnuHealActor* Heal = GetWorld()->SpawnActor<AGnuHealActor>(HealClass, SpawnTransform);
-
-		if (Heal)
+		if (!isHealCoolDown)
 		{
-			Heal->SetOwner(this); // 이거 안해주면 GnuHealActor에서 onwer가 누군지 몰라서 오류가 난다
+			FVector SpawnLocation = GetActorLocation() + FVector(0, 0, 500.0f);
+			FRotator SpawnRotation = GetActorRotation();
+
+			FTransform SpawnTransform(SpawnRotation, SpawnLocation);
+
+			AGnuHealActor* Heal = GetWorld()->SpawnActor<AGnuHealActor>(HealClass, SpawnTransform);
+
+			if (Heal)
+			{
+				StartCooldown();
+				Heal->SetOwner(this); // 이거 안해주면 GnuHealActor에서 onwer가 누군지 몰라서 오류가 난다
+			}
 		}
 	}
 }
+
+void AGnuMyCharacter::StartCooldown()
+{
+	isHealCoolDown = true;
+	GetWorld()->GetTimerManager().SetTimer(HealCoolDownTimer, this, &AGnuMyCharacter::EndCooldown, 10.0f, false);
+}
+
+void AGnuMyCharacter::EndCooldown()
+{
+	isHealCoolDown = false; // 쿨타임 해제
+	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, TEXT("Heal Cooldown ended!"));
+}
+
 // -------------------------------------------------------------------------
 
 //--------------------------- Arrow Skill --------------------------------
@@ -577,15 +597,21 @@ void AGnuMyCharacter::SpawnArrow()
 {
 	if (ArrowClass)
 	{
-		FVector SpawnLocation = Gun->GetMesh()->GetSocketLocation("MuzzleFlashSocket");
-		FRotator SpawnRotation = Gun->GetMesh()->GetSocketRotation("MuzzleFlashSocket");
-		FTransform SpawnTransform(SpawnRotation, SpawnLocation);
-
-		AGnuProjectileActor* Arrow = GetWorld()->SpawnActor<AGnuProjectileActor>(ArrowClass, SpawnTransform);
-		if (Arrow)
+		if (GunClass)
 		{
-			Arrow->SetOwner(this);
-			Arrow->LaunchProjectile(this);
+			FVector SpawnLocation = Combat->EquippedWeapon->GetMesh()->GetSocketLocation("MuzzleFlashSocket");
+			FRotator SpawnRotation = Combat->EquippedWeapon->GetMesh()->GetSocketRotation("MuzzleFlashSocket");
+
+			/*FVector SpawnLocation = Gun->GetMesh()->GetSocketLocation("MuzzleFlashSocket");
+			FRotator SpawnRotation = Gun->GetMesh()->GetSocketRotation("MuzzleFlashSocket");*/
+			FTransform SpawnTransform(SpawnRotation, SpawnLocation);
+
+			AGnuProjectileActor* Arrow = GetWorld()->SpawnActor<AGnuProjectileActor>(ArrowClass, SpawnTransform);
+			if (Arrow)
+			{
+				Arrow->SetOwner(this);
+				Arrow->LaunchProjectile(this);
+			}
 		}
 	}
 }
@@ -596,15 +622,15 @@ void AGnuMyCharacter::SpawnGrenade()
 {
 	if (GrenadeClass)
 	{
-		FVector SpawnLocation = Gun->GetMesh()->GetSocketLocation("MuzzleFlashSocket");
-		FRotator SpawnRotation = Gun->GetMesh()->GetSocketRotation("MuzzleFlashSocket");
+		FVector SpawnLocation = Combat->EquippedWeapon->GetMesh()->GetSocketLocation("MuzzleFlashSocket");
+		FRotator SpawnRotation = Combat->EquippedWeapon->GetMesh()->GetSocketRotation("MuzzleFlashSocket");
 		FTransform SpawnTransform(SpawnRotation, SpawnLocation);
 
 		AGnuGrenadeActor* Grenade = GetWorld()->SpawnActor<AGnuGrenadeActor>(GrenadeClass, SpawnTransform);
 		if (Grenade)
 		{
 			Grenade->SetOwner(this);
-			Grenade->LaunchProjectile(this);
+			Grenade->LaunchProjectile(this, SpawnLocation, SpawnRotation);
 		}
 	}
 }
@@ -1048,6 +1074,7 @@ void AGnuMyCharacter::OnRep_Stamina()
 {
 
 }
+
 
 void AGnuMyCharacter::SetReplicatedHealth()
 {

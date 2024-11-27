@@ -28,7 +28,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	void ShowPickupWidget(bool bShowWidget);
-	
+	USkeletalMeshComponent* GetMesh(); // 11.26
 	virtual void Fire(const FVector& HitTarget);
 
 	// Crosshair 

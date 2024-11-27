@@ -3,45 +3,41 @@
 
 #include "Characters/Actor/GnuGrenadeActor.h"
 #include "GameFramework/ProjectileMovementComponent.h"
-#include "DrawDebugHelpers.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Characters/GnuMyCharacter.h"
 #include "Monster/GnuMonster.h"
-#include "Weapons/Gun.h"
-#include "Kismet/GameplayStatics.h"
-#include "Camera/PlayerCameraManager.h"
-#include "GameFramework/Actor.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Components/SphereComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 AGnuGrenadeActor::AGnuGrenadeActor()
 {
     PrimaryActorTick.bCanEverTick = true;
 
-    // RootSceneComponent 생성 및 설정
-    RootSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootSceneComponent"));
-    RootComponent = RootSceneComponent;
-
     // 부모 클래스에서 상속받은 BoxComponent를 초기화
     if (BoxComponent)
     {
-        BoxComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-        BoxComponent->SetCollisionResponseToAllChannels(ECR_Block); // 모든 채널에 대해 충돌 허용
-        BoxComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap); // 캐릭터에 대해 오버랩 허용
+        BoxComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+        BoxComponent->SetCollisionResponseToAllChannels(ECR_Ignore); // 모든 채널에 대해 충돌 허용
     }
 
     NiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraComponent"));
     NiagaraComponent->SetupAttachment(BoxComponent);
 
-    ProjectileOffset = FVector(15.0f, 35.0f, -10.0f);
+    //SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
+    //SphereComponent->SetupAttachment(NiagaraComponent);
+
+    //// 물리 설정 (필요에 따라 물리 적용 여부 설정)
+    //SphereComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+    //SphereComponent->SetCollisionResponseToAllChannels(ECR_Block);
+
     Damage = -10.0f;
 }
 
 void AGnuGrenadeActor::BeginPlay()
 {
     Super::BeginPlay();
-    // 이전 위치를 초기 위치로 설정
-    PreviousLocation = GetActorLocation();
 
     // 충돌을 위해 이벤트 바인딩
     if (BoxComponent)
@@ -51,102 +47,93 @@ void AGnuGrenadeActor::BeginPlay()
     }
 
     // 일정 시간 이후 firball actor 삭제 위한 타이머 설정
-    GetWorld()->GetTimerManager().SetTimer(DestructionTimerHandle, this, &AGnuGrenadeActor::DestroyActor, 10.0f, false);
-
-
+    GetWorld()->GetTimerManager().SetTimer(DestroyTimer, this, &AGnuGrenadeActor::DestroyActor, 5.0f, false);
 }
 
 void AGnuGrenadeActor::Tick(float DeltaTime)
 {
-    FVector CurrentLocation = GetActorLocation();
 
-
-    // 이전 위치와 현재 위치 사이에 디버그 라인 그리기
-    DrawDebugLine(
-        GetWorld(),
-        PreviousLocation,
-        CurrentLocation,
-        FColor::Red,          // 경로 색상
-        false,                 // 영구 표시 여부
-        -1.0f,                 // 지속 시간 (Tick마다 갱신이므로 -1.0f 사용)
-        0,
-        2.0f                   // 선 두께
-    );
-
-    // 이전 위치를 현재 위치로 업데이트
-    PreviousLocation = CurrentLocation;
 }
 
-void AGnuGrenadeActor::LaunchProjectile(AActor* IgnoredActor)
+void AGnuGrenadeActor::LaunchProjectile(AActor* IgnoredActor, FVector SpawnLocation, FRotator SpawnRotation)
 {
-    if (MuzzleNiagaraSystem)
+    AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(IgnoredActor);
+    if (MyCharacter)
     {
-        NiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
-            MuzzleNiagaraSystem,    // UNiagaraSystem* 타입의 Niagara 시스템 자산
-            BoxComponent,           // Niagara 시스템을 부착할 BoxComponent
-            NAME_None,              // 소켓 이름 (None이면 기본 위치에 부착)
-            FVector(0.0f, 80.0f, 10.0f),    // 위치 오프셋
-            FRotator::ZeroRotator,  // 회전 오프셋
-            EAttachLocation::KeepRelativeOffset,  // 위치 기준 설정
-            false,                   // 부모가 삭제되면 Niagara 시스템도 삭제
-            true                    // 자동으로 활성화
+        // 캐릭터의 SkeletalMeshComponent를 가져오기
+        USkeletalMeshComponent* SkeletalMeshComponent = MyCharacter->GetMesh();
+
+        if (MuzzleNiagaraSystem)
+        {
+            NiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
+                MuzzleNiagaraSystem,    // UNiagaraSystem* 타입의 Niagara 시스템 자산
+                SkeletalMeshComponent,           // Niagara 시스템을 부착할 BoxComponent
+                FName("WeaponSocket"),              // 소켓 이름 (None이면 기본 위치에 부착)
+                FVector(0.0f, 80.0f, 10.0f),    // 위치 오프셋
+                FRotator::ZeroRotator,  // 회전 오프셋
+                EAttachLocation::SnapToTarget,  // 위치 기준 설정
+                false,                   // 부모가 삭제되면 Niagara 시스템도 삭제
+                true                    // 자동으로 활성화
+            );
+        }
+
+        // 1초 후에 SpawnActor 호출하도록 타이머 설정
+        FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(
+            this,
+            &AGnuGrenadeActor::SpawnEMPVortex,
+            IgnoredActor,
+            SpawnLocation,
+            SpawnRotation
         );
+        GetWorld()->GetTimerManager().SetTimer(GrenadeTimer, TimerDelegate, 1.0f, false);
     }
-
-    // 1초 후에 SpawnEMPVortex 메서드를 호출하도록 타이머 설정
-    FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(
-        this,
-        &AGnuGrenadeActor::SpawnEMPVortex,
-        IgnoredActor
-    );
-
-    // TimerHandle을 멤버 변수로 사용
-    GetWorld()->GetTimerManager().SetTimer(
-        DestructionTimerHandle,  // 기존 클래스 멤버 변수 사용
-        TimerDelegate,
-        1.0f, // 1초 뒤에 실행
-        false // 반복하지 않음
-    );
-
-    BoxComponent->IgnoreActorWhenMoving(IgnoredActor, true);
 }
-void AGnuGrenadeActor::SpawnEMPVortex(AActor* IgnoredActor)
+
+void AGnuGrenadeActor::SpawnEMPVortex(AActor* IgnoredActor, FVector SpawnLocation, FRotator SpawnRotation)
 {
-    if (BP_Projectile_EMP_Vortex) // 스폰할 액터의 클래스가 유효한지 확인
+     // 카메라 회전값을 가져오기
+    APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
+    APlayerCameraManager* CameraManager = PlayerController->PlayerCameraManager;
+
+    if (CameraManager)
     {
-        APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
-        if (!PlayerController)
+        // 캐릭터가 바라보는 방향과 발사 위치를 설정
+        AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(IgnoredActor); // 발사를 원하는 캐릭터
+        if (MyCharacter)
         {
-            UE_LOG(LogTemp, Warning, TEXT("PlayerController is not available!"));
-            return;
-        }
+            // 캐릭터의 SkeletalMeshComponent를 가져오기
+            USkeletalMeshComponent* SkeletalMeshComponent = MyCharacter->GetMesh();
 
-        // 2. Get Player Camera Manager
-        APlayerCameraManager* CameraManager = PlayerController->PlayerCameraManager;
-        if (!CameraManager)
-        {
-            UE_LOG(LogTemp, Warning, TEXT("CameraManager is not available!"));
-            return;
-        }
+            // 캐릭터의 현재 위치에서 발사
+            FVector CharacterSpawnLocation = SkeletalMeshComponent->GetSocketLocation(FName("WeaponSocket")); // "WeaponSocket"을 원하는 소켓으로 변경
 
-        // MuzzleSocket 위치를 얻고, ProjectileOffset을 더해서 결과를 계산
-        AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(IgnoredActor);
-        USkeletalMeshComponent* SkeletalMeshComponent = MyCharacter ? MyCharacter->GetMesh() : nullptr;
-        if (SkeletalMeshComponent)
-        {
+            FVector ProjectileOffset = FVector(170.0f, 0.0f, 0.0f);  // 발사 위치 오프셋
+
+            // 카메라의 회전값을 얻어옴
             FRotator CameraRotation = CameraManager->GetCameraRotation();
-            FVector Temp = CameraRotation.RotateVector(ProjectileOffset);
-            // 소켓 위치를 가져온 후 오프셋 추가
-            FVector MoveSpawnLocation = SkeletalMeshComponent->GetSocketLocation(FName("MuzzleFlashSocket")) + ProjectileOffset;
 
-            FTransform SpawnTransfrom = UKismetMathLibrary::MakeTransform(MoveSpawnLocation, CameraRotation);
+            // 카메라의 회전값을 바탕으로 발사체 방향 계산
+            FVector RotatedDirection = CameraRotation.RotateVector(ProjectileOffset);
 
+            // 발사 위치 업데이트 (움직이는 캐릭터의 위치에 맞춰)
+            FVector UpdatedSpawnLocation = CharacterSpawnLocation + RotatedDirection;
+
+            // 카메라의 회전값을 SpawnRotation에 반영
+            FRotator AdjustedRotation = CameraRotation;  // 카메라가 바라보는 방향으로 설정
+
+            // 발사체를 해당 위치에서 발사
+            FTransform Transform = UKismetMathLibrary::MakeTransform(UpdatedSpawnLocation, AdjustedRotation);
+
+            // 액터 스폰 파라미터 설정
             FActorSpawnParameters SpawnParams;
-            SpawnParams.Owner = this;
-            SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn; // 충돌을 무시하고 액터 스폰
+            SpawnParams.Owner = this; // Owner 설정 (필요시 설정)
 
-            // 액터 스폰
-            GetWorld()->SpawnActor<AActor>(BP_Projectile_EMP_Vortex, SpawnTransfrom, SpawnParams);
+            // 발사체 액터 스폰
+            AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(
+                BP_Projectile_EMP_Vortex,  // 스폰할 액터의 클래스
+                Transform,
+                SpawnParams
+            );
         }
     }
 }
@@ -165,4 +152,14 @@ void AGnuGrenadeActor::EndOverlap(UPrimitiveComponent* OverlappedComponent, AAct
 
 void AGnuGrenadeActor::DestroyActor()
 {
+    // 타이머 중지
+    GetWorld()->GetTimerManager().ClearTimer(DestroyTimer);
+    GetWorld()->GetTimerManager().ClearTimer(GrenadeTimer);
+
+    // 소멸 이펙트 재생
+    NiagaraComponent->SetAutoDestroy(true); // 소멸 후 자동 삭제 설정
+    NiagaraComponent->Deactivate();        // 이펙트 비활성화
+
+    Destroy();
 }
+
