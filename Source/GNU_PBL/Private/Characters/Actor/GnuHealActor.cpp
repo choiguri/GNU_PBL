@@ -28,6 +28,9 @@ void AGnuHealActor::BeginPlay()
 {
     Super::BeginPlay();
 
+    // 힐 시작
+    GetWorld()->GetTimerManager().SetTimer(DestroyTimer, this, &AGnuHealActor::DestroyActor, 5.0f, false);
+    GetWorld()->GetTimerManager().SetTimer(HealTimer, this, &AGnuHealActor::Heal, 1.0f, true);
 }
 
 void AGnuHealActor::Tick(float DeltaTime)
@@ -41,42 +44,30 @@ void AGnuHealActor::Tick(float DeltaTime)
     }
 }
 
+void AGnuHealActor::Heal()
+{
+
+    GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, TEXT("Heal !"));
+}
+
 void AGnuHealActor::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-    //// Overlap 시 Heal 시작
-    //if (OtherActor && OtherActor->IsA(AGnuMyCharacter::StaticClass()))
-    //{
-    //    if (OtherActor)
-    //    {
-    //        SetActorLocation(OtherActor->GetActorLocation());  // 캐릭터와 동일한 위치로 이펙트 이동
-    //        GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("SetActorLocation!")));
-    //    }
-    //    AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(OtherActor);
-    //    if (MyCharacter)
-    //    {
-    //        // 체력 회복 시작
-    //        GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("Healing started!")));
-    //    }
-    //}
+
 }
 
 void AGnuHealActor::EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-    //// Overlap 끝날 때 Heal 중지
-    //if (OtherActor && OtherActor->IsA(AGnuMyCharacter::StaticClass()))
-    //{
-    //    AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(OtherActor);
-    //    if (MyCharacter)
-    //    {
-    //        // 체력 회복 중지
-    //        GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::Printf(TEXT("Healing stopped!")));
-    //    }
-    //}
 }
 
-void AGnuHealActor::DestroyHeal()
+void AGnuHealActor::DestroyActor()
 {
     // 타이머 중지
-    GetWorld()->GetTimerManager().ClearTimer(DamageHandle);
+    GetWorld()->GetTimerManager().ClearTimer(DestroyTimer);
+    GetWorld()->GetTimerManager().ClearTimer(HealTimer);
+
+    // 소멸 이펙트 재생
+    NiagaraComponent->SetAutoDestroy(true); // 소멸 후 자동 삭제 설정
+    NiagaraComponent->Deactivate();        // 이펙트 비활성화
+
     Destroy();
 }

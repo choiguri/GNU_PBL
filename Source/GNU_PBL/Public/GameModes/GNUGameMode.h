@@ -16,7 +16,7 @@ class GNU_PBL_API AGNUGameMode : public AGameMode
 
 public:
 	AGNUGameMode();
-	virtual void PlayerEliminated(class AGnuCharacter* ElimmedCharacter, class AGNUPlayerController* VictimController, AGNUPlayerController* Monster);
+	virtual void PlayerEliminated(class AGnuMyCharacter* ElimmedCharacter, class AGnuMyPlayerController* VictimController, AController* Monster);
 
-	
+	virtual void RequestRespawn(ACharacter* ElimedCharacter, AController* ElimedController);
 };

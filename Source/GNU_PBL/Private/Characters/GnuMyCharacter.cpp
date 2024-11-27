@@ -40,7 +40,6 @@
 #include "Components/WidgetComponent.h"
 #include "HUD/GNUOverHeadWidget.h"
 #include "Characters/GnuMyPlayerController.h"
-#include "GameModes/GNUGameMode.h"
 #include "HUD/GnuReplicatedHealth.h"
 #include "Components/ProgressBar.h"
 
@@ -49,6 +48,10 @@
 #include "Weapons/GnuCombatComponent.h"
 #include "GNU_PBL/GNU_PBL.h"
 
+
+// GameMode
+#include "GameModes/GNUGameMode.h"
+#include "TimerManager.h"
 
 AGnuMyCharacter::AGnuMyCharacter()
 {
@@ -123,7 +126,8 @@ AGnuMyCharacter::AGnuMyCharacter()
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 
-
+	SpawnCollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+	isHealCoolDown = false;
 }
 
 void AGnuMyCharacter::PlayCameraShake()
@@ -193,6 +197,13 @@ void AGnuMyCharacter::BeginPlay()
 		GNUPlayerController->SetHUDHealth(Health, MaxHealth);
 		GNUPlayerController->SetHUDStamina(Stamina, MaxStaminaa);
 
+	}
+	else
+	{
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("No PlayerController")));
+		}
 	}
 	if (ReplicatedHealthWidget)
 	{
@@ -343,10 +354,6 @@ void AGnuMyCharacter::OnRep_IsSprinting()// 클라이언트가 동기화 되는 
 	// Client의 Implementation 함수에서만 써도 동일한 기능이 작동된다.
 	// -> 다만 Clint 함수 내부에서 사용하면 좀 더 반응 속도가 빠른 반면, OnRep 함수에서 쓰면 서버와 클라이언트간의 일관성을 유지할 수 있다.
 	UpdateSprintState(isSprint); // 스프린트 상태가 변경된 것을 클라이언트에서 반영
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Blue, FString::Printf(TEXT("OnRep_IsSprinting")));
-	}
 }
 
 void AGnuMyCharacter::UpdateSprintState(bool bIsSprinting)
@@ -550,20 +557,36 @@ void AGnuMyCharacter::SpawnHeal()
 {
 	if (HealClass)
 	{
-	
-		FVector SpawnLocation = GetActorLocation() + FVector(0, 0, 500.0f);
-		FRotator SpawnRotation = GetActorRotation();
-
-		FTransform SpawnTransform(SpawnRotation, SpawnLocation);
-
-		AGnuHealActor* Heal = GetWorld()->SpawnActor<AGnuHealActor>(HealClass, SpawnTransform);
-
-		if (Heal)
+		if (!isHealCoolDown)
 		{
-			Heal->SetOwner(this); // 이거 안해주면 GnuHealActor에서 onwer가 누군지 몰라서 오류가 난다
+			FVector SpawnLocation = GetActorLocation() + FVector(0, 0, 500.0f);
+			FRotator SpawnRotation = GetActorRotation();
+
+			FTransform SpawnTransform(SpawnRotation, SpawnLocation);
+
+			AGnuHealActor* Heal = GetWorld()->SpawnActor<AGnuHealActor>(HealClass, SpawnTransform);
+
+			if (Heal)
+			{
+				StartCooldown();
+				Heal->SetOwner(this); // 이거 안해주면 GnuHealActor에서 onwer가 누군지 몰라서 오류가 난다
+			}
 		}
 	}
 }
+
+void AGnuMyCharacter::StartCooldown()
+{
+	isHealCoolDown = true;
+	GetWorld()->GetTimerManager().SetTimer(HealCoolDownTimer, this, &AGnuMyCharacter::EndCooldown, 10.0f, false);
+}
+
+void AGnuMyCharacter::EndCooldown()
+{
+	isHealCoolDown = false; // 쿨타임 해제
+	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, TEXT("Heal Cooldown ended!"));
+}
+
 // -------------------------------------------------------------------------
 
 //--------------------------- Arrow Skill --------------------------------
@@ -571,15 +594,21 @@ void AGnuMyCharacter::SpawnArrow()
 {
 	if (ArrowClass)
 	{
-		FVector SpawnLocation = Gun->GetMesh()->GetSocketLocation("MuzzleFlashSocket");
-		FRotator SpawnRotation = Gun->GetMesh()->GetSocketRotation("MuzzleFlashSocket");
-		FTransform SpawnTransform(SpawnRotation, SpawnLocation);
-
-		AGnuProjectileActor* Arrow = GetWorld()->SpawnActor<AGnuProjectileActor>(ArrowClass, SpawnTransform);
-		if (Arrow)
+		if (GunClass)
 		{
-			Arrow->SetOwner(this);
-			Arrow->LaunchProjectile(this);
+			FVector SpawnLocation = Combat->EquippedWeapon->GetMesh()->GetSocketLocation("MuzzleFlashSocket");
+			FRotator SpawnRotation = Combat->EquippedWeapon->GetMesh()->GetSocketRotation("MuzzleFlashSocket");
+
+			/*FVector SpawnLocation = Gun->GetMesh()->GetSocketLocation("MuzzleFlashSocket");
+			FRotator SpawnRotation = Gun->GetMesh()->GetSocketRotation("MuzzleFlashSocket");*/
+			FTransform SpawnTransform(SpawnRotation, SpawnLocation);
+
+			AGnuProjectileActor* Arrow = GetWorld()->SpawnActor<AGnuProjectileActor>(ArrowClass, SpawnTransform);
+			if (Arrow)
+			{
+				Arrow->SetOwner(this);
+				Arrow->LaunchProjectile(this);
+			}
 		}
 	}
 }
@@ -590,15 +619,15 @@ void AGnuMyCharacter::SpawnGrenade()
 {
 	if (GrenadeClass)
 	{
-		FVector SpawnLocation = Gun->GetMesh()->GetSocketLocation("MuzzleFlashSocket");
-		FRotator SpawnRotation = Gun->GetMesh()->GetSocketRotation("MuzzleFlashSocket");
+		FVector SpawnLocation = Combat->EquippedWeapon->GetMesh()->GetSocketLocation("MuzzleFlashSocket");
+		FRotator SpawnRotation = Combat->EquippedWeapon->GetMesh()->GetSocketRotation("MuzzleFlashSocket");
 		FTransform SpawnTransform(SpawnRotation, SpawnLocation);
 
 		AGnuGrenadeActor* Grenade = GetWorld()->SpawnActor<AGnuGrenadeActor>(GrenadeClass, SpawnTransform);
 		if (Grenade)
 		{
 			Grenade->SetOwner(this);
-			Grenade->LaunchProjectile(this);
+			Grenade->LaunchProjectile(this, SpawnLocation, SpawnRotation);
 		}
 	}
 }
@@ -944,6 +973,17 @@ void AGnuMyCharacter::PlayHitReactMontage()
 	}
 }
 
+void AGnuMyCharacter::PlayElimMontage()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && ElimMontage)
+	{
+		AnimInstance->Montage_Play(ElimMontage);
+	}
+}
+
+
+
 AGnuWeapon* AGnuMyCharacter::GetEquippedWeapon()
 {
 	if (Combat == nullptr) return nullptr;
@@ -987,6 +1027,16 @@ void AGnuMyCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UD
 	PlayHitReactMontage();
 	UpdateHUDHealth();
 
+	if (Health == 0.f)
+	{
+		AGNUGameMode* GnuGameMode = GetWorld()->GetAuthGameMode<AGNUGameMode>();
+		if (GnuGameMode)
+		{
+			GNUPlayerController = GNUPlayerController == nullptr ? Cast<AGnuMyPlayerController>(Controller) : GNUPlayerController;
+			AController* MonsterController = Cast<AController>(InstigatorController);
+			GnuGameMode->PlayerEliminated(this, GNUPlayerController, MonsterController);
+		}
+	}
 }
 
 void AGnuMyCharacter::UpdateHUDHealth()
@@ -1022,11 +1072,11 @@ void AGnuMyCharacter::OnRep_Stamina()
 
 }
 
+
 void AGnuMyCharacter::SetReplicatedHealth()
 {
 	MultiCastSetHealth();
 }
-
 
 void AGnuMyCharacter::MultiCastSetHealth_Implementation()
 {
@@ -1043,6 +1093,34 @@ void AGnuMyCharacter::MultiCastSetHealth_Implementation()
 		}
 	}
 }
+
+void AGnuMyCharacter::Elim()
+{
+	MultiCastElim();
+
+	// GameMode는 서버에서만 값을 가짐 
+	GetWorldTimerManager().SetTimer(
+		ElimTimer,
+		this,
+		&AGnuMyCharacter::ElimTimerFinished,
+		ElimDelay
+	);
+}
+
+void AGnuMyCharacter::MultiCastElim_Implementation()
+{
+	PlayElimMontage();
+}
+
+void AGnuMyCharacter::ElimTimerFinished()
+{
+	AGNUGameMode* GnuGameMode = GetWorld()->GetAuthGameMode<AGNUGameMode>();
+	if (GnuGameMode)
+	{
+		GnuGameMode->RequestRespawn(this, Controller);
+	}
+}
+
 
 void AGnuMyCharacter::ClientSetName_Implementation(const FString& Name)
 {

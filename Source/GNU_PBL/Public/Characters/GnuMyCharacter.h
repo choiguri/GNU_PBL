@@ -141,7 +141,11 @@ public:
 	// ------------------------------------- Heal Skill ----------------------------------------
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
 	TSubclassOf<class AGnuHealActor> HealClass;
+	FTimerHandle HealCoolDownTimer;
+	bool isHealCoolDown;
 	void SpawnHeal();
+	void StartCooldown();
+	void EndCooldown();
 	// -----------------------------------------------------------------------------------------
 
 	// ------------------------------------- Grenade Skill ----------------------------------------
@@ -256,7 +260,7 @@ private:
 public:
 	UPROPERTY(VisibleAnywhere)
 	class UGnuCombatComponent* Combat;
-	
+
 	// Implementation으로 정의해서 밑줄이 뜨더라도 오류가 아님
 	UFUNCTION(Client, Reliable)
 	void ClientSetName(const FString& Name);
@@ -270,10 +274,6 @@ public:
 	void MultiCastSetHealth();
 
 
-	//
-	// GNUGameMode와 관련
-	//
-	void Elim();
 
 	// 기존
 	/*UFUNCTION(Server, Reliable)
@@ -330,6 +330,9 @@ private:
 
 	void HideCameraIfCharacterClose();
 
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	UAnimMontage* ElimMontage;
+
 
 public:
 	// 복제를 위한 변수 저장
@@ -355,5 +358,21 @@ public:
 
 	FVector GetHitTarget() const;
 
+	//
+	// GNUGameMode와 관련
+	//
+	void Elim();
 
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiCastElim();
+
+	void PlayElimMontage();
+
+	FTimerHandle ElimTimer;
+
+	// 부활 시간
+	UPROPERTY(EditDefaultsOnly)
+	float ElimDelay = 3.f;
+
+	void ElimTimerFinished();
 };

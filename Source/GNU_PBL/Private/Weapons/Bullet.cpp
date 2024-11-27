@@ -34,7 +34,6 @@ ABullet::ABullet()
 
 	TrailParticle = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("TrailParticle"));
 	TrailParticle->SetupAttachment(Root);
-	
 	movementComp = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("MovementComp"));
 	movementComp->InitialSpeed = 10000;
 	movementComp->bShouldBounce = false;

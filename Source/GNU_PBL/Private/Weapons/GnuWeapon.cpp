@@ -164,6 +164,11 @@ void AGnuWeapon::ShowPickupWidget(bool bShowWidget)
 	}
 }
 
+USkeletalMeshComponent* AGnuWeapon::GetMesh()
+{
+	return WeaponMesh;
+}
+
 void AGnuWeapon::Fire(const FVector& HitTarget)
 {
 	if (FireAnimation)
