@@ -31,8 +31,28 @@ public:
 	//UPROPERTY()
 	//AGnuMonster* GnuMonster;
 
+	// Behaviortree 변수들 레플리케이트
+	UPROPERTY(ReplicatedUsing = OnRep_TargetActor)
+	AActor* TargetActor;
+
+	UPROPERTY(ReplicatedUsing = OnRep_TargetLocation)
+	FVector TargetLocation;
+
+	UPROPERTY(ReplicatedUsing = OnRep_DistToTarget)
+	float TargetDist;
+
 protected:
 	virtual void BeginPlay() override;
+
+	UFUNCTION()
+	void OnRep_TargetActor();
+
+	UFUNCTION()
+	void OnRep_TargetLocation();
+
+	UFUNCTION()
+	void OnRep_DistToTarget();
+
 
 
 	// 인식 시키는 컴포넌트 추가
@@ -63,6 +83,8 @@ protected:
 	UFUNCTION()
 	void OnTargetDetected(AActor* Actor, FAIStimulus const Stimulus);
 
+	// 멀티
+	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 private:
 	

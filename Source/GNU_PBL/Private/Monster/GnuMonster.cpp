@@ -30,14 +30,12 @@
 #include "Kismet/GameplayStatics.h"
 #include <Net/UnrealNetwork.h>
 #include "GNU_PBL/GNU_PBL.h"	// SkeletalMesh 채널 설정
-
 // 캐릭터
 #include "Characters/GnuMyCharacter.h"
 
 
 AGnuMonster::AGnuMonster()
 {
-	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	// 컨트롤러의 회전 사용 여부
@@ -68,6 +66,7 @@ AGnuMonster::AGnuMonster()
 
 	// MovementComponent 리플리케이션 활성화
 	GetCharacterMovement()->SetIsReplicated(true);
+	SetReplicateMovement(true);
 	bReplicates = true; // Actor 리플리케이션 활성화
 	bAlwaysRelevant = true; // 항상 네트워크에서 중요
 
@@ -615,7 +614,6 @@ void AGnuMonster::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedE
 	}
 }
 #endif
-
 
 
 // 공격 콜리전 활성화 부분

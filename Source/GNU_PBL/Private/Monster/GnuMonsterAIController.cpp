@@ -8,16 +8,19 @@
 #include "Characters/GnuMyCharacter.h"
 #include "Monster/GnuMonster.h"
 #include "TimerManager.h"
+#include "Net/UnrealNetwork.h"
 
 AGnuMonsterAIController::AGnuMonsterAIController()
 {
     SetUpPerceptionComponent();
+
+    bReplicates = true;
+    SetReplicateMovement(true);
 }
 
 void AGnuMonsterAIController::BeginPlay()
 {
     Super::BeginPlay();
-
 
     // BehaviorTree 실행
     if (AIBehavior != nullptr)
@@ -29,6 +32,19 @@ void AGnuMonsterAIController::BeginPlay()
             BlackboardComp->SetValueAsVector(TEXT("StartLocation"), GetPawn()->GetActorLocation());
         }
     }
+
+    if (HasAuthority())
+    {
+        TargetLocation = FVector::ZeroVector;
+        TargetDist = 0.0f;
+
+        GetBlackboardComponent()->SetValueAsVector(TEXT("PlayerLocation"), TargetLocation);
+        GetBlackboardComponent()->SetValueAsFloat(TEXT("DistToTarget"), TargetDist);
+
+    }
+
+    SetReplicates(true);
+
 
     // 타겟 변경 시간 설정
     TargetUpdateInterval = 15.f;
@@ -49,18 +65,17 @@ void AGnuMonsterAIController::Tick(float DeltaSeconds)
     if (CurrentTarget)
     {
         // 타겟의 위치를 계속 업데이트
-        /*GetBlackboardComponent()->SetValueAsObject(FName("TargetActor"), CurrentTarget);*/
-        GetBlackboardComponent()->SetValueAsVector(TEXT("PlayerLocation"), CurrentTarget->GetActorLocation());
+        GetBlackboardComponent()->SetValueAsVector(TEXT("PlayerLocation"), TargetActor->GetActorLocation());
 
         // GnuMonster의 위치 가져오기
         AGnuMonster* MonsterActor = Cast<AGnuMonster>(GetPawn());
         if (MonsterActor)
         {
             // 두 Actor 간의 거리 계산
-            float Distance = FVector::Dist(MonsterActor->GetActorLocation(), CurrentTarget->GetActorLocation());
+            TargetDist = FVector::Dist(MonsterActor->GetActorLocation(), TargetActor->GetActorLocation());
 
             // DistToTarget 블랙보드 키에 저장
-            GetBlackboardComponent()->SetValueAsFloat(TEXT("DistToTarget"), Distance);
+            GetBlackboardComponent()->SetValueAsFloat(TEXT("DistToTarget"), TargetDist);
         }
     }
     else if (bCanRetry && CurrentTarget == nullptr)
@@ -196,14 +211,33 @@ void AGnuMonsterAIController::StartRetryCooldown()
 }
 
 
-
 // 새 타겟 지정
 void AGnuMonsterAIController::SetNewTarget(ACharacter* NewTarget)
 {
-    GetBlackboardComponent()->SetValueAsObject(FName("TargetActor"), NewTarget);
-    GetBlackboardComponent()->SetValueAsVector(TEXT("PlayerLocation"), NewTarget->GetActorLocation());
+    GEngine->AddOnScreenDebugMessage(-1, 4, FColor::Yellow, TEXT("SetNewTarget Function Call!"));
+    if (HasAuthority())
+    {
+        TargetActor = NewTarget;
 
-    UE_LOG(LogTemp, Warning, TEXT("New TargetActor set: %s"), *NewTarget->GetName());
+        GetBlackboardComponent()->SetValueAsObject(TEXT("TargetActor"), TargetActor);
+    }
+}
+
+void AGnuMonsterAIController::OnRep_TargetActor()
+{
+    GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Black, TEXT("OnRep_TargetActor"));
+
+    GetBlackboardComponent()->SetValueAsObject("TargetActor", TargetActor);
+}
+
+void AGnuMonsterAIController::OnRep_TargetLocation()
+{
+    GetBlackboardComponent()->SetValueAsVector(TEXT("PlayerLocation"), TargetLocation);
+}
+
+void AGnuMonsterAIController::OnRep_DistToTarget()
+{
+    GetBlackboardComponent()->SetValueAsFloat(TEXT("DistToTarget"), TargetDist);
 }
 
 // 가까운 캐릭터 찾기
@@ -247,4 +281,19 @@ void AGnuMonsterAIController::UpdateTarget()
     {
         SetNewTarget(NewTarget);
     }
+}
+
+
+void AGnuMonsterAIController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+    // TargetActor 리플리케이션
+    DOREPLIFETIME(AGnuMonsterAIController, TargetActor);
+
+    // TargetLocation 리플리케이션
+    DOREPLIFETIME(AGnuMonsterAIController, TargetLocation);
+
+    // TargetDist 리플리케이션
+    DOREPLIFETIME(AGnuMonsterAIController, TargetDist);
 }
