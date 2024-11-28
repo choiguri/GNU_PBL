@@ -17,11 +17,12 @@ AGnuWeapon::AGnuWeapon()
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
 
-	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
-	SetRootComponent(Root);
+	/*Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+	SetRootComponent(Root);*/
 
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
-	WeaponMesh->SetupAttachment(Root);
+	/*WeaponMesh->SetupAttachment(Root);*/
+	SetRootComponent(WeaponMesh);
 
 	// �浹 ����
 	WeaponMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
@@ -30,13 +31,15 @@ AGnuWeapon::AGnuWeapon()
 
 	// ĳ���Ϳ� ��ġ�� �κ� ���� �ֿ� �� ����� Sphere
 	AreaSphere = CreateDefaultSubobject<USphereComponent>(TEXT("AreaSphere"));
-	AreaSphere->SetupAttachment(WeaponMesh);
+	/*AreaSphere->SetupAttachment(WeaponMesh);*/
+	AreaSphere->SetupAttachment(RootComponent);
 	AreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	// �ֿ� �� ������ Ű ���� ����
 	PickupWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("PickupWidget"));
-	PickupWidget->SetupAttachment(WeaponMesh);
+	/*PickupWidget->SetupAttachment(WeaponMesh);*/
+	PickupWidget->SetupAttachment(RootComponent);
 }
 
 
@@ -122,6 +125,18 @@ void AGnuWeapon::SetWeaponState(EWeaponState State)
 	case EWeaponState::EWS_Equipped :
 		ShowPickupWidget(false);
 		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		WeaponMesh->SetSimulatePhysics(false);
+		WeaponMesh->SetEnableGravity(false);
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		break;
+	case EWeaponState::EWS_Dropped:
+		if (HasAuthority())
+		{
+			AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		}
+		WeaponMesh->SetSimulatePhysics(true);
+		WeaponMesh->SetEnableGravity(true);
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		break;
 	}
 }
@@ -154,6 +169,14 @@ void AGnuWeapon::OnRep_WeaponState()
 	{
 	case EWeaponState::EWS_Equipped :
 		ShowPickupWidget(false);
+		WeaponMesh->SetSimulatePhysics(false);
+		WeaponMesh->SetEnableGravity(false);
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		break;
+	case EWeaponState::EWS_Dropped :
+		WeaponMesh->SetSimulatePhysics(true);
+		WeaponMesh->SetEnableGravity(true);
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		break;
 	}
 }
@@ -179,6 +202,16 @@ void AGnuWeapon::Fire(const FVector& HitTarget)
 		WeaponMesh->PlayAnimation(FireAnimation, false);
 	}
 	SpendAmmo();
+}
+
+void AGnuWeapon::Dropped()
+{
+	SetWeaponState(EWeaponState::EWS_Dropped);
+
+	FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);
+	WeaponMesh->DetachFromComponent(DetachRules);
+
+	SetOwner(nullptr);
 }
 
 

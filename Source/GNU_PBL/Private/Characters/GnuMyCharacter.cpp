@@ -1105,6 +1105,11 @@ void AGnuMyCharacter::MultiCastSetHealth_Implementation()
 
 void AGnuMyCharacter::Elim()
 {
+	if (Combat && Combat->EquippedWeapon)
+	{
+		Combat->EquippedWeapon->Dropped();
+	}
+
 	MultiCastElim();
 
 	// GameMode는 서버에서만 값을 가짐 
@@ -1114,6 +1119,8 @@ void AGnuMyCharacter::Elim()
 		&AGnuMyCharacter::ElimTimerFinished,
 		ElimDelay
 	);
+
+	
 }
 
 void AGnuMyCharacter::MultiCastElim_Implementation()
@@ -1123,6 +1130,16 @@ void AGnuMyCharacter::MultiCastElim_Implementation()
 	SetDynamicDissolveMaterialInstances();
 
 	StartDissolve();
+	// Disable Movement
+	GetCharacterMovement()->DisableMovement();
+	GetCharacterMovement()->StopMovementImmediately();
+	if (GNUPlayerController)
+	{
+		DisableInput(GNUPlayerController);
+	}
+	// Disable Collision
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void AGnuMyCharacter::ElimTimerFinished()

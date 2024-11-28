@@ -31,6 +31,8 @@ public:
 	USkeletalMeshComponent* GetMesh(); // 11.26
 	virtual void Fire(const FVector& HitTarget);
 
+	void Dropped();
+
 	// Crosshair 
 	UPROPERTY(EditAnywhere, Category = "Crosshairs")
 	class UTexture2D* CrosshairCenter;

@@ -169,6 +169,14 @@ void UGnuCombatComponent::OnRep_EquippedWeapon()
 {
 	if (EquippedWeapon && GnuCharacter)
 	{
+		EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+		const USkeletalMeshSocket* HandSocket = GnuCharacter->GetMesh()->GetSocketByName(FName("WeaponSocket"));
+
+		if (HandSocket)
+		{
+			HandSocket->AttachActor(EquippedWeapon, GnuCharacter->GetMesh());
+		}
+
 		GnuCharacter->GetCharacterMovement()->bOrientRotationToMovement = false;
 		GnuCharacter->bUseControllerRotationYaw = true;
 	}
@@ -283,12 +291,17 @@ void UGnuCombatComponent::ReloadFinished(bool bPressed)
 // 무기 장착
 void UGnuCombatComponent::EquipWeapon(AGnuWeapon* WeaponToEquip)
 {
-	if (GEngine)
+	if (GnuCharacter == nullptr) return;
+
+	// 이미 무기를 장착 중이면 무기를 버린다
+	if (EquippedWeapon != nullptr)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("EquipWeapon")));
+		EquippedWeapon->Dropped();
+		EquippedWeapon = nullptr;
+		return;
 	}
-	if (GnuCharacter == nullptr || WeaponToEquip == nullptr) return;
-	if (EquippedWeapon != nullptr) return;
+
+	if (WeaponToEquip == nullptr) return;
 
 	EquippedWeapon = WeaponToEquip;
 	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
