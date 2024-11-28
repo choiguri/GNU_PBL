@@ -128,6 +128,13 @@ AGnuMyCharacter::AGnuMyCharacter()
 
 	SpawnCollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 	isHealCoolDown = false;
+
+
+	DissolveTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("DissolveTimelineComponent"));
+
+	
+	
+	
 }
 
 void AGnuMyCharacter::PlayCameraShake()
@@ -1112,6 +1119,10 @@ void AGnuMyCharacter::Elim()
 void AGnuMyCharacter::MultiCastElim_Implementation()
 {
 	PlayElimMontage();
+
+	SetDynamicDissolveMaterialInstances();
+
+	StartDissolve();
 }
 
 void AGnuMyCharacter::ElimTimerFinished()
@@ -1144,6 +1155,77 @@ void AGnuMyCharacter::ServerSetPlayerName_Implementation(const FString& PlayerNa
 		ClientSetName(PlayerName);
 	}
 }
+
+void AGnuMyCharacter::UpdateDissovleMaterial(float DissolveValue)
+{
+	if (DissolveMaterialInstance0 && DissolveMaterialInstance1 && DissolveMaterialInstance2 && DissolveMaterialInstance3 && DissolveMaterialInstance4
+		&& DissolveMaterialInstance5 && DissolveMaterialInstance6 && DissolveMaterialInstance7)
+	{
+		DynamicDissolveMaterialInstance0->SetScalarParameterValue(TEXT("Dissolve"), DissolveValue);
+		DynamicDissolveMaterialInstance1->SetScalarParameterValue(TEXT("Dissolve"), DissolveValue);
+		DynamicDissolveMaterialInstance2->SetScalarParameterValue(TEXT("Dissolve"), DissolveValue);
+		DynamicDissolveMaterialInstance3->SetScalarParameterValue(TEXT("Dissolve"), DissolveValue);
+		DynamicDissolveMaterialInstance4->SetScalarParameterValue(TEXT("Dissolve"), DissolveValue);
+		DynamicDissolveMaterialInstance5->SetScalarParameterValue(TEXT("Dissolve"), DissolveValue);
+		DynamicDissolveMaterialInstance6->SetScalarParameterValue(TEXT("Dissolve"), DissolveValue);
+		DynamicDissolveMaterialInstance7->SetScalarParameterValue(TEXT("Dissolve"), DissolveValue);
+	}
+}
+
+void AGnuMyCharacter::StartDissolve()
+{
+	DissolveTrack.BindDynamic(this, &AGnuMyCharacter::UpdateDissovleMaterial);
+	if (DissolveCurve && DissolveTimeline)
+	{
+		DissolveTimeline->AddInterpFloat(DissolveCurve, DissolveTrack);
+		DissolveTimeline->Play();
+	}
+}
+
+void AGnuMyCharacter::SetDynamicDissolveMaterialInstances()
+{
+	if (DissolveMaterialInstance0 && DissolveMaterialInstance1 && DissolveMaterialInstance2 && DissolveMaterialInstance3 && DissolveMaterialInstance4
+		&& DissolveMaterialInstance5 && DissolveMaterialInstance6 && DissolveMaterialInstance7)
+	{
+		DynamicDissolveMaterialInstance0 = UMaterialInstanceDynamic::Create(DissolveMaterialInstance0, this);
+		DynamicDissolveMaterialInstance1 = UMaterialInstanceDynamic::Create(DissolveMaterialInstance1, this);
+		DynamicDissolveMaterialInstance2 = UMaterialInstanceDynamic::Create(DissolveMaterialInstance2, this);
+		DynamicDissolveMaterialInstance3 = UMaterialInstanceDynamic::Create(DissolveMaterialInstance3, this);
+		DynamicDissolveMaterialInstance4 = UMaterialInstanceDynamic::Create(DissolveMaterialInstance4, this);
+		DynamicDissolveMaterialInstance5 = UMaterialInstanceDynamic::Create(DissolveMaterialInstance5, this);
+		DynamicDissolveMaterialInstance6 = UMaterialInstanceDynamic::Create(DissolveMaterialInstance6, this);
+		DynamicDissolveMaterialInstance7 = UMaterialInstanceDynamic::Create(DissolveMaterialInstance7, this);
+
+		GetMesh()->SetMaterial(0, DynamicDissolveMaterialInstance0);
+		GetMesh()->SetMaterial(1, DynamicDissolveMaterialInstance1);
+		GetMesh()->SetMaterial(2, DynamicDissolveMaterialInstance2);
+		GetMesh()->SetMaterial(3, DynamicDissolveMaterialInstance3);
+		GetMesh()->SetMaterial(4, DynamicDissolveMaterialInstance4);
+		GetMesh()->SetMaterial(5, DynamicDissolveMaterialInstance5);
+		GetMesh()->SetMaterial(6, DynamicDissolveMaterialInstance6);
+		GetMesh()->SetMaterial(7, DynamicDissolveMaterialInstance7);
+
+		DynamicDissolveMaterialInstance0->SetScalarParameterValue(TEXT("Dissolve"), 0.55f);
+		DynamicDissolveMaterialInstance0->SetScalarParameterValue(TEXT("Glow"), 200.f);
+		DynamicDissolveMaterialInstance1->SetScalarParameterValue(TEXT("Dissolve"), 0.55f);
+		DynamicDissolveMaterialInstance1->SetScalarParameterValue(TEXT("Glow"), 200.f);
+		DynamicDissolveMaterialInstance2->SetScalarParameterValue(TEXT("Dissolve"), 0.55f);
+		DynamicDissolveMaterialInstance2->SetScalarParameterValue(TEXT("Glow"), 200.f);
+		DynamicDissolveMaterialInstance3->SetScalarParameterValue(TEXT("Dissolve"), 0.55f);
+		DynamicDissolveMaterialInstance3->SetScalarParameterValue(TEXT("Glow"), 200.f);
+		DynamicDissolveMaterialInstance4->SetScalarParameterValue(TEXT("Dissolve"), 0.55f);
+		DynamicDissolveMaterialInstance4->SetScalarParameterValue(TEXT("Glow"), 200.f);
+		DynamicDissolveMaterialInstance5->SetScalarParameterValue(TEXT("Dissolve"), 0.55f);
+		DynamicDissolveMaterialInstance5->SetScalarParameterValue(TEXT("Glow"), 200.f);
+		DynamicDissolveMaterialInstance6->SetScalarParameterValue(TEXT("Dissolve"), 0.55f);
+		DynamicDissolveMaterialInstance6->SetScalarParameterValue(TEXT("Glow"), 200.f);
+		DynamicDissolveMaterialInstance7->SetScalarParameterValue(TEXT("Dissolve"), 0.55f);
+		DynamicDissolveMaterialInstance7->SetScalarParameterValue(TEXT("Glow"), 200.f);
+
+	}
+}
+
+
 
 
 /* ----------- 서버 - 클라이언트 동기화 설명 -------------------
