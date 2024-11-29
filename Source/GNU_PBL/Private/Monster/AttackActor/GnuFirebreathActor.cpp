@@ -14,8 +14,7 @@ AGnuFirebreathActor::AGnuFirebreathActor()
 {
 	PrimaryActorTick.bCanEverTick = true;
     
-
-    // SecondaryBoxComponent 생성
+    // ProjectileBoxComponent 생성 (기존 BoxComponent 아님)
     ProjectileBoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("ProjectileBoxComponent"));
     ProjectileBoxComponent->SetupAttachment(RootComponent);
 
@@ -40,6 +39,7 @@ AGnuFirebreathActor::AGnuFirebreathActor()
     // NiagaraComponent 초기화 및 설정
     NiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraComponent"));
     NiagaraComponent->SetupAttachment(BoxComponent);
+    //NiagaraComponent->SetIsReplicated(true);  // 네트워크에서 복제 활성화
 
     // 부모 클래스에서 상속받은 BoxComponent를 초기화
     if (BoxComponent)
@@ -59,10 +59,17 @@ void AGnuFirebreathActor::BeginPlay()
     Super::BeginPlay();
 
     // 초기화 시 파티클 활성화
-    if (NiagaraComponent)
+    if (NiagaraComponent && HasAuthority())
     {
         NiagaraComponent->Activate();
     }
+    else
+    {
+        NiagaraComponent->Deactivate();
+        DestroyActor();
+    }
+
+
 
     if (ProjectileBoxComponent)
     {
@@ -95,12 +102,12 @@ void AGnuFirebreathActor::DestroyFirebreath()
 {
     if (NiagaraComponent)
     {
-        NiagaraComponent->Deactivate(); // 새로운 파티클 생성을 중단
-        NiagaraComponent->SetAutoDestroy(true); // 파티클이 모두 끝나면 컴포넌트 삭제
+        NiagaraComponent->Deactivate();  // 파티클 비활성화
+        NiagaraComponent->SetAutoDestroy(true); // 파티클이 끝나면 삭제
     }
 
-    // 파티클 소멸 후 액터 삭제를 위한 타이머 설정
-    GetWorld()->GetTimerManager().SetTimer(DestroyActorTimerHandle, this, &AGnuFirebreathActor::DestroyActor, 2.0f, false); // 2초 지연
+    // 서버에서만 타이머를 설정하여 액터 삭제
+    GetWorld()->GetTimerManager().SetTimer(DestroyActorTimerHandle, this, &AGnuFirebreathActor::DestroyActor, 2.0f, false);
 }
 
 void AGnuFirebreathActor::DestroyActor()
@@ -112,15 +119,14 @@ void AGnuFirebreathActor::BeginOverlap(UPrimitiveComponent* OverlappedComponent,
 {
     if (OtherActor && (OtherActor != this))
     {
-        // 충돌한 액터가 벽이나 캐릭터일 때 파이어볼 삭제
         ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
         if (OwnerCharacter)
         {
             AController* OwnerController = OwnerCharacter->Controller;
-            UGameplayStatics::ApplyDamage(OtherActor, Damage, OwnerController, this, DamageType);
-            GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Black, TEXT("Apply Damage!!"));
+            UGameplayStatics::ApplyDamage(OtherActor, GetDamage(), OwnerController, this, DamageType);
+            GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Black, TEXT("Apply Damage!!"));
         }
 
-        GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Yellow, TEXT("Begin Overlap with : ") + OtherActor->GetName());
+        GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Magenta, TEXT("Begin Overlap with : ") + OtherActor->GetName());
     }
 }

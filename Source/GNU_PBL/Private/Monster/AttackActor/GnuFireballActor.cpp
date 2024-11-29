@@ -34,10 +34,6 @@ AGnuFireballActor::AGnuFireballActor()
         BoxComponent->SetCollisionResponseToAllChannels(ECR_Ignore); // 모든 채널에 대해 무시
         BoxComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap); // 캐릭터에 대해 오버랩 허용
     }
-
-    // 상속 받아 데미지 정의
-    DamageType = UDamageType::StaticClass();
-    Damage = 5.0f;
 }
 
 void AGnuFireballActor::BeginPlay()
@@ -88,7 +84,7 @@ void AGnuFireballActor::BeginOverlap(UPrimitiveComponent* OverlappedComponent, A
         if (OwnerCharacter)
         {
             AController* OwnerController = OwnerCharacter->Controller;
-            UGameplayStatics::ApplyDamage(OtherActor, Damage, OwnerController, this, DamageType);
+            UGameplayStatics::ApplyDamage(OtherActor, GetDamage(), OwnerController, this, DamageType);
             GEngine->AddOnScreenDebugMessage(-1, 4, FColor::Black, TEXT("Apply Damage!!"));
         }
 

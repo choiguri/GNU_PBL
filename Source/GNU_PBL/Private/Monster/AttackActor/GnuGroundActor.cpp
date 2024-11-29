@@ -15,16 +15,20 @@ AGnuGroundActor::AGnuGroundActor()
 
 void AGnuGroundActor::BeginPlay()
 {
-    // 충돌을 위해 이벤트 바인딩
-    if (BoxComponent)
-    {
-        BoxComponent->OnComponentHit.AddDynamic(this, &AGnuGroundActor::OnHit);
-    }
+    //// 충돌을 위해 이벤트 바인딩
+    //if (BoxComponent)
+    //{
+    //    BoxComponent->OnComponentHit.AddDynamic(this, &AGnuGroundActor::OnHit);
+    //}
 
     // 초기화 시 파티클 활성화
-    if (NiagaraComponent)
+    if (NiagaraComponent && HasAuthority())
     {
         NiagaraComponent->Activate();
+    }
+    else
+    {
+        NiagaraComponent->Deactivate();
     }
 
     // 브레스는 따로 삭제 함수 구현할 것

@@ -9,6 +9,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "KismetAnimationLibrary.h"
 #include "MotionWarpingComponent.h"
+#include "Net/UnrealNetwork.h"
 
 
 // 애니메이션 상태 업데이트 로직 작성하는 곳
@@ -33,29 +34,39 @@ void UGnuMonsterAnimInstance::NativeInitializeAnimation()
 
 void UGnuMonsterAnimInstance::NativeThreadSafeUpdateAnimation(float DeltaSeconds)
 {
+    if (!MonsterOwner)
+    {
+        MonsterOwner = Cast<AGnuMonster>(TryGetPawnOwner());
+        if (MonsterOwner)
+        {
+            MosnterMovementComponent = MonsterOwner->GetCharacterMovement();
+        }
+    }
+
     if (!MonsterOwner || !MosnterMovementComponent)
     {
         return;
     }
 
-    GroundSpeed = MonsterOwner->GetVelocity().Size2D();
+    // 속도 받아오기
+    if (MonsterOwner)
+    {
+        Speed = MonsterOwner->GroundSpeed;
+    }
+
+    /*SetGroundSpeed();*/
     Direction = UKismetAnimationLibrary::CalculateDirection(MonsterOwner->GetVelocity(), MonsterOwner->GetActorRotation());
 }
 
 
+void UGnuMonsterAnimInstance::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+    DOREPLIFETIME(UGnuMonsterAnimInstance, Direction);
+}
 
 void UGnuMonsterAnimInstance::PlayMontage(UAnimMontage* MontageToPlay)
-{
-    Server_PlayMontage(MontageToPlay);
-}
-
-void UGnuMonsterAnimInstance::Server_PlayMontage_Implementation(UAnimMontage* MontageToPlay)
-{
-    Multicast_PlayMontage(MontageToPlay);
-}
-
-
-void UGnuMonsterAnimInstance::Multicast_PlayMontage_Implementation(UAnimMontage* MontageToPlay)
 {
     if (MontageToPlay == nullptr)
     {
@@ -82,6 +93,39 @@ void UGnuMonsterAnimInstance::Multicast_PlayMontage_Implementation(UAnimMontage*
     Montage_SetEndDelegate(MontageEndedDelegate, MontageToPlay);
 }
 
+//void UGnuMonsterAnimInstance::Server_PlayMontage_Implementation(UAnimMontage* MontageToPlay)
+//{
+//    Multicast_PlayMontage(MontageToPlay);
+//}
+//
+//
+//void UGnuMonsterAnimInstance::Multicast_PlayMontage_Implementation(UAnimMontage* MontageToPlay)
+//{
+//    if (MontageToPlay == nullptr)
+//    {
+//        return;
+//    }
+//
+//    // 현재 몽타주가 재생 중인지 확인
+//    if (Montage_IsPlaying(MontageToPlay))
+//    {
+//        GEngine->AddOnScreenDebugMessage(1, 4, FColor::Red, TEXT("Playing Montage!!"));
+//        return;
+//    }
+//
+//    if (bIsMontageEnded || bIsDead)
+//    {
+//        Montage_Play(MontageToPlay);
+//        bIsMontageEnded = false;
+//    }
+//
+//    // 몽타주가 끝날 때 호출될 델리게이트를 설정
+//    FOnMontageEnded MontageEndedDelegate;
+//    MontageEndedDelegate.BindUObject(this, &UGnuMonsterAnimInstance::OnMontageEnded);
+//
+//    Montage_SetEndDelegate(MontageEndedDelegate, MontageToPlay);
+//}
+
 
 void UGnuMonsterAnimInstance::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
@@ -92,50 +136,12 @@ void UGnuMonsterAnimInstance::OnMontageEnded(UAnimMontage* Montage, bool bInterr
     GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Blue, bInterrupted ? TEXT("Montage Interrupted!") : TEXT("Montage Ended Successfully!"));
 }
 
-// 각 몽타주 실행
-void UGnuMonsterAnimInstance::PlayFireballAttackMontage()
-{
-    PlayMontage(FireballAttackMontage);
-}
-
-void UGnuMonsterAnimInstance::PlayFlyingAttackMontage()
-{
-    PlayMontage(FlyingAttackMontage);
-}
-
-void UGnuMonsterAnimInstance::PlayFirebreathAttackMontage()
-{
-    PlayMontage(FirebreathAttackMontage);
-}
-
-void UGnuMonsterAnimInstance::PlayClawAttackMontage()
-{
-    PlayMontage(ClawAttackMontage);
-}
-
-void UGnuMonsterAnimInstance::PlayTailAttackMontage()
-{
-    PlayMontage(TailAttackMontage);
-}
-
-void UGnuMonsterAnimInstance::PlayBodyAttackMontage()
-{
-    PlayMontage(BodyAttackMontage);
-}
-
-void UGnuMonsterAnimInstance::PlayGroundAttackMontage()
-{
-    PlayMontage(GroundAttackMontage);
-}
-
-void UGnuMonsterAnimInstance::PlayGroundSpikeAttackMontage()
-{
-    PlayMontage(GroundSpikeAttackMontage);
-}
-
 void UGnuMonsterAnimInstance::PlayDieMontage()
 {
-    PlayMontage(DragonDieMontage);
+    if (MonsterOwner)
+    {
+        MonsterOwner->MulticastPlayMontage(DragonDieMontage);
+    }
 }
 
 // 처음 한번만 실행하도록 bool형 선언

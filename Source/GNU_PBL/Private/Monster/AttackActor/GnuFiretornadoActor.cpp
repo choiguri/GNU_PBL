@@ -28,9 +28,6 @@ AGnuFiretornadoActor::AGnuFiretornadoActor()
         BoxComponent->SetCollisionResponseToAllChannels(ECR_Ignore); // 모든 채널에 대해 무시
         BoxComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap); // 캐릭터에 대해 오버랩 허용
     }
-
-    DamageType = UDamageType::StaticClass();
-    Damage = 20.0f;
 }
 
 void AGnuFiretornadoActor::BeginPlay()
@@ -79,7 +76,7 @@ void AGnuFiretornadoActor::BeginOverlap(UPrimitiveComponent* OverlappedComponent
         if (OwnerCharacter)
         {
             AController* OwnerController = OwnerCharacter->Controller;
-            UGameplayStatics::ApplyDamage(OtherActor, Damage, OwnerController, this, DamageType);
+            UGameplayStatics::ApplyDamage(OtherActor, GetDamage(), OwnerController, this, DamageType);
             GEngine->AddOnScreenDebugMessage(-1, 4, FColor::Black, TEXT("Apply Damage!!"));
         }
 

@@ -76,6 +76,8 @@ AGnuMonster::AGnuMonster()
 
 	// 넉백 힘
 	KnockbackStrength = 0.f;
+
+	GroundSpeed = 0.f;
 }
 
 
@@ -120,6 +122,23 @@ void AGnuMonster::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	// 몬스터 이속
+	if (HasAuthority()) // 서버에서만 GroundSpeed 업데이트
+	{
+		GroundSpeed = GetVelocity().Size();
+	}
+
+	if (HasAuthority())
+	{
+		// 디버그 로그 추가
+		UE_LOG(LogTemp, Log, TEXT("GroundSpeed(Server): %f"), GroundSpeed);
+	}
+	else
+	{
+		// 클라이언트에서는 복제된 값을 읽기만 함
+		UE_LOG(LogTemp, Log, TEXT("GroundSpeed(Client): %f"), GroundSpeed);
+	}
+
 	// FirebreathActor가 활성화 되면 위치 업데이트
 	if (FirebreathActor)
 	{
@@ -151,16 +170,6 @@ void AGnuMonster::OnRep_Health()
 }
 
 
-void AGnuMonster::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	DOREPLIFETIME(AGnuMonster, CurrentHealth);
-
-	// 몬스터의 위치를 리플리케이트
-	/*DOREPLIFETIME(AGnuMonster, GetActorLocation());
-	DOREPLIFETIME(AGnuMonster, GetActorRotation());*/
-}
-
-
 // 데미지를 받게 되었을 때
 void AGnuMonster::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
 {
@@ -177,23 +186,15 @@ void AGnuMonster::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamag
 	{
 		// 머티리얼의 첫번째 두번째 인덱스 찾아서 EmissiveColor 라는 이름을 찾으면 그 값을 변경
 		// VectorParam을 이용해서 변경
-		DynamicMaterialInst_1st->SetVectorParameterValue(FName("EmissiveColor"), FLinearColor(0.05f, 0.0f, 0.0f));  // 빨간색
-		DynamicMaterialInst_2nd->SetVectorParameterValue(FName("EmissiveColor"), FLinearColor(0.05f, 0.0f, 0.0f));  // 빨간색
+		Multicast_SetEmissiveColor(FLinearColor(0.05f, 0.0f, 0.0f));
+
 
 		// 타이머로 원래 색상으로 복원
 		FTimerHandle TimerHandle_1st;
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle_1st, [this]() {
-			if (DynamicMaterialInst_1st)
+			if (DynamicMaterialInst_1st && DynamicMaterialInst_2nd)
 			{
-				DynamicMaterialInst_1st->SetVectorParameterValue(FName("EmissiveColor"), FLinearColor(0.0f, 0.0f, 0.0f));  // 기본값 (검정색)
-			}
-			}, 0.05f, false);
-
-		FTimerHandle TimerHandle_2nd;
-		GetWorld()->GetTimerManager().SetTimer(TimerHandle_2nd, [this]() {
-			if (DynamicMaterialInst_2nd)
-			{
-				DynamicMaterialInst_2nd->SetVectorParameterValue(FName("EmissiveColor"), FLinearColor(0.0f, 0.0f, 0.0f));  // 기본값 (검정색)
+				Multicast_SetEmissiveColor(FLinearColor(0.0f, 0.0f, 0.0f));  // 기본값 (검정색)
 			}
 			}, 0.05f, false);
 	}
@@ -212,6 +213,16 @@ void AGnuMonster::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamag
 	if (CurrentHealth <= 0)
 	{
 		Die();
+	}
+}
+
+
+void AGnuMonster::Multicast_SetEmissiveColor_Implementation(const FLinearColor& NewColor)
+{
+	if (DynamicMaterialInst_1st && DynamicMaterialInst_2nd)
+	{
+		DynamicMaterialInst_1st->SetVectorParameterValue(FName("EmissiveColor"), NewColor);
+		DynamicMaterialInst_2nd->SetVectorParameterValue(FName("EmissiveColor"), NewColor);
 	}
 }
 
@@ -338,7 +349,6 @@ void AGnuMonster::EnterPhaseTwo()
 	UE_LOG(LogTemp, Warning, TEXT("Entering Phase Two!"));
 }
 
-
 //ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ Monster Collision 관련 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 void AGnuMonster::ActivateSkeletalMesh()
 {
@@ -377,16 +387,6 @@ void AGnuMonster::DeactivateCapsuleComp()
 //ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ Attack 관련 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 void AGnuMonster::SpawnFireball()
 {
-	Server_SpawnFireball();
-}
-
-void AGnuMonster::Server_SpawnFireball_Implementation()
-{
-	Multicast_SpawnFireball();
-}
-
-void AGnuMonster::Multicast_SpawnFireball_Implementation()
-{
 	if (FireballClass)  // FireballClass는 BP에서 설정한 파이어볼 클래스
 	{
 		FVector HeadLoaction = GetMesh()->GetSocketLocation(TEXT("HeadSocket"));
@@ -409,8 +409,16 @@ void AGnuMonster::Multicast_SpawnFireball_Implementation()
 			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Orange, TEXT("Start Fireball LaunchProjectile"));
 		}
 	}
-
 }
+
+//void AGnuMonster::Server_SpawnFireball_Implementation()
+//{
+//	Multicast_SpawnFireball();
+//}
+//
+//void AGnuMonster::Multicast_SpawnFireball_Implementation()
+//{
+//}
 
 void AGnuMonster::SpawnFiretornado()
 {
@@ -474,7 +482,16 @@ void AGnuMonster::SpawnFirebreath()
 
 
 		/*AGnuFirebreathActor* Firebreath = GetWorld()->SpawnActor<AGnuFirebreathActor>(FirebreathClass, SpawnLocation, SpawnRotation);*/
-		FirebreathActor = GetWorld()->SpawnActor<AGnuFirebreathActor>(FirebreathClass, SpawnLocation, HeadRotation, SpawnParams);
+		/*FirebreathActor = GetWorld()->SpawnActor<AGnuFirebreathActor>(FirebreathClass, SpawnLocation, HeadRotation, SpawnParams);*/
+
+		if (FirebreathActor == nullptr)
+		{
+			FirebreathActor = GetWorld()->SpawnActor<AGnuFirebreathActor>(FirebreathClass, SpawnLocation, HeadRotation, SpawnParams);
+		}
+		else
+		{
+			return;
+		}
 	}
 }
 
@@ -582,13 +599,8 @@ void AGnuMonster::BodyAttack()
 		}
 	}
 }
-
 //ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ Attack 관련 끝 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
-
-void AGnuMonster::InitializeAnimInstance()
-{
-}
 
 void AGnuMonster::InitializeCollisionComponent(UBoxComponent*& CollisionComponent, const FName& ComponentName)
 {
@@ -636,3 +648,29 @@ void AGnuMonster::DeactivateTailCollision()
 {
 	TailCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
+
+// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 멀티 관련 시작 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
+// 전체적 값 복제 함수
+void AGnuMonster::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	DOREPLIFETIME(AGnuMonster, CurrentHealth);
+
+	// GroundSpeed를 복제
+	DOREPLIFETIME(AGnuMonster, GroundSpeed);
+}
+
+
+void AGnuMonster::OnRep_GroundSpeed()
+{
+	/*GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Black, TEXT("HI"));*/
+}
+
+void AGnuMonster::MulticastPlayMontage_Implementation(UAnimMontage* MontageToPlay)
+{
+	UGnuMonsterAnimInstance* AnimInstance = Cast<UGnuMonsterAnimInstance>(GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->PlayMontage(MontageToPlay);
+	}
+}
+// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 멀티 관련 끝 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //

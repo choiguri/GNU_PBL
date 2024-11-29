@@ -13,6 +13,7 @@ AGnuGroundSpikeActor::AGnuGroundSpikeActor()
     // NiagaraComponent 초기화 및 설정
     NiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraComponent"));
     NiagaraComponent->SetupAttachment(BoxComponent);
+    //NiagaraComponent->SetIsReplicated(true);  // 네트워크에서 복제 활성화
 
     // 부모 클래스에서 상속받은 BoxComponent를 초기화
     if (BoxComponent)
@@ -27,9 +28,13 @@ void AGnuGroundSpikeActor::BeginPlay()
     Super::BeginPlay();
 
     // 초기화 시 파티클 활성화
-    if (NiagaraComponent)
+    if (NiagaraComponent && HasAuthority())
     {
         NiagaraComponent->Activate();
+    }
+    else
+    {
+        NiagaraComponent->Deactivate();
     }
 
     GetWorld()->GetTimerManager().SetTimer(DestroyActorTimerHandle, this, &AGnuGroundSpikeActor::DestroyGroundSpike, 3.0f, false); // 10초 뒤에 삭제

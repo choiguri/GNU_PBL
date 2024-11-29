@@ -32,6 +32,11 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projectile")
     UProjectileMovementComponent* ProjectileMovement;
 
+    virtual float GetDamage() const override { return 15.0f; }
+
+
+    class AGnuMonster* Monster;
+
 private:
     FTimerHandle DestructionTimerHandle;    // 타이머 핸들
 

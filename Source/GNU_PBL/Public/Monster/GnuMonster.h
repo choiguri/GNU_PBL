@@ -42,20 +42,41 @@ public:
 	void DeactivateSkeletalMesh(); // 스켈레탈 메시 비활성화
 	void DeactivateCapsuleComp(); // 캡슐 컴포넌트 비활성화
 
-	// 몬스터 공격 함수
+	//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 몬스터 공격 함수 시작 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ//
 	UFUNCTION()
 	void SpawnFireball(); // 파이어볼 소환 함수
-	UFUNCTION(Server, Reliable)
+	/*UFUNCTION(Server, Reliable)
 	void Server_SpawnFireball();
 	UFUNCTION(NetMulticast, Reliable)
-	void Multicast_SpawnFireball();
+	void Multicast_SpawnFireball();*/
 
 	void SpawnFiretornado(); // 파이어토네이도 소환 함수
+
+	UFUNCTION()
 	void SpawnFirebreath(); // 파이어브레스 소환 함수
+
 	void SpawnGroundAttack(); // 그라운드 돌 공격 소환 함수
 	void SpawnGroundSpikeAttack(); // 그라운드 5방향 스파이크 소환 함수
 
 	void BodyAttack();
+	//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 공격 함수 끝 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ//
+
+	//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 정보 관련 시작 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ//
+	UPROPERTY(ReplicatedUsing = OnRep_GroundSpeed, BlueprintReadOnly, Category = "AnimData")
+	float GroundSpeed;
+
+	UFUNCTION()
+	void OnRep_GroundSpeed();
+	//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 정보 관련 끝 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ//
+
+	//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 애니메이션 관련 시작 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ//
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastPlayMontage(UAnimMontage* MontageToPlay);
+
+	//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 애니메이션 관련 끝 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ//
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_SetEmissiveColor(const FLinearColor& NewColor);
 
 protected:
 	// Called when the game starts or when spawned
@@ -63,13 +84,6 @@ protected:
 
 	float KnockbackStrength; // 넉백 힘
 	FTimerHandle DestroyTimerHandle;
-
-	// 몬스터 애님인스턴스 설정
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
-	TSubclassOf<UGnuMonsterAnimInstance> MonsterAnimInstanceClass;
-
-	UFUNCTION()
-	void InitializeAnimInstance();
 
 	UFUNCTION()
 	void InitializeCollisionComponent(UBoxComponent*& CollisionComponent, const FName& ComponentName);
@@ -88,20 +102,24 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
 	FName TailCollisionBoxAttachBoneName;
 
+	// 머터리얼 관련 컴포넌트 (드래곤 머터리얼 2개)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Materials")
+	UMaterialInstanceDynamic* DynamicMaterialInst_1st;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Materials")
+	UMaterialInstanceDynamic* DynamicMaterialInst_2nd;
+
+
 #if WITH_EDITOR
 	//~ Begin UObject Interface.
 	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
 	//~ End UObject Interface
 #endif
 
-
 private:
 	// 페이즈 2 여부 확인
 	bool bIsPhaseTwo = false;
 
-	// 머터리얼 인스턴스 다이나믹으로 선언
-	UMaterialInstanceDynamic* DynamicMaterialInst_1st;
-	UMaterialInstanceDynamic* DynamicMaterialInst_2nd;
 
 	UFUNCTION()	// 몬스터 발톱 공격에 맞았는지
 	void OnClawOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -142,9 +160,6 @@ public:
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
 
-	// 멀티 관련
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
 
 	// 원거리 공격 Actor 소환 class 설정
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack|ActorClass")
@@ -180,4 +195,8 @@ public:
 	void ActivateTailCollision();
 	UFUNCTION()
 	void DeactivateTailCollision();
+
+
+	// 멀티 관련
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

@@ -28,8 +28,8 @@ void UGnuAttackEndNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequence
             }
             else if (AnimInstance->Montage_IsPlaying(AnimInstance->FirebreathAttackMontage))
             {
-                Monster->FirebreathActor->DestroyFirebreath();  // 소환된 브레스 액터 삭제
-                Monster->FirebreathActor = nullptr;             // 참조 초기화
+                Monster->FirebreathActor->DestroyFirebreath(); // 소환된 브레스 액터 삭제
+                Monster->FirebreathActor = nullptr; // 참조 초기화는 필요하지 않을 수 있음
             }
         }
     }

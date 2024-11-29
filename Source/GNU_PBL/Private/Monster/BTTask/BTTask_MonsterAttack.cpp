@@ -34,7 +34,11 @@ EBTNodeResult::Type UBTTask_MonsterAttack::ExecuteTask(UBehaviorTreeComponent& O
 	UGnuMonsterAnimInstance* AnimInstance = Cast<UGnuMonsterAnimInstance>(Monster->GetMesh()->GetAnimInstance());
 	if (AnimInstance)
 	{
-		AnimInstance->PlayMontage(AttackMontage); // 공격 몽타주 실행
+		// 서버에서 Multicast 호출
+		if (Monster->HasAuthority()) // 서버에서만 실행
+		{
+			Monster->MulticastPlayMontage(AttackMontage);
+		}
 		// 몽타주가 끝날 때까지 기다리기 위해 Latent Task가 끝나기를 기다림
 		return EBTNodeResult::InProgress;
 	}

@@ -29,6 +29,8 @@ public:
     UPROPERTY(Replicated)
     AActor* OwnerActor;
 
+    virtual float GetDamage() const override { return 10.0f; }
+
 private:
     FTimerHandle DestructionTimerHandle; // 파괴 타이머 핸들
 

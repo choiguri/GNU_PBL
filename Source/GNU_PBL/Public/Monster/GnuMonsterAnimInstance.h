@@ -24,7 +24,6 @@ public:
 
     virtual void NativeThreadSafeUpdateAnimation(float DeltaSeconds) override;
 
-
     // 현재 몬스터를 참조하기 위한 변수
     UPROPERTY()
     AGnuMonster* MonsterOwner;
@@ -91,16 +90,18 @@ public:
     // 임시 예시 재생 몽타주
     UPROPERTY(EditDefaultsOnly, Category = "Montage")
     UAnimMontage* ExampleAttackMontage;
-    
 
 protected:
-    // 몬스터 데이터 (속도, 각도)
+    // 몬스터 데이터 (속도, 각도 / 멀티처리는 몬스터한테서 설정됨) 
     UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "AnimData")
-    float GroundSpeed;
-    
+    float Speed;
+
     UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "AnimData")
     float Direction;
 
+
+    // 멀티 관련
+    virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 private:
 
 public:
@@ -108,43 +109,17 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Animation")
     void PlayMontage(UAnimMontage* MontageToPlay);
 
-    UFUNCTION(Server, Reliable)
+    /*UFUNCTION(Server, Reliable)
     void Server_PlayMontage(UAnimMontage* MontageToPlay);
 
     UFUNCTION(NetMulticast, Reliable)
-    void Multicast_PlayMontage(UAnimMontage* MontageToPlay);
+    void Multicast_PlayMontage(UAnimMontage* MontageToPlay);*/
 
     // 몽타주 애니메이션 끝났을 때 호출 될 함수
     UFUNCTION()
     void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
     // 공격 몽타주 실행 함수
-    // 근거리 공격
-    UFUNCTION(BlueprintCallable)
-    void PlayClawAttackMontage();
-
-    UFUNCTION(BlueprintCallable)
-    void PlayTailAttackMontage();
-
-    UFUNCTION(BlueprintCallable)
-    void PlayBodyAttackMontage();
-
-    // 원거리 공격
-    UFUNCTION(BlueprintCallable)
-    void PlayFireballAttackMontage();
-
-    UFUNCTION(BlueprintCallable)
-    void PlayFlyingAttackMontage();
-
-    UFUNCTION(BlueprintCallable)
-    void PlayFirebreathAttackMontage();
-
-    UFUNCTION(BlueprintCallable)
-    void PlayGroundAttackMontage();
-
-    UFUNCTION(BlueprintCallable)
-    void PlayGroundSpikeAttackMontage();
-
     // 죽었을 때 몽타주 처리
     UFUNCTION(BlueprintCallable)
     void PlayDieMontage();

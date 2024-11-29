@@ -40,6 +40,27 @@ AGnuAttackCollisionActor::AGnuAttackCollisionActor()
 	Damage = 1.0f;
 }
 
+// Called when the game starts or when spawned
+void AGnuAttackCollisionActor::BeginPlay()
+{
+	Super::BeginPlay();
+
+	// AddDynamic: 겹쳐졌으면 내가 원하는 함수가 실행되도록 바인딩하는 것
+	BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &AGnuAttackCollisionActor::BeginOverlap);
+	BoxComponent->OnComponentEndOverlap.AddDynamic(this, &AGnuAttackCollisionActor::EndOverlap);
+
+	if (Particle)
+	{
+		Particle->Activate();
+	}
+}
+
+// Called every frame
+void AGnuAttackCollisionActor::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+}
+
 void AGnuAttackCollisionActor::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor && (OtherActor != this))
@@ -61,26 +82,3 @@ void AGnuAttackCollisionActor::EndOverlap(UPrimitiveComponent* OverlappedCompone
 		}
 	}
 }
-
-// Called when the game starts or when spawned
-void AGnuAttackCollisionActor::BeginPlay()
-{
-	Super::BeginPlay();
-
-	// AddDynamic: 겹쳐졌으면 내가 원하는 함수가 실행되도록 바인딩하는 것
-	BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &AGnuAttackCollisionActor::BeginOverlap);
-	BoxComponent->OnComponentEndOverlap.AddDynamic(this, &AGnuAttackCollisionActor::EndOverlap);
-	
-	if (Particle)
-	{
-		Particle->Activate();
-	}
-}
-
-// Called every frame
-void AGnuAttackCollisionActor::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
