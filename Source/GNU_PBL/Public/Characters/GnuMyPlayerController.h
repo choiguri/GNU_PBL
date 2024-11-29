@@ -34,6 +34,8 @@ public:
 
 	void SetHUDWeaponAmmo(int32 Ammo, int32 MaxAmmo);
 
+	void SetHUDDeathCount(int32 Deathcount);
+
 	virtual void Tick(float DeltaTime) override;
 	virtual float GetServertime();
 	virtual void ReceivedPlayer() override;

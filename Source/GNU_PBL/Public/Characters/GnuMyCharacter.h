@@ -225,12 +225,9 @@ protected:
 
 // Character 합치면서 작성
 private:
-	// 머리 위의 스팀 닉네임 표시
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	class UWidgetComponent* OverHeadWidget;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	UWidgetComponent* ReplicatedHealthWidget;
+	class UWidgetComponent* ReplicatedHealthWidget;
 
 	// HP바 설정
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
@@ -251,6 +248,7 @@ private:
 	UFUNCTION()
 	void OnRep_Stamina();
 
+	UPROPERTY()
 	class AGnuMyPlayerController* GNUPlayerController;
 
 	UPROPERTY(EditAnywhere, Category = "Player Name")
@@ -258,6 +256,10 @@ private:
 
 
 public:
+	// 머리 위의 스팀 닉네임 표시
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UWidgetComponent* OverHeadWidget;
+
 	UPROPERTY(VisibleAnywhere)
 	class UGnuCombatComponent* Combat;
 
@@ -301,7 +303,7 @@ protected:
 	void UpdateHUDHealth();
 	void UpdateHUDStamina();
 
-	
+	void PollInit();
 
 ////// GnuWeapon Start
 
@@ -311,8 +313,6 @@ private:
 
 	UFUNCTION()
 	void OnRep_OverlappingWeapon(AGnuWeapon* LastWeapon);
-
-	
 
 	UFUNCTION(Server, Reliable)
 	void ServerEquipButtonPressed();
@@ -394,6 +394,10 @@ private:
 	UMaterialInstance* DissolveMaterialInstance7;
 
 	void SetDynamicDissolveMaterialInstances();
+
+	// PlayerState
+	UPROPERTY()
+	class AGnuPlayerState* GnuPlayerState;
 
 
 public:

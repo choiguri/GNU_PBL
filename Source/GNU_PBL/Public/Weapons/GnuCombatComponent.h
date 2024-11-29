@@ -50,8 +50,11 @@ protected:
 	void OnRep_EquippedWeapon();
 
 private:
+	UPROPERTY()
 	class AGnuMyCharacter* GnuCharacter;
+	UPROPERTY()
 	class AGnuMyPlayerController* Controller;
+	UPROPERTY()
 	class AGNUHUD* HUD;
 
 	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)

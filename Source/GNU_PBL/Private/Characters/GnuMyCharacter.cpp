@@ -48,10 +48,12 @@
 #include "Weapons/GnuCombatComponent.h"
 #include "GNU_PBL/GNU_PBL.h"
 
-
 // GameMode
 #include "GameModes/GNUGameMode.h"
 #include "TimerManager.h"
+
+// PlayerState
+#include "PlayerState/GnuPlayerState.h"
 
 AGnuMyCharacter::AGnuMyCharacter()
 {
@@ -206,12 +208,12 @@ void AGnuMyCharacter::BeginPlay()
 
 	}
 	
-	ServerSetPlayerName(LocalPlayerName);
+	//ServerSetPlayerName(LocalPlayerName);
 
 	if (OverHeadWidget)
 	{
 		UGNUOverHeadWidget* OverHeadNameWidget = Cast<UGNUOverHeadWidget>(OverHeadWidget->GetWidget());
-		if (OverHeadWidget)
+		if (OverHeadNameWidget)
 		{
 			OverHeadNameWidget->ShowPlayerName(this);
 		}
@@ -239,6 +241,8 @@ void AGnuMyCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	ZoomInTimeline.TickTimeline(DeltaTime);
 	HideCameraIfCharacterClose();
+
+	PollInit();
 }
 
 void AGnuMyCharacter::SetCamera()
@@ -1070,6 +1074,22 @@ void AGnuMyCharacter::UpdateHUDStamina()
 	if (GNUPlayerController)
 	{
 		GNUPlayerController->SetHUDStamina(Stamina, MaxStaminaa);
+	}
+}
+
+void AGnuMyCharacter::PollInit()
+{
+	// 플레이어가 리스폰 되고 나면 beginplay, tick이 구성된 이후 다음 프레임에 PlayerState를 구축한다.
+	// 위와 같은 이유로 beginplay나 tick에서 PlayerState를 초기화해도 적용되지 않는 문제가 발생한다.
+	// 그래서 PlayerState가 생긴 프레임이후에 PlayerState에 대한 설정을 하기 위해 GnuPlayerState == nullptr이라는 조건을 사용했다.
+
+	if (GnuPlayerState == nullptr)
+	{
+		GnuPlayerState = GetPlayerState<AGnuPlayerState>();
+		if (GnuPlayerState)
+		{
+			GnuPlayerState->AddToDeath(0);
+		}
 	}
 }
 

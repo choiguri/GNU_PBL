@@ -16,6 +16,9 @@
 #include "Components/Image.h"
 #include "HUD/GNUReturnToMainMenu.h"
 
+#include "HUD/GNUOverHeadWidget.h"
+#include "Components/WidgetComponent.h"
+
 
 AGnuMyPlayerController::AGnuMyPlayerController()
 {
@@ -56,7 +59,15 @@ void AGnuMyPlayerController::OnPossess(APawn* InPawn)
 	if (GnuCharacter)
 	{
 		SetHUDHealth(GnuCharacter->GetHealth(), GnuCharacter->GetMaxHealth());
-		
+
+		if (GnuCharacter->OverHeadWidget)
+		{
+			UGNUOverHeadWidget* OverHeadNameWidget = Cast<UGNUOverHeadWidget>(GnuCharacter->OverHeadWidget->GetWidget());
+			if (OverHeadNameWidget)
+			{
+				OverHeadNameWidget->ShowPlayerName(GnuCharacter);
+			}
+		}
 	}
 }
 
@@ -90,15 +101,6 @@ void AGnuMyPlayerController::SetHUDHealth(float Health, float MaxHealth)
 		GNUHUD->CharacterOverlay &&
 		GNUHUD->CharacterOverlay->HealthBar &&
 		GNUHUD->CharacterOverlay->HealthText;
-
-	if (GNUHUD)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("GNUHUD Valid"));
-	}
-	if (GNUHUD && GNUHUD->CharacterOverlay)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("GNUHUD->CharacterOverlay Valid"));
-	}
 
 	if (bHUDValid)
 	{
@@ -156,6 +158,20 @@ void AGnuMyPlayerController::SetHUDWeaponAmmo(int32 Ammo, int32 MaxAmmo)
 	{
 		FString AmmoText = FString::Printf(TEXT("%d / %d"), Ammo, MaxAmmo);
 		GNUHUD->CharacterOverlay->AmmoText->SetText(FText::FromString(AmmoText));
+	}
+}
+
+void AGnuMyPlayerController::SetHUDDeathCount(int32 Deathcount)
+{
+	GNUHUD = GNUHUD == nullptr ? Cast<AGNUHUD>(GetHUD()) : GNUHUD;
+
+	bool bHUDValid = GNUHUD &&
+		GNUHUD->CharacterOverlay &&
+		GNUHUD->CharacterOverlay->DeathAmount;
+	if (bHUDValid)
+	{
+		FString DeathText = FString::Printf(TEXT("%d"), Deathcount);
+		GNUHUD->CharacterOverlay->DeathAmount->SetText(FText::FromString(DeathText));
 	}
 }
 

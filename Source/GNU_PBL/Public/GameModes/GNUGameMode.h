@@ -19,4 +19,13 @@ public:
 	virtual void PlayerEliminated(class AGnuMyCharacter* ElimmedCharacter, class AGnuMyPlayerController* VictimController, AController* Monster);
 
 	virtual void RequestRespawn(ACharacter* ElimedCharacter, AController* ElimedController);
+
+	UPROPERTY()
+	int32 TotalDeath = 0;
+
+	void UpdateTotalDeath();
+
+	bool bOverDeathCount();
+
+	int32 GetTotalDeath();
 };

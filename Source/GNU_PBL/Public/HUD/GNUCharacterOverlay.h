@@ -34,8 +34,5 @@ public:
 	UTextBlock* AmmoText;
 
 	UPROPERTY(meta = (BindWidget))
-	class UImage* HighPingImage;
-
-	UPROPERTY(meta = (BindWidgetAnim), Transient)
-	UWidgetAnimation* HighPingAnimation;
+	UTextBlock* DeathAmount;
 };
