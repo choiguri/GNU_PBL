@@ -116,6 +116,13 @@ private:
 	float Pitch = 0;
 	float Yaw = 0;
 
+	UPROPERTY(ReplicatedUsing = OnRep_InitialTransform)
+	FVector InitialRelativeLocation = FVector::ZeroVector;
+	UPROPERTY(ReplicatedUsing = OnRep_InitialTransform)
+	FRotator InitialRelativeRotation = FRotator::ZeroRotator;
+
+	UFUNCTION()
+	void OnRep_InitialTransform();
 public:	
 	void SetWeaponState(EWeaponState State);
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; };

@@ -17,11 +17,11 @@ AGnuWeapon::AGnuWeapon()
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
 
-	/*Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
-	SetRootComponent(Root);*/
+	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+	SetRootComponent(Root);
 
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
-	/*WeaponMesh->SetupAttachment(Root);*/
+	WeaponMesh->SetupAttachment(Root);
 	SetRootComponent(WeaponMesh);
 
 	// �浹 ����
@@ -59,6 +59,10 @@ void AGnuWeapon::BeginPlay()
 	{
 		PickupWidget->SetVisibility(false);
 	}
+
+	InitialRelativeLocation = WeaponMesh->GetRelativeLocation();
+	InitialRelativeRotation = WeaponMesh->GetRelativeRotation();
+
 }
 
 void AGnuWeapon::Tick(float DeltaTime)
@@ -115,8 +119,6 @@ void AGnuWeapon::UpdateAmmo()
 	}
 }
 
-
-
 void AGnuWeapon::SetWeaponState(EWeaponState State)
 {
 	WeaponState = State;
@@ -128,6 +130,8 @@ void AGnuWeapon::SetWeaponState(EWeaponState State)
 		WeaponMesh->SetSimulatePhysics(false);
 		WeaponMesh->SetEnableGravity(false);
 		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		
+		WeaponMesh->SetRelativeLocationAndRotation(InitialRelativeLocation, InitialRelativeRotation);
 		break;
 	case EWeaponState::EWS_Dropped:
 		if (HasAuthority())
@@ -172,6 +176,8 @@ void AGnuWeapon::OnRep_WeaponState()
 		WeaponMesh->SetSimulatePhysics(false);
 		WeaponMesh->SetEnableGravity(false);
 		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		
+		WeaponMesh->SetRelativeLocationAndRotation(InitialRelativeLocation, InitialRelativeRotation);
 		break;
 	case EWeaponState::EWS_Dropped :
 		WeaponMesh->SetSimulatePhysics(true);
@@ -209,10 +215,16 @@ void AGnuWeapon::Dropped()
 	SetWeaponState(EWeaponState::EWS_Dropped);
 
 	FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);
-	WeaponMesh->DetachFromComponent(DetachRules);
+	Root->DetachFromComponent(DetachRules);
 
 	SetOwner(nullptr);
 }
+
+void AGnuWeapon::OnRep_InitialTransform()
+{
+	WeaponMesh->SetRelativeLocationAndRotation(InitialRelativeLocation, InitialRelativeRotation);
+}
+
 
 
 void AGnuWeapon::SetRecoil(float DeltaTime)
