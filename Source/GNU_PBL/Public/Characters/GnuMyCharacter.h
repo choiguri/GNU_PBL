@@ -437,4 +437,7 @@ public:
 	float ElimDelay = 3.f;
 
 	void ElimTimerFinished();
+
+	FORCEINLINE float GetHealth() const { return Health; }
+	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
 };

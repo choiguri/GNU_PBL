@@ -205,13 +205,18 @@ void AGnuMyCharacter::BeginPlay()
 		GNUPlayerController->SetHUDStamina(Stamina, MaxStaminaa);
 
 	}
-	else
+	
+	ServerSetPlayerName(LocalPlayerName);
+
+	if (OverHeadWidget)
 	{
-		if (GEngine)
+		UGNUOverHeadWidget* OverHeadNameWidget = Cast<UGNUOverHeadWidget>(OverHeadWidget->GetWidget());
+		if (OverHeadWidget)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("No PlayerController")));
+			OverHeadNameWidget->ShowPlayerName(this);
 		}
 	}
+
 	if (ReplicatedHealthWidget)
 	{
 		UGnuReplicatedHealth* HealthWidget = Cast<UGnuReplicatedHealth>(ReplicatedHealthWidget->GetWidget());
@@ -1168,8 +1173,18 @@ void AGnuMyCharacter::ServerSetPlayerName_Implementation(const FString& PlayerNa
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
 	if (PlayerController)
 	{
-		PlayerController->PlayerState->SetPlayerName(PlayerName);
-		ClientSetName(PlayerName);
+		if (HasAuthority())
+		{
+			PlayerController->PlayerState->SetPlayerName(PlayerName);
+			
+			UE_LOG(LogTemp, Warning, TEXT("ServerSetPlayerName"));
+		}
+		else
+		{
+			ClientSetName(PlayerName);
+			UE_LOG(LogTemp, Warning, TEXT("ClientSetPlayerName"));
+		}
+		
 	}
 }
 

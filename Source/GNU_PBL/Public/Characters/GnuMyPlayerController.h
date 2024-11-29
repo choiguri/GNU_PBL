@@ -23,6 +23,7 @@ class GNU_PBL_API AGnuMyPlayerController : public APlayerController
 public:
 	AGnuMyPlayerController();
 
+	virtual void OnPossess(APawn* InPawn) override;
 
 	// 추가사항
 	void SetHUDHealth(float Health, float MaxHealth);

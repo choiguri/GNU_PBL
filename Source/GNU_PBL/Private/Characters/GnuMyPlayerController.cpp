@@ -48,6 +48,19 @@ void AGnuMyPlayerController::BeginPlay()
 	}
 }
 
+void AGnuMyPlayerController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+	
+	AGnuMyCharacter* GnuCharacter = Cast<AGnuMyCharacter>(InPawn);
+	if (GnuCharacter)
+	{
+		SetHUDHealth(GnuCharacter->GetHealth(), GnuCharacter->GetMaxHealth());
+		
+	}
+}
+
+
 //
 // 추가사항 여러 개
 //
@@ -77,6 +90,16 @@ void AGnuMyPlayerController::SetHUDHealth(float Health, float MaxHealth)
 		GNUHUD->CharacterOverlay &&
 		GNUHUD->CharacterOverlay->HealthBar &&
 		GNUHUD->CharacterOverlay->HealthText;
+
+	if (GNUHUD)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GNUHUD Valid"));
+	}
+	if (GNUHUD && GNUHUD->CharacterOverlay)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GNUHUD->CharacterOverlay Valid"));
+	}
+
 	if (bHUDValid)
 	{
 		const float HealthPercent = Health / MaxHealth;
