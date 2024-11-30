@@ -24,6 +24,11 @@ public:
 	virtual void OnRep_Death();
 
 	void AddToDeath(int32 DeathAmount);
+
+	void UpdateDeathCountToHUD();
+
+	int32 MaxRespawn = 5;
+
 private:
 	UPROPERTY()
 	class AGnuMyCharacter* Character;
@@ -32,5 +37,4 @@ private:
 
 	
 
-	
 };

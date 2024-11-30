@@ -18,6 +18,10 @@ void AGnuPlayerState::AddToDeath(int32 DeathAmount)
 {
 	Death += DeathAmount;
 
+}
+
+void AGnuPlayerState::UpdateDeathCountToHUD()
+{
 	Character = Character == nullptr ? Cast<AGnuMyCharacter>(GetPawn()) : Character;
 	if (Character)
 	{
@@ -25,7 +29,8 @@ void AGnuPlayerState::AddToDeath(int32 DeathAmount)
 
 		if (Controller)
 		{
-			Controller->SetHUDDeathCount(Death);
+			int32 DeathNum = FMath::Clamp(MaxRespawn - Death, 0, MaxRespawn);
+			Controller->SetHUDDeathCount(DeathNum);
 		}
 	}
 }
@@ -39,7 +44,8 @@ void AGnuPlayerState::OnRep_Death()
 
 		if (Controller)
 		{
-			Controller->SetHUDDeathCount(Death);
+			int32 DeathNum = FMath::Clamp(MaxRespawn - Death, 0, MaxRespawn);
+			Controller->SetHUDDeathCount(DeathNum);
 		}
 	}
 }

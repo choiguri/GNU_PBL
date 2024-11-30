@@ -233,7 +233,9 @@ void AGnuMyCharacter::BeginPlay()
 	if (HasAuthority())
 	{
 		OnTakeAnyDamage.AddDynamic(this, &AGnuMyCharacter::ReceiveDamage);
+
 	}
+	
 }
 
 void AGnuMyCharacter::Tick(float DeltaTime)
@@ -1088,7 +1090,7 @@ void AGnuMyCharacter::PollInit()
 		GnuPlayerState = GetPlayerState<AGnuPlayerState>();
 		if (GnuPlayerState)
 		{
-			GnuPlayerState->AddToDeath(0);
+			GnuPlayerState->UpdateDeathCountToHUD();
 		}
 	}
 }
