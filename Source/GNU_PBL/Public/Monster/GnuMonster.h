@@ -12,6 +12,7 @@
 
 class UGnuMonsterHealthBase;
 class UBoxComponent;
+class USphereComponent;
 class UAnimMontage;
 class AGnuMyCharacter;
 
@@ -28,31 +29,17 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// TakeDamage 함수 오버라이드
-	//virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+	
 
-	// HP 상황에 따라 상태 함수들
-	void Die(); // 사망 함수
-	void DelayedDestroy(); // 타이머가 만료되면 호출될 함수
-	void EnterPhaseTwo(); // 페이즈 2 (할지 안할지 모름)
-
-	// 콜리전 관련 함수
+	// 몬스터 콜리전 관련 함수
 	void ActivateSkeletalMesh();
 	void ActivateCapsuleComp();
 	void DeactivateSkeletalMesh(); // 스켈레탈 메시 비활성화
 	void DeactivateCapsuleComp(); // 캡슐 컴포넌트 비활성화
 
 	//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 몬스터 공격 함수 시작 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ//
-	UFUNCTION()
 	void SpawnFireball(); // 파이어볼 소환 함수
-	/*UFUNCTION(Server, Reliable)
-	void Server_SpawnFireball();
-	UFUNCTION(NetMulticast, Reliable)
-	void Multicast_SpawnFireball();*/
-
 	void SpawnFiretornado(); // 파이어토네이도 소환 함수
-
-	UFUNCTION()
 	void SpawnFirebreath(); // 파이어브레스 소환 함수
 
 	void SpawnGroundAttack(); // 그라운드 돌 공격 소환 함수
@@ -61,23 +48,23 @@ public:
 	void BodyAttack();
 	//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 공격 함수 끝 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ//
 
-	//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 정보 관련 시작 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ//
+	// HP 상황에 따라 상태 함수들
+	void Die(); // 사망 함수
+	void DelayedDestroy(); // 타이머가 만료되면 호출될 함수
+	void EnterPhaseTwo(); // 페이즈 2 (할지 안할지 모름)
+
+
+	//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 애니메이션 관련 시작 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ//
 	UPROPERTY(ReplicatedUsing = OnRep_GroundSpeed, BlueprintReadOnly, Category = "AnimData")
 	float GroundSpeed;
 
 	UFUNCTION()
 	void OnRep_GroundSpeed();
-	//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 정보 관련 끝 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ//
 
-	//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 애니메이션 관련 시작 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ//
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastPlayMontage(UAnimMontage* MontageToPlay);
 
 	//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 애니메이션 관련 끝 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ//
-
-	UFUNCTION(NetMulticast, Reliable)
-	void Multicast_SetEmissiveColor(const FLinearColor& NewColor);
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -88,7 +75,6 @@ protected:
 	UFUNCTION()
 	void InitializeCollisionComponent(UBoxComponent*& CollisionComponent, const FName& ComponentName);
 	
-
 	// 공격 부위별 콜리전 컴포넌트
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack|Collision")
 	UBoxComponent* ClawCollision;
@@ -96,13 +82,21 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack|Collision")
 	UBoxComponent* TailCollision;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack|Collision")
+	USphereComponent* BodyCollision;
+
+	// 공격 부위별 콜리전 컴포넌트 이름 가져오기
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack|Collision")
 	FName ClawCollisionBoxAttachBoneName;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack|Collision")
 	FName TailCollisionBoxAttachBoneName;
 
-	// 머터리얼 관련 컴포넌트 (드래곤 머터리얼 2개)
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_SetEmissiveColor(const FLinearColor& NewColor);
+
+	// 공격 받았을 때 변경할 머터리얼
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Materials")
 	UMaterialInstanceDynamic* DynamicMaterialInst_1st;
 
@@ -127,6 +121,10 @@ private:
 	UFUNCTION()	// 몬스터 꼬리 공격에 맞았는지
 	void OnTailOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+	UFUNCTION()	// 몬스터 몸통 공격에 맞았는지
+	void OnBodyOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+
 	// 근접 공격 맞았으면 플레이어가 뒤로 밀려나도록 하기
 	void KnockbackPlayer(AGnuMyCharacter* PlayerCharacter);
 
@@ -136,6 +134,11 @@ private:
 
 	// 재시도 쿨다운 설정 함수
 	void StartRetryCooldown();
+
+	// 여러번 맞는거 방지하기 위한 Map
+	TMap<AActor*, float> LastHitTime;
+	// 타격 간격 설정 (예: 1초)
+	float AttackCooldown = 1.0f;
 
 public:
 	// 블루프린트 위젯 넣는 곳
@@ -195,6 +198,11 @@ public:
 	void ActivateTailCollision();
 	UFUNCTION()
 	void DeactivateTailCollision();
+
+	UFUNCTION()
+	void ActivateBodyCollision();
+	UFUNCTION()
+	void DeactivateBodyCollision();
 
 
 	// 멀티 관련

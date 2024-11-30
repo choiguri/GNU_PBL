@@ -18,13 +18,18 @@ void UGnuAttackEndNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequence
             // Attack_End 노티파이가 불려졌을 때
             if (AnimInstance->Montage_IsPlaying(AnimInstance->ClawAttackMontage))
             {
-                Monster->DeactivateClawCollision(); // 클로 공격 종료 로직
+                Monster->DeactivateClawCollision(); // 손톱 공격 종료 로직
                 GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, TEXT("Claw Collision Deactivate"));
             }
             else if (AnimInstance->Montage_IsPlaying(AnimInstance->TailAttackMontage))
             {
-                Monster->DeactivateTailCollision(); // 테일 공격 종료 로직
+                Monster->DeactivateTailCollision(); // 꼬리 공격 종료 로직
                 GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, TEXT("Tail Collision Deactivate"));
+            }
+            else if (AnimInstance->Montage_IsPlaying(AnimInstance->BodyAttackMontage))
+            {
+                Monster->DeactivateBodyCollision(); // 몸통 공격 종료 로직
+                GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, TEXT("Body Collision Deactivate"));
             }
             else if (AnimInstance->Montage_IsPlaying(AnimInstance->FirebreathAttackMontage))
             {

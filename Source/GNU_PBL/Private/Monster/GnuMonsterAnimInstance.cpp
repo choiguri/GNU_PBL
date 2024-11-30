@@ -48,6 +48,7 @@ void UGnuMonsterAnimInstance::NativeThreadSafeUpdateAnimation(float DeltaSeconds
         return;
     }
 
+
     // 속도 받아오기
     if (MonsterOwner)
     {
@@ -92,39 +93,6 @@ void UGnuMonsterAnimInstance::PlayMontage(UAnimMontage* MontageToPlay)
 
     Montage_SetEndDelegate(MontageEndedDelegate, MontageToPlay);
 }
-
-//void UGnuMonsterAnimInstance::Server_PlayMontage_Implementation(UAnimMontage* MontageToPlay)
-//{
-//    Multicast_PlayMontage(MontageToPlay);
-//}
-//
-//
-//void UGnuMonsterAnimInstance::Multicast_PlayMontage_Implementation(UAnimMontage* MontageToPlay)
-//{
-//    if (MontageToPlay == nullptr)
-//    {
-//        return;
-//    }
-//
-//    // 현재 몽타주가 재생 중인지 확인
-//    if (Montage_IsPlaying(MontageToPlay))
-//    {
-//        GEngine->AddOnScreenDebugMessage(1, 4, FColor::Red, TEXT("Playing Montage!!"));
-//        return;
-//    }
-//
-//    if (bIsMontageEnded || bIsDead)
-//    {
-//        Montage_Play(MontageToPlay);
-//        bIsMontageEnded = false;
-//    }
-//
-//    // 몽타주가 끝날 때 호출될 델리게이트를 설정
-//    FOnMontageEnded MontageEndedDelegate;
-//    MontageEndedDelegate.BindUObject(this, &UGnuMonsterAnimInstance::OnMontageEnded);
-//
-//    Montage_SetEndDelegate(MontageEndedDelegate, MontageToPlay);
-//}
 
 
 void UGnuMonsterAnimInstance::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)

@@ -79,7 +79,6 @@ void AGnuFireballActor::BeginOverlap(UPrimitiveComponent* OverlappedComponent, A
 {
     if (OtherActor && (OtherActor != this))
     {
-        // 충돌한 액터가 벽이나 캐릭터일 때
         ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
         if (OwnerCharacter)
         {

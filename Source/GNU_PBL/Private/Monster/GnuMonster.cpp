@@ -21,6 +21,7 @@
 #include "Characters/GnuMyCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/BoxComponent.h"
+#include "Components/SphereComponent.h"
 #include "Animation/AnimNotifies/AnimNotify.h"
 #include "Animation/AnimMontage.h"
 #include "Animation/AnimInstance.h"
@@ -51,15 +52,18 @@ AGnuMonster::AGnuMonster()
 
 	ClawCollision = CreateDefaultSubobject<UBoxComponent>("ClawCollision");
 	ClawCollision->SetupAttachment(GetMesh());
-	ClawCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	ClawCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);	// ±âº»ÀûÀ¸·Î ºñÈ°¼ºÈ­
 	ClawCollision->bEditableWhenInherited = true; // ºí·çÇÁ¸°Æ® °ªÀÌ ¿ì¼±µÇ°Ô ÇÔ
-	ClawCollision->OnComponentBeginOverlap.AddDynamic(this, &AGnuMonster::OnClawOverlapBegin);
 
 	TailCollision = CreateDefaultSubobject<UBoxComponent>("TailCollision");
 	TailCollision->SetupAttachment(GetMesh());
-	TailCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	TailCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);	// ±âº»ÀûÀ¸·Î ºñÈ°¼ºÈ­
 	TailCollision->bEditableWhenInherited = true; // ºí·çÇÁ¸°Æ® °ªÀÌ ¿ì¼±µÇ°Ô ÇÔ
-	TailCollision->OnComponentBeginOverlap.AddDynamic(this, &AGnuMonster::OnTailOverlapBegin);
+
+	BodyCollision = CreateDefaultSubobject<USphereComponent>("BodyCollision");
+	BodyCollision->SetupAttachment(GetMesh());
+	BodyCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);	// ±âº»ÀûÀ¸·Î ºñÈ°¼ºÈ­
+	BodyCollision->bEditableWhenInherited = true; // ºí·çÇÁ¸°Æ® °ªÀÌ ¿ì¼±µÇ°Ô ÇÔ
 	
 	// Ä³¸¯°£ °ø°ÝÀ» ¸·±â À§ÇÑ »õ·Î¿î Ã¤³Î ¼³Á¤
 	GetMesh()->SetCollisionObjectType(ECC_SkeletalMesh);
@@ -77,6 +81,7 @@ AGnuMonster::AGnuMonster()
 	// ³Ë¹é Èû
 	KnockbackStrength = 0.f;
 
+	// ¸ó½ºÅÍ ÀÌµ¿ ¼Óµµ
 	GroundSpeed = 0.f;
 }
 
@@ -93,12 +98,26 @@ void AGnuMonster::BeginPlay()
 	// ÇÃ·¹ÀÌ¾î¸¦ ÀÎ½ÄÇÏ¸é UI°¡ ¶ßµµ·Ï º¯°æÇØ¾ßÇÔ (ÃßÈÄ ¼öÁ¤)
 	if (MonsterHealthWidgetClass)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Call MonsterHealthWidgetClass"));
-
 		MonsterHealthWidget = CreateWidget<UGnuMonsterHealthBase>(GetWorld(), MonsterHealthWidgetClass);
 		MonsterHealthWidget->AddToViewport();
 	}
 
+	if (BodyCollision)
+	{
+		BodyCollision->OnComponentBeginOverlap.AddDynamic(this, &AGnuMonster::OnBodyOverlapBegin);
+	}
+
+	if (ClawCollision)
+	{
+		ClawCollision->OnComponentBeginOverlap.AddDynamic(this, &AGnuMonster::OnClawOverlapBegin);
+	}
+
+	if (TailCollision)
+	{
+		TailCollision->OnComponentBeginOverlap.AddDynamic(this, &AGnuMonster::OnTailOverlapBegin);
+	}
+
+	// ¼­¹ö¿¡¼­ µ¥¹ÌÁö °ü¸®
 	if (HasAuthority())
 	{
 		OnTakeAnyDamage.AddDynamic(this, &AGnuMonster::ReceiveDamage);
@@ -227,53 +246,6 @@ void AGnuMonster::Multicast_SetEmissiveColor_Implementation(const FLinearColor& 
 }
 
 
-// Claw °ø°Ý½Ã overlap µÇ¸é ºÒ·¯Áú ÇÔ¼ö
-void AGnuMonster::OnClawOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	if (OtherActor && OtherActor != this)
-	{
-		// Ä³¸¯ÅÍ È®ÀÎ
-		AGnuMyCharacter* TargetCharacter = Cast<AGnuMyCharacter>(OtherActor);
-		ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
-		if (TargetCharacter && OwnerCharacter)
-		{
-			AController* OwnerController = OwnerCharacter->Controller;
-
-			// µ¥¹ÌÁö Ã³¸®
-			float DamageAmount = 30.0f; // µ¥¹ÌÁö ¾ç
-			UGameplayStatics::ApplyDamage(OtherActor, DamageAmount, OwnerController, this, UDamageType::StaticClass());
-			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Claw Attack Overlap"));
-
-			// ÇÃ·¹ÀÌ¾î¿¡°Ô ³Ë¹é Àû¿ë
-			KnockbackStrength = 5000.f;
-			KnockbackPlayer(TargetCharacter);
-		}
-	}
-}
-
-
-// Tail °ø°Ý½Ã overlap µÇ¸é ºÒ·¯Áú ÇÔ¼ö
-void AGnuMonster::OnTailOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	if (OtherActor && OtherActor != this)
-	{
-		// Ä³¸¯ÅÍ È®ÀÎ
-		AGnuMyCharacter* TargetCharacter = Cast<AGnuMyCharacter>(OtherActor);
-		if (TargetCharacter)
-		{
-			// µ¥¹ÌÁö Ã³¸®
-			float DamageAmount = 30.0f; // µ¥¹ÌÁö ¾ç
-			/*TargetCharacter->TakeDamage(DamageAmount, FDamageEvent(), nullptr, this);*/
-			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Tail Attack Overlap"));
-
-			// ÇÃ·¹ÀÌ¾î¿¡°Ô ³Ë¹é Àû¿ë
-			KnockbackStrength = 10000.f;
-			KnockbackPlayer(TargetCharacter);
-		}
-	}
-}
-
-
 void AGnuMonster::KnockbackPlayer(AGnuMyCharacter* PlayerCharacter)
 {
 	// ³Ë¹é ¹æÇâ °è»ê
@@ -349,42 +321,9 @@ void AGnuMonster::EnterPhaseTwo()
 	UE_LOG(LogTemp, Warning, TEXT("Entering Phase Two!"));
 }
 
-//¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ Monster Collision °ü·Ã ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ
-void AGnuMonster::ActivateSkeletalMesh()
-{
-	if (USkeletalMeshComponent* SkeletalMesh = GetMesh())
-	{
-		SkeletalMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	}
-}
-
-void AGnuMonster::ActivateCapsuleComp()
-{
-	if (UCapsuleComponent* CapsuleComp = GetCapsuleComponent())
-	{
-		CapsuleComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	}
-}
-
-void AGnuMonster::DeactivateSkeletalMesh()
-{
-	if (USkeletalMeshComponent* SkeletalMesh = GetMesh())
-	{
-		SkeletalMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	}
-}
-
-void AGnuMonster::DeactivateCapsuleComp()
-{
-	if (UCapsuleComponent* CapsuleComp = GetCapsuleComponent())
-	{
-		CapsuleComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	}
-}
-//¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ Monster Collision °ü·Ã ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ
-
 
 //¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ Attack °ü·Ã ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ
+// ¿ø°Å¸® °ø°Ý ºÎºÐ 5°³
 void AGnuMonster::SpawnFireball()
 {
 	if (FireballClass)  // FireballClass´Â BP¿¡¼­ ¼³Á¤ÇÑ ÆÄÀÌ¾îº¼ Å¬·¡½º
@@ -411,14 +350,6 @@ void AGnuMonster::SpawnFireball()
 	}
 }
 
-//void AGnuMonster::Server_SpawnFireball_Implementation()
-//{
-//	Multicast_SpawnFireball();
-//}
-//
-//void AGnuMonster::Multicast_SpawnFireball_Implementation()
-//{
-//}
 
 void AGnuMonster::SpawnFiretornado()
 {
@@ -558,50 +489,251 @@ void AGnuMonster::SpawnGroundSpikeAttack()
 	}
 }
 
+// ±Ù°Å¸® °ø°Ý ºÎºÐ (3°³)
+// ½Ã¹ß ¿Ö Trace°¡ Å¬¶óÀÌ¾ðÆ®ÇÑÅ×¸¸ ¸Ô°í ¼­¹öÇÑÅ×´Â ¾È¸ÔÀ»±î?
 void AGnuMonster::BodyAttack()
 {
-	float SphereRadius = 220.0f; // Sphere Trace ¹Ý°æ
-	FVector Start = GetActorLocation();
+	// ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ
+	// ¸ó½ºÅÍ°¡ 10µµ ¾î±ß³­Ã¤·Î ¸öÅë¹ÚÄ¡±âÇÔ ÀÌ°É·Î ÇØ°á
+	FRotator CurrentRotation = this->GetActorRotation();	// ¸ó½ºÅÍÀÇ ÇöÀç È¸Àü°ªÀ» ¹Þ¾Æ¿È
+	CurrentRotation.Yaw += 10.0f;							// ÇöÀç È¸Àü°ª¿¡ 10µµ Ãß°¡ (Yaw °ª¸¸ ¼öÁ¤)
+	this->SetActorRotation(CurrentRotation);				// ¼öÁ¤µÈ È¸Àü°ªÀ» ¾Ö´Ï¸ÞÀÌ¼Ç¿¡ Àû¿ë
+	// ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ
 
-	FRotator Rotation = GetActorRotation(); // ¸ó½ºÅÍÀÇ ÇöÀç È¸Àü
-	Rotation.Yaw -= 40.f;                  // Yaw ¹æÇâ -40µµ
+	//float SphereRadius = 220.0f; // Sphere Trace ¹Ý°æ
+	//FVector Start = GetActorLocation();
 
-	FVector ForwardDirection = Rotation.Vector(); // È¸ÀüµÈ ¹æÇâÀÇ º¤ÅÍ¸¦ °¡Á®¿È
+	//FRotator Rotation = GetActorRotation(); // ¸ó½ºÅÍÀÇ ÇöÀç È¸Àü
+	//Rotation.Yaw -= 40.f;                  // Yaw ¹æÇâ -40µµ
 
-	FVector End = Start + (ForwardDirection * 1800.0f); // 1800.0 Àü¹æ ÀÌµ¿
-	FHitResult HitResult;
+	//FVector ForwardDirection = Rotation.Vector(); // È¸ÀüµÈ ¹æÇâÀÇ º¤ÅÍ¸¦ °¡Á®¿È
 
-	// Trace ½ÇÇà
-	bool bHit = GetWorld()->SweepSingleByChannel(
-		HitResult,
-		Start,
-		End,
-		FQuat::Identity,
-		ECC_Pawn,
-		FCollisionShape::MakeSphere(SphereRadius) // 220cm ¹Ý°æ
-	);
+	//FVector End = Start + (ForwardDirection * 1900.0f); // 1800.0 Àü¹æ ÀÌµ¿
+	//FHitResult HitResult;	// Ãæµ¹ °á°ú¸¦ ´ã´Â º¯¼ö
 
-	// µð¹ö±×: Sphere TraceÀÇ °æ·Î¸¦ Ç¥½Ã
-	DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 2.0f, 0, 2.0f); // ½ÃÀÛÁ¡°ú ³¡Á¡À» ÀÕ´Â ¼±
-	DrawDebugSphere(GetWorld(), Start, SphereRadius, 12, FColor::Blue, false, 2.0f); // ½ÃÀÛÁ¡¿¡ ±¸Ã¼ Ç¥½Ã
-	DrawDebugSphere(GetWorld(), End, SphereRadius, 12, FColor::Red, false, 2.0f);   // ³¡Á¡¿¡ ±¸Ã¼ Ç¥½Ã
+	//// Trace ½ÇÇà
+	//bool bHit = GetWorld()->SweepSingleByChannel(
+	//	HitResult,
+	//	Start,
+	//	End,
+	//	FQuat::Identity,
+	//	ECC_Visibility,
+	//	FCollisionShape::MakeSphere(SphereRadius) //  220 ¹Ý°æ
+	//);
 
-	if (bHit)
+	//// µð¹ö±×: Sphere TraceÀÇ °æ·Î¸¦ Ç¥½Ã
+	//DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 2.0f, 0, 2.0f); // ½ÃÀÛÁ¡°ú ³¡Á¡À» ÀÕ´Â ¼±
+	//DrawDebugSphere(GetWorld(), Start, SphereRadius, 12, FColor::Blue, false, 2.0f); // ½ÃÀÛÁ¡¿¡ ±¸Ã¼ Ç¥½Ã
+	//DrawDebugSphere(GetWorld(), End, SphereRadius, 12, FColor::Red, false, 2.0f);   // ³¡Á¡¿¡ ±¸Ã¼ Ç¥½Ã
+
+	//if (bHit && HitResult.GetActor() != this)
+	//{
+	//	AActor* HitActor = HitResult.GetActor();
+	//	FString HitActorName = HitActor->GetName();
+	//	GEngine->AddOnScreenDebugMessage(-1, 4, FColor::Orange, FString::Printf(TEXT("Hit! %s"), *HitActorName));
+	//	
+	//	AGnuMyCharacter* TargetCharacter = Cast<AGnuMyCharacter>(HitResult.GetActor());
+	//	if (TargetCharacter)
+	//	{
+	//		FString HitName = TargetCharacter->GetName();
+	//		GEngine->AddOnScreenDebugMessage(-1, 4, FColor::Yellow, FString::Printf(TEXT("Target Character set %s"), *HitName));
+	//		// µð¹ö±×: Ãæµ¹ÇÑ ActorÀÇ À§Ä¡¿¡ ±¸Ã¼ Ç¥½Ã
+	//		DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, 20.f, 12, FColor::Yellow, false, 2.0f);
+	//	}
+	//	else
+	//	{
+	//		GEngine->AddOnScreenDebugMessage(-1, 4, FColor::Red, FString::Printf(TEXT("Hit Actor: %s is not TargetCharacter"), *HitActorName));
+	//	}
+	//}
+	//else
+	//{
+	//	GEngine->AddOnScreenDebugMessage(-1, 4, FColor::Red, FString::Printf(TEXT("Hit Actor is nullptr")));
+	//}
+}
+
+
+// Claw °ø°Ý½Ã overlap µÇ¸é ºÒ·¯Áú ÇÔ¼ö
+void AGnuMonster::OnClawOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor && OtherActor != this)
 	{
-		AActor* HitActor = HitResult.GetActor();
-		if (HitActor && HitActor != this)
+		// Ä³¸¯ÅÍ È®ÀÎ
+		AGnuMyCharacter* TargetCharacter = Cast<AGnuMyCharacter>(OtherActor);
+		if (TargetCharacter)
 		{
-			// µ¥¹ÌÁö Àû¿ë
-			// UGameplayStatics::ApplyDamage(HitActor, DamageAmount, GetController(), this, DamageTypeClass);
+			// ¸¶Áö¸· Å¸°Ý ½Ã°£ °¡Á®¿À±â
+			float* LastHit = LastHitTime.Find(OtherActor);
+			float CurrentTime = GetWorld()->GetTimeSeconds();
 
-			// µð¹ö±×: Ãæµ¹ÇÑ ActorÀÇ À§Ä¡¿¡ ±¸Ã¼ Ç¥½Ã
-			DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, SphereRadius, 12, FColor::Yellow, false, 2.0f);
+			// Å¸°Ý °£°Ý ³»¿¡ ¸ÂÀº Ä³¸¯ÅÍ´Â ¹«½ÃÇÏ°í, Å¸°ÝÀ» ¹ÞÀº ½Ã°£ÀÌ ÃæºÐÇÏ¸é µ¥¹ÌÁö Àû¿ë
+			if (LastHit && (CurrentTime - *LastHit) < AttackCooldown)
+			{
+				return; // Å¸°ÝÀÌ °£°Ý ÀÌ³»¿¡ ¹ß»ýÇßÀ¸¸é Ã³¸®ÇÏÁö ¾ÊÀ½
+			}
+
+			// µ¥¹ÌÁö Ã³¸®
+			float DamageAmount = 30.0f; // µ¥¹ÌÁö ¾ç
+			UGameplayStatics::ApplyDamage(OtherActor, DamageAmount, GetController(), this, UDamageType::StaticClass());
+			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Claw Attack Overlap"));
+
+			// ÇÃ·¹ÀÌ¾î¿¡°Ô ³Ë¹é Àû¿ë
+			KnockbackStrength = 5000.f;
+			KnockbackPlayer(TargetCharacter);
+
+			LastHitTime.Add(OtherActor, CurrentTime);
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("This is not TargetChracter"));
+		}
+	}
+}
+
+
+// Tail °ø°Ý½Ã overlap µÇ¸é ºÒ·¯Áú ÇÔ¼ö
+void AGnuMonster::OnTailOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor && OtherActor != this)
+	{
+		// Ä³¸¯ÅÍ È®ÀÎ
+		AGnuMyCharacter* TargetCharacter = Cast<AGnuMyCharacter>(OtherActor);
+		if (TargetCharacter)
+		{
+			// ¸¶Áö¸· Å¸°Ý ½Ã°£ °¡Á®¿À±â
+			float* LastHit = LastHitTime.Find(OtherActor);
+			float CurrentTime = GetWorld()->GetTimeSeconds();
+
+			// Å¸°Ý °£°Ý ³»¿¡ ¸ÂÀº Ä³¸¯ÅÍ´Â ¹«½ÃÇÏ°í, Å¸°ÝÀ» ¹ÞÀº ½Ã°£ÀÌ ÃæºÐÇÏ¸é µ¥¹ÌÁö Àû¿ë
+			if (LastHit && (CurrentTime - *LastHit) < AttackCooldown)
+			{
+				return; // Å¸°ÝÀÌ °£°Ý ÀÌ³»¿¡ ¹ß»ýÇßÀ¸¸é Ã³¸®ÇÏÁö ¾ÊÀ½
+			}
+
+			// µ¥¹ÌÁö Ã³¸®
+			float DamageAmount = 40.0f; // µ¥¹ÌÁö ¾ç
+			UGameplayStatics::ApplyDamage(OtherActor, DamageAmount, GetController(), this, UDamageType::StaticClass());
+			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Tail Take Damage Overlap"));
+
+			// ÇÃ·¹ÀÌ¾î¿¡°Ô ³Ë¹é Àû¿ë
+			KnockbackStrength = 10000.f;
+			KnockbackPlayer(TargetCharacter);
+
+			LastHitTime.Add(OtherActor, CurrentTime);
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("This is not TargetChracter"));
+		}
+	}
+}
+void AGnuMonster::OnBodyOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor && OtherActor != this)
+	{
+		// Ä³¸¯ÅÍ È®ÀÎ
+		AGnuMyCharacter* TargetCharacter = Cast<AGnuMyCharacter>(OtherActor);
+		if (TargetCharacter)
+		{
+			// ¸¶Áö¸· Å¸°Ý ½Ã°£ °¡Á®¿À±â
+			float* LastHit = LastHitTime.Find(OtherActor);
+			float CurrentTime = GetWorld()->GetTimeSeconds();
+
+			// Å¸°Ý °£°Ý ³»¿¡ ¸ÂÀº Ä³¸¯ÅÍ´Â ¹«½ÃÇÏ°í, Å¸°ÝÀ» ¹ÞÀº ½Ã°£ÀÌ ÃæºÐÇÏ¸é µ¥¹ÌÁö Àû¿ë
+			if (LastHit && (CurrentTime - *LastHit) < AttackCooldown)
+			{
+				return;
+			}
+
+			// µ¥¹ÌÁö Ã³¸®
+			float DamageAmount = 35.0f; // µ¥¹ÌÁö ¾ç
+			UGameplayStatics::ApplyDamage(OtherActor, DamageAmount, GetController(), this, UDamageType::StaticClass());
+			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Tail Take Damage Overlap"));
+
+			// ÇÃ·¹ÀÌ¾î¿¡°Ô ³Ë¹é Àû¿ë
+			KnockbackStrength = 30000.f;
+			KnockbackPlayer(TargetCharacter);
+
+			LastHitTime.Add(OtherActor, CurrentTime);
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("This is not TargetChracter"));
 		}
 	}
 }
 //¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ Attack °ü·Ã ³¡ ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ
 
+//¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ Monster Collision °ü·Ã ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ
+void AGnuMonster::ActivateSkeletalMesh()
+{
+	// ½ºÄÌ·¹Å» ¸Þ½Ã È°¼ºÈ­
+	if (USkeletalMeshComponent* SkeletalMesh = GetMesh())
+	{
+		SkeletalMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	}
+}
 
+void AGnuMonster::ActivateCapsuleComp()
+{
+	// Ä¸½¶ ÄÄÆ÷³ÍÆ® È°¼ºÈ­
+	if (UCapsuleComponent* CapsuleComp = GetCapsuleComponent())
+	{
+		CapsuleComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	}
+}
+
+void AGnuMonster::DeactivateSkeletalMesh()
+{
+	// ½ºÄÌ·¹Å» ¸Þ½Ã ºñÈ°¼ºÈ­
+	if (USkeletalMeshComponent* SkeletalMesh = GetMesh())
+	{
+		SkeletalMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+}
+
+void AGnuMonster::DeactivateCapsuleComp()
+{
+	// Ä¸½¶ ÄÄÆ÷³ÍÆ® ºñÈ°¼ºÈ­
+	if (UCapsuleComponent* CapsuleComp = GetCapsuleComponent())
+	{
+		CapsuleComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+}
+
+// °ø°Ý ÄÄÆ÷³ÍÆ®
+void AGnuMonster::ActivateClawCollision()
+{
+	ClawCollision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics); // ÄÝ¸®Àü È°¼ºÈ­
+}
+
+void AGnuMonster::DeactivateClawCollision()
+{
+	ClawCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision); // ÄÝ¸®Àü ºñÈ°¼ºÈ­
+}
+
+void AGnuMonster::ActivateTailCollision()
+{
+	TailCollision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+}
+
+void AGnuMonster::DeactivateTailCollision()
+{
+	TailCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void AGnuMonster::ActivateBodyCollision()
+{
+	BodyCollision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+}
+
+void AGnuMonster::DeactivateBodyCollision()
+{
+	BodyCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+//¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ Monster Collision °ü·Ã ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ
+
+
+// Claw, Tail ÄÝ¸®Àü ÃÊ±âÈ­·Î ¸¸µé¾ú´ø ÃÊ±â¼³Á¤ ÇÔ¼ö
 void AGnuMonster::InitializeCollisionComponent(UBoxComponent*& CollisionComponent, const FName& ComponentName)
 {
 	//CollisionComponent = CreateDefaultSubobject<UBoxComponent>(ComponentName);
@@ -628,27 +760,6 @@ void AGnuMonster::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedE
 #endif
 
 
-// °ø°Ý ÄÝ¸®Àü È°¼ºÈ­ ºÎºÐ
-void AGnuMonster::ActivateClawCollision()
-{
-	ClawCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly); // ÄÝ¸®Àü È°¼ºÈ­
-}
-
-void AGnuMonster::DeactivateClawCollision()
-{
-	ClawCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision); // ÄÝ¸®Àü ºñÈ°¼ºÈ­
-}
-
-void AGnuMonster::ActivateTailCollision()
-{
-	TailCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-}
-
-void AGnuMonster::DeactivateTailCollision()
-{
-	TailCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-}
-
 // ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ ¸ÖÆ¼ °ü·Ã ½ÃÀÛ ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ //
 // ÀüÃ¼Àû °ª º¹Á¦ ÇÔ¼ö
 void AGnuMonster::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -662,7 +773,6 @@ void AGnuMonster::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 
 void AGnuMonster::OnRep_GroundSpeed()
 {
-	/*GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Black, TEXT("HI"));*/
 }
 
 void AGnuMonster::MulticastPlayMontage_Implementation(UAnimMontage* MontageToPlay)

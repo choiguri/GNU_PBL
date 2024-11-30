@@ -56,7 +56,6 @@ void UGnuGenericNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBa
                 else if (AnimInstance->Montage_IsPlaying(AnimInstance->BodyAttackMontage))
                 {
                     Monster->BodyAttack();
-                    GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, TEXT("Body Attack Notify Call"));
                 }
             }
         }

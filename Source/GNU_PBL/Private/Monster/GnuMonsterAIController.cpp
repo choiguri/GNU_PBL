@@ -205,7 +205,7 @@ void AGnuMonsterAIController::StartRetryCooldown()
     GetWorld()->GetTimerManager().SetTimer(
         RetryCooldownTimerHandle,
         [this]() { bCanRetry = true; },
-        0.5f, // 쿨다운 시간 (초)
+        1.0f, // 쿨다운 시간 (초)
         false // 반복하지 않음
     );
 }
