@@ -1178,6 +1178,15 @@ void AGnuMyCharacter::ElimTimerFinished()
 	}
 }
 
+void AGnuMyCharacter::RestartingGame_Implementation()
+{
+	AGNUGameMode* GnuGameMode = GetWorld()->GetAuthGameMode<AGNUGameMode>();
+	if (GnuGameMode)
+	{
+		GnuGameMode->RestartGame();
+	}
+}
+
 
 void AGnuMyCharacter::ClientSetName_Implementation(const FString& Name)
 {

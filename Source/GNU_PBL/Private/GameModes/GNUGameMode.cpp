@@ -11,6 +11,7 @@
 #include "GameFramework/GameStateBase.h"
 #include "GameFramework/PlayerState.h"
 #include "GameFramework/Controller.h"
+#include "Engine/World.h"
 
 
 AGNUGameMode::AGNUGameMode()
@@ -51,7 +52,7 @@ void AGNUGameMode::RequestRespawn(ACharacter* ElimedCharacter, AController* Elim
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Cyan, FString::Printf(TEXT("TotalDeath is Over")));
 		}
-		
+
 	}
 
 	if (ElimedController)
@@ -110,3 +111,11 @@ int32 AGNUGameMode::GetTotalDeath()
 {
 	return TotalDeath;
 }
+
+void AGNUGameMode::RestartGame()
+{
+	TotalDeath = 0;
+
+	Super::RestartGame();
+}
+

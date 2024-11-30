@@ -28,4 +28,6 @@ public:
 	bool bOverDeathCount();
 
 	int32 GetTotalDeath();
+
+	virtual void RestartGame() override;
 };
