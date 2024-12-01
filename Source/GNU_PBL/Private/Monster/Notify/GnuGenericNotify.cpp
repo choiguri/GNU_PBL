@@ -20,6 +20,10 @@ void UGnuGenericNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBa
             {
                 if (AnimInstance->Montage_IsPlaying(AnimInstance->FireballAttackMontage))
                 {
+                    Monster->SpawnFireball(); 
+                }
+                else if (AnimInstance->Montage_IsPlaying(AnimInstance->FireballAttackContinuousMontage))
+                {
                     Monster->SpawnFireball();
                 }
                 else if (AnimInstance->Montage_IsPlaying(AnimInstance->FlyingAttackMontage))

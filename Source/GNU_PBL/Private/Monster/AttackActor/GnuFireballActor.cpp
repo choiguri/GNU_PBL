@@ -6,6 +6,8 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/DamageType.h"
 #include "GameFramework/Actor.h"
+#include "NiagaraComponent.h" // UNiagaraComponent 헤더 추가
+#include "NiagaraFunctionLibrary.h" // Niagara 기능을 위한 헤더
 #include "Kismet/GameplayStatics.h"
 #include "Components/StaticMeshComponent.h"
 #include "Net/UnrealNetwork.h"
@@ -21,11 +23,14 @@ AGnuFireballActor::AGnuFireballActor()
 
     // ProjectileMovementComponent 생성 및 기본값 설정
     ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
-    ProjectileMovement->InitialSpeed = 2000.f;                  // 발사 속도
-    ProjectileMovement->MaxSpeed = 3000.f;                      // 최고 속도
+    ProjectileMovement->InitialSpeed = 3000.f;                  // 발사 속도
+    ProjectileMovement->MaxSpeed = 4000.f;                      // 최고 속도
     ProjectileMovement->bRotationFollowsVelocity = true;        // 발사체가 이동 방향으로 회전
     ProjectileMovement->bShouldBounce = false;                  // 바운스 설정
     ProjectileMovement->ProjectileGravityScale = 0.f;           // 중력 비활성화
+
+    NiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraComponent"));
+    NiagaraComponent->SetupAttachment(BoxComponent);
 
     // 부모 클래스에서 상속받은 BoxComponent를 초기화
     if (BoxComponent)
@@ -38,13 +43,18 @@ AGnuFireballActor::AGnuFireballActor()
 
 void AGnuFireballActor::BeginPlay()
 {
-
     Super::BeginPlay();
 
-    // 초기 속도 확인
-    if (ProjectileMovement)
+    // 초기화 시 파티클 활성화
+    if (NiagaraComponent && HasAuthority())
     {
-        GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, FString::Printf(TEXT("Projectile Velocity: %s"), *ProjectileMovement->Velocity.ToString()));
+        NiagaraComponent->Activate();
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("DestroyGround called prematurely"));
+        NiagaraComponent->Deactivate();
+        Destroy();
     }
 
     // 충돌을 위해 이벤트 바인딩
@@ -70,7 +80,13 @@ void AGnuFireballActor::LaunchProjectile(AActor* IgnoredActor)
 
 void AGnuFireballActor::DestroyFireball()
 {
-    Destroy();
+    if (NiagaraComponent)
+    {
+        NiagaraComponent->Deactivate(); // 파티클 시스템 비활성화
+        NiagaraComponent->SetAutoDestroy(true); // 파티클이 끝나면 삭제
+    }
+
+    Destroy(); // 액터 삭제
 }
 
 
@@ -91,10 +107,10 @@ void AGnuFireballActor::BeginOverlap(UPrimitiveComponent* OverlappedComponent, A
     }
 }
 
-void AGnuFireballActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-    DOREPLIFETIME(AGnuFireballActor, ProjectileVelocity);
-    DOREPLIFETIME(AGnuFireballActor, OwnerActor);
-}
+//void AGnuFireballActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+//{
+//    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+//
+//    DOREPLIFETIME(AGnuFireballActor, ProjectileVelocity);
+//    DOREPLIFETIME(AGnuFireballActor, OwnerActor);
+//}

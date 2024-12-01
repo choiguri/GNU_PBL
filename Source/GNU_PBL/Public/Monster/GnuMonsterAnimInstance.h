@@ -70,6 +70,9 @@ public:
     UAnimMontage* FireballAttackMontage;
 
     UPROPERTY(EditDefaultsOnly, Category = "Attack")
+    UAnimMontage* FireballAttackContinuousMontage;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Attack")
     UAnimMontage* FlyingAttackMontage;
 
     UPROPERTY(EditDefaultsOnly, Category = "Attack")
@@ -88,9 +91,11 @@ public:
     UPROPERTY(EditDefaultsOnly, Category = "Montage")
     UAnimMontage* IntroShoutingMontage;
 
-    // 임시 예시 재생 몽타주
     UPROPERTY(EditDefaultsOnly, Category = "Montage")
-    UAnimMontage* ExampleAttackMontage;
+    UAnimMontage* DodgeMontage;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Montage")
+    UAnimMontage* FlyingDodgeMontage;
 
 protected:
     // 몬스터 데이터 (속도, 각도 / 멀티처리는 몬스터한테서 설정됨) 
@@ -128,8 +133,4 @@ public:
     // 첫 입장 시 나오는 몽타주
     UFUNCTION(BlueprintCallable)
     void PlayIntroMontage();
-
-    // 애니메이션 예시 실행기
-    UFUNCTION(BlueprintCallable)
-    void PlayExampleMontage();
 };

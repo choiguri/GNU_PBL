@@ -147,16 +147,6 @@ void AGnuMonster::Tick(float DeltaTime)
 		GroundSpeed = GetVelocity().Size();
 	}
 
-	if (HasAuthority())
-	{
-		// 디버그 로그 추가
-		UE_LOG(LogTemp, Log, TEXT("GroundSpeed(Server): %f"), GroundSpeed);
-	}
-	else
-	{
-		// 클라이언트에서는 복제된 값을 읽기만 함
-		UE_LOG(LogTemp, Log, TEXT("GroundSpeed(Client): %f"), GroundSpeed);
-	}
 
 	// FirebreathActor가 활성화 되면 위치 업데이트
 	if (FirebreathActor)
@@ -246,13 +236,20 @@ void AGnuMonster::Multicast_SetEmissiveColor_Implementation(const FLinearColor& 
 }
 
 
-void AGnuMonster::KnockbackPlayer(AGnuMyCharacter* PlayerCharacter)
+void AGnuMonster::KnockbackPlayer(ACharacter* PlayerCharacter)
 {
-	// 넉백 방향 계산
-	FVector KnockbackDirection = (PlayerCharacter->GetActorLocation() - GetActorLocation()).GetSafeNormal(); // 적으로부터 플레이어 방향
+	if (PlayerCharacter)
+    {
+        // 넉백 방향 계산
+        FVector KnockbackDirection = (PlayerCharacter->GetActorLocation() - GetActorLocation()).GetSafeNormal(); // 적으로부터 플레이어 방향
 
-	// 캐릭터를 뒤로 밀어내기
-	PlayerCharacter->LaunchCharacter(KnockbackDirection * KnockbackStrength, true, true);
+        // 캐릭터를 뒤로 밀어내기
+        PlayerCharacter->LaunchCharacter(KnockbackDirection * KnockbackStrength, true, true);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("PlayerCharacter is nullptr"));
+    }
 }
 
 void AGnuMonster::StartRetryCooldown()
@@ -308,7 +305,6 @@ void AGnuMonster::Die()
 	}
 }
 
-
 // 몬스터가 죽었을 때 딜레이 주고 삭제시키기
 void AGnuMonster::DelayedDestroy()
 {
@@ -355,20 +351,34 @@ void AGnuMonster::SpawnFiretornado()
 {
 	if (FiretornadoClass)
 	{
-		FVector BaseSpawnLocation = GetActorLocation() + GetActorForwardVector() * 500;
-		BaseSpawnLocation.Z = 0.f;	// 높이 0으로 만들어서 바닥 높이에서 생성되도록
+		//FVector BaseSpawnLocation = GetActorLocation() + GetActorForwardVector() * 500;
+		//BaseSpawnLocation.Z = 0.f;	// 높이 0으로 만들어서 바닥 높이에서 생성되도록
 
-		FVector SpawnLocation1 = BaseSpawnLocation; // 원래 위치
-		FVector SpawnLocation2 = BaseSpawnLocation + FVector(0.f, 500.f, 0.f);  // 약간 오른쪽으로 이동
-		FVector SpawnLocation3 = BaseSpawnLocation + FVector(0.f, -500.f, 0.f);  // 약간 왼쪽으로 이동
+		//FVector SpawnLocation1 = BaseSpawnLocation; // 원래 위치
+		//FVector SpawnLocation2 = BaseSpawnLocation + FVector(0.f, 500.f, 0.f);  // 약간 오른쪽으로 이동
+		//FVector SpawnLocation3 = BaseSpawnLocation + FVector(0.f, -500.f, 0.f);  // 약간 왼쪽으로 이동
+
+		// 컨트롤러 회전값 사용하여 방향 계산
+		FRotator MonsterRotation = GetController()->GetControlRotation(); // 몬스터의 컨트롤러 회전값
+		FVector ForwardVector = MonsterRotation.Vector();                 // 몬스터의 정면 방향
+		FVector RightVector = FVector::CrossProduct(ForwardVector, FVector::UpVector); // 몬스터의 오른쪽 방향
+
+		// 기본 위치: 몬스터 정면 500 유닛 거리
+		FVector BaseSpawnLocation = GetActorLocation() + ForwardVector * 500.f;
+		BaseSpawnLocation.Z = 0.f; // 바닥 높이 고정
+
+		// 좌우 위치 계산
+		FVector SpawnLocation1 = BaseSpawnLocation;                     // 정면
+		FVector SpawnLocation2 = BaseSpawnLocation + RightVector * 500; // 오른쪽
+		FVector SpawnLocation3 = BaseSpawnLocation - RightVector * 500; // 왼쪽
 
 
-		FRotator SpawnRotation1 = GetActorRotation();
+		FRotator SpawnRotation1 = MonsterRotation;
 		
-		FRotator SpawnRotation2 = GetActorRotation();
+		FRotator SpawnRotation2 = MonsterRotation;
 		SpawnRotation2.Yaw -= 30;
 
-		FRotator SpawnRotation3 = GetActorRotation();
+		FRotator SpawnRotation3 = MonsterRotation;
 		SpawnRotation3.Yaw += 30;
 
 		FActorSpawnParameters SpawnParams;
@@ -412,9 +422,6 @@ void AGnuMonster::SpawnFirebreath()
 			ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;	// 충돌이 발생할 경우, 가능한 위치로 조정하여 액터를 생성
 
 
-		/*AGnuFirebreathActor* Firebreath = GetWorld()->SpawnActor<AGnuFirebreathActor>(FirebreathClass, SpawnLocation, SpawnRotation);*/
-		/*FirebreathActor = GetWorld()->SpawnActor<AGnuFirebreathActor>(FirebreathClass, SpawnLocation, HeadRotation, SpawnParams);*/
-
 		if (FirebreathActor == nullptr)
 		{
 			FirebreathActor = GetWorld()->SpawnActor<AGnuFirebreathActor>(FirebreathClass, SpawnLocation, HeadRotation, SpawnParams);
@@ -436,8 +443,31 @@ void AGnuMonster::SpawnGroundAttack()
 		FVector SpawnLocation = GroundLoaction + GetActorForwardVector() * 100;  // 몬스터 앞에 생성
 		FRotator SpawnRotation = GetActorRotation();
 
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;                         // Fireball의 소유자를 현재 몬스터로 설정
+		SpawnParams.Instigator = Cast<APawn>(this);       // Instigator(데미지를 유발한 주체)를 현재 몬스터로 설정
+		SpawnParams.SpawnCollisionHandlingOverride =							// 생성된 액터가 스폰될 때 충돌 처리 방식 설정 
+			ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;	// 충돌이 발생할 경우, 가능한 위치로 조정하여 액터를 생성
+
+
 		// 그라운드 액터를 스폰
-		AGnuGroundActor* Ground = GetWorld()->SpawnActor<AGnuGroundActor>(GroundClass, SpawnLocation, SpawnRotation);
+		AGnuGroundActor* Ground = GetWorld()->SpawnActor<AGnuGroundActor>(GroundClass, SpawnLocation, SpawnRotation, SpawnParams);
+		if (Ground)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, TEXT("Ground Actor Spawned Successfully"));
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Ground Actor Spawn Failed"));
+		}
+
+
+		if (Ground)
+		{
+			// 파이어볼을 발사하는 메서드 호출
+			Ground->LaunchProjectile(this, &SpawnLocation, &SpawnRotation);
+			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Orange, TEXT("Start Ground LaunchProjectile"));
+		}
 	}
 }
 

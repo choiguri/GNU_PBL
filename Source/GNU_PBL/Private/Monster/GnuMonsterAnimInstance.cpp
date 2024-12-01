@@ -121,8 +121,3 @@ void UGnuMonsterAnimInstance::PlayIntroMontage()
         bIsPlayIntro = true;
     }
 }
-
-void UGnuMonsterAnimInstance::PlayExampleMontage()
-{
-    PlayMontage(ExampleAttackMontage);
-}

@@ -46,6 +46,10 @@ public:
 	void SpawnGroundSpikeAttack(); // 그라운드 5방향 스파이크 소환 함수
 
 	void BodyAttack();
+
+	
+	void KnockbackPlayer(ACharacter* PlayerCharacter);	// 공격 맞았으면 플레이어가 뒤로 밀려나도록 하기
+	float KnockbackStrength; // 넉백 힘
 	//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 공격 함수 끝 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ//
 
 	// HP 상황에 따라 상태 함수들
@@ -69,7 +73,6 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	float KnockbackStrength; // 넉백 힘
 	FTimerHandle DestroyTimerHandle;
 
 	UFUNCTION()
@@ -123,10 +126,6 @@ private:
 
 	UFUNCTION()	// 몬스터 몸통 공격에 맞았는지
 	void OnBodyOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-
-	// 근접 공격 맞았으면 플레이어가 뒤로 밀려나도록 하기
-	void KnockbackPlayer(AGnuMyCharacter* PlayerCharacter);
 
 	// Tick 에서 타겟 변경 재시도 쿨다운 타이머
 	FTimerHandle RetryCooldownTimerHandle;

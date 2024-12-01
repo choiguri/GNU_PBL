@@ -24,6 +24,7 @@ public:
 
     virtual float GetDamage() const override { return 20.0f; }
 
+    class AGnuMonster* Monster;
 private:
     FTimerHandle DestructionTimerHandle;    // 타이머 핸들
 

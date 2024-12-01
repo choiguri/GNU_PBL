@@ -28,11 +28,28 @@ AGnuFiretornadoActor::AGnuFiretornadoActor()
         BoxComponent->SetCollisionResponseToAllChannels(ECR_Ignore); // 모든 채널에 대해 무시
         BoxComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap); // 캐릭터에 대해 오버랩 허용
     }
+
+    Monster = nullptr;
 }
 
 void AGnuFiretornadoActor::BeginPlay()
 {
     Super::BeginPlay();
+
+    AActor* OwnerActor = GetOwner();
+    if (OwnerActor)
+    {
+        Monster = Cast<AGnuMonster>(OwnerActor);
+        if (Monster)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Monster assigned successfully!"));
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Failed to assign Monster"));
+        }
+    }
+
 
     // 초기 속도 확인
     if (ProjectileMovement)
@@ -69,7 +86,7 @@ void AGnuFiretornadoActor::DestroyFiretornado()
 
 void AGnuFiretornadoActor::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-    if (OtherActor && (OtherActor != this))
+    if (OtherActor && (OtherActor != this) && !Monster)
     {
         // 충돌한 액터가 벽이나 캐릭터일 때
         ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());

@@ -36,7 +36,6 @@ EBTNodeResult::Type UBTTask_MontsterExampleAnim::ExecuteTask(UBehaviorTreeCompon
 	UGnuMonsterAnimInstance* AnimInstance = Cast<UGnuMonsterAnimInstance>(Monster->GetMesh()->GetAnimInstance());
 	if (AnimInstance)
 	{
-		AnimInstance->PlayExampleMontage();
 		return EBTNodeResult::InProgress;
 	}
 	else

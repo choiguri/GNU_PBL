@@ -51,7 +51,7 @@ AGnuFirebreathActor::AGnuFirebreathActor()
 
     // 상속 받아 데미지 정의
     DamageType = UDamageType::StaticClass();
-    Damage = 15.0f;
+    Damage = GetDamage();
 }
 
 void AGnuFirebreathActor::BeginPlay()
@@ -68,8 +68,6 @@ void AGnuFirebreathActor::BeginPlay()
         NiagaraComponent->Deactivate();
         DestroyActor();
     }
-
-
 
     if (ProjectileBoxComponent)
     {
