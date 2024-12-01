@@ -17,10 +17,7 @@
 
 UGnuCombatComponent::UGnuCombatComponent()
 {
-	
 	PrimaryComponentTick.bCanEverTick = true;
-
-	// ...
 }
 
 void UGnuCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -33,8 +30,6 @@ void UGnuCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 void UGnuCombatComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	
 }
 
 void UGnuCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -50,7 +45,6 @@ void UGnuCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 		TraceUnderCrosshairs(HitResult);
 		HitTarget = HitResult.ImpactPoint;
 	}
-
 }
 
 
@@ -203,7 +197,6 @@ void UGnuCombatComponent::FireButtonPressed(bool bPressed)
 		}
 		StartFireTimer();
 	}
-
 }
 
 // Automatic Fire
@@ -276,7 +269,6 @@ void UGnuCombatComponent::ReloadButtonPressed(bool bPressed)
 		EquippedWeapon->Reload();
 		GnuCharacter->PlayReloadMontage();
 	}
-	
 }
 
 void UGnuCombatComponent::ReloadFinished(bool bPressed)
@@ -285,8 +277,6 @@ void UGnuCombatComponent::ReloadFinished(bool bPressed)
 	EquippedWeapon->ReloadFinished();
 	bReloadButtonPressed = bPressed;
 }
-
-
 
 // 무기 장착
 void UGnuCombatComponent::EquipWeapon(AGnuWeapon* WeaponToEquip)
@@ -298,9 +288,8 @@ void UGnuCombatComponent::EquipWeapon(AGnuWeapon* WeaponToEquip)
 	{
 		EquippedWeapon->Dropped();
 		EquippedWeapon = nullptr;
-		return;
 	}
-
+	// 무기를 버렸을 때 Overlap되어있는 무기가 있다면 무기 교체, 아니면 갖고 있는 무기 버리기
 	if (WeaponToEquip == nullptr) return;
 
 	EquippedWeapon = WeaponToEquip;
@@ -313,8 +302,7 @@ void UGnuCombatComponent::EquipWeapon(AGnuWeapon* WeaponToEquip)
 	}
 
 	EquippedWeapon->SetOwner(GnuCharacter);
-
-	
+	EquippedWeapon->UpdateAmmo();
 }
 
 

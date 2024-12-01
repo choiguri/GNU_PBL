@@ -31,6 +31,10 @@ public:
 	USkeletalMeshComponent* GetMesh(); // 11.26
 	virtual void Fire(const FVector& HitTarget);
 
+	void UpdateAmmo();
+
+	virtual void OnRep_Owner() override;
+
 	void Dropped();
 
 	// Crosshair 
@@ -96,15 +100,16 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	UAnimationAsset* ReloadAnimation;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_Ammo)
 	int32 Ammo = 30;
 
 	UPROPERTY(EditAnywhere)
 	int32 MaxAmmo = 30;
 
-	void SpendAmmo();
+	UFUNCTION()
+	void OnRep_Ammo();
 
-	void UpdateAmmo();
+	void SpendAmmo();
 
 	UPROPERTY()
 	class AGnuMyCharacter* GnuOwnerCharacter;

@@ -248,14 +248,14 @@ private:
 	UFUNCTION()
 	void OnRep_Stamina();
 
-	UPROPERTY()
-	class AGnuMyPlayerController* GNUPlayerController;
-
 	UPROPERTY(EditAnywhere, Category = "Player Name")
 	FString LocalPlayerName = TEXT("Unknown Player");
 
 
 public:
+	UPROPERTY()
+	class AGnuMyPlayerController* GNUPlayerController;
+
 	// 머리 위의 스팀 닉네임 표시
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UWidgetComponent* OverHeadWidget;

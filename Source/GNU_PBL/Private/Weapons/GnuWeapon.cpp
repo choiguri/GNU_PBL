@@ -24,24 +24,20 @@ AGnuWeapon::AGnuWeapon()
 	WeaponMesh->SetupAttachment(Root);
 	SetRootComponent(WeaponMesh);
 
-	// �浹 ����
 	WeaponMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
 	WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
 	WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-	// ĳ���Ϳ� ��ġ�� �κ� ���� �ֿ� �� ����� Sphere
 	AreaSphere = CreateDefaultSubobject<USphereComponent>(TEXT("AreaSphere"));
 	/*AreaSphere->SetupAttachment(WeaponMesh);*/
 	AreaSphere->SetupAttachment(RootComponent);
 	AreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-	// �ֿ� �� ������ Ű ���� ����
 	PickupWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("PickupWidget"));
 	/*PickupWidget->SetupAttachment(WeaponMesh);*/
 	PickupWidget->SetupAttachment(RootComponent);
 }
-
 
 void AGnuWeapon::BeginPlay()
 {
@@ -77,6 +73,10 @@ void AGnuWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifeti
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AGnuWeapon, WeaponState);
+	DOREPLIFETIME(AGnuWeapon, Ammo);
+
+	DOREPLIFETIME(AGnuWeapon, InitialRelativeLocation);
+	DOREPLIFETIME(AGnuWeapon, InitialRelativeRotation);
 
 
 }
@@ -99,11 +99,38 @@ void AGnuWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedCompoonent, A
 	}
 }
 
+void AGnuWeapon::ShowPickupWidget(bool bShowWidget)
+{
+	if (PickupWidget)
+	{
+		PickupWidget->SetVisibility(bShowWidget);
+	}
+}
+
+void AGnuWeapon::OnRep_Ammo()
+{
+	GnuOwnerCharacter = GnuOwnerCharacter == nullptr ? Cast<AGnuMyCharacter>(GetOwner()) : GnuOwnerCharacter;
+	UpdateAmmo();
+}
+
+void AGnuWeapon::OnRep_Owner()
+{
+	Super::OnRep_Owner();
+	if (Owner == nullptr)
+	{
+		GnuOwnerCharacter = nullptr;
+		GnuOwnerController = nullptr;
+	}
+	else
+	{
+		UpdateAmmo();
+	}
+}
+
 void AGnuWeapon::SpendAmmo()
 {
 	Ammo = FMath::Clamp(Ammo - 1, 0, MaxAmmo);
 	UpdateAmmo();
-	
 }
 
 void AGnuWeapon::UpdateAmmo()
@@ -117,6 +144,11 @@ void AGnuWeapon::UpdateAmmo()
 			GnuOwnerController->SetHUDWeaponAmmo(Ammo, MaxAmmo);
 		}
 	}
+}
+
+bool AGnuWeapon::IsEmptyAmmo()
+{
+	return Ammo <= 0;
 }
 
 void AGnuWeapon::SetWeaponState(EWeaponState State)
@@ -145,41 +177,19 @@ void AGnuWeapon::SetWeaponState(EWeaponState State)
 	}
 }
 
-void AGnuWeapon::Reload()
-{
-	if (ReloadAnimation)
-	{
-		WeaponMesh->PlayAnimation(ReloadAnimation, false);
-	}
-	UpdateAmmo();
-	
-}
-
-bool AGnuWeapon::IsEmptyAmmo()
-{
-	return Ammo <= 0;
-}
-
-void AGnuWeapon::ReloadFinished()
-{
-	Ammo = MaxAmmo;
-	UpdateAmmo();
-}
-
-
 void AGnuWeapon::OnRep_WeaponState()
 {
 	switch (WeaponState)
 	{
-	case EWeaponState::EWS_Equipped :
+	case EWeaponState::EWS_Equipped:
 		ShowPickupWidget(false);
 		WeaponMesh->SetSimulatePhysics(false);
 		WeaponMesh->SetEnableGravity(false);
 		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		
+
 		WeaponMesh->SetRelativeLocationAndRotation(InitialRelativeLocation, InitialRelativeRotation);
 		break;
-	case EWeaponState::EWS_Dropped :
+	case EWeaponState::EWS_Dropped:
 		WeaponMesh->SetSimulatePhysics(true);
 		WeaponMesh->SetEnableGravity(true);
 		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
@@ -187,18 +197,16 @@ void AGnuWeapon::OnRep_WeaponState()
 	}
 }
 
-
-void AGnuWeapon::ShowPickupWidget(bool bShowWidget)
+void AGnuWeapon::Dropped()
 {
-	if (PickupWidget)
-	{
-		PickupWidget->SetVisibility(bShowWidget);
-	}
-}
+	SetWeaponState(EWeaponState::EWS_Dropped);
 
-USkeletalMeshComponent* AGnuWeapon::GetMesh()
-{
-	return WeaponMesh;
+	FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);
+	Root->DetachFromComponent(DetachRules);
+
+	SetOwner(nullptr);
+	GnuOwnerCharacter = nullptr;
+	GnuOwnerController = nullptr;
 }
 
 void AGnuWeapon::Fire(const FVector& HitTarget)
@@ -210,35 +218,39 @@ void AGnuWeapon::Fire(const FVector& HitTarget)
 	SpendAmmo();
 }
 
-void AGnuWeapon::Dropped()
+void AGnuWeapon::Reload()
 {
-	SetWeaponState(EWeaponState::EWS_Dropped);
+	if (ReloadAnimation)
+	{
+		WeaponMesh->PlayAnimation(ReloadAnimation, false);
+	}
+}
 
-	FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);
-	Root->DetachFromComponent(DetachRules);
+void AGnuWeapon::ReloadFinished()
+{
+	Ammo = MaxAmmo;
+	UpdateAmmo();
+}
 
-	SetOwner(nullptr);
+void AGnuWeapon::SetRecoil(float DeltaTime)
+{
+	GnuOwnerCharacter = GnuOwnerCharacter == nullptr ? Cast<AGnuMyCharacter>(GetOwner()) : GnuOwnerCharacter;
+	if (GnuOwnerCharacter)
+	{
+		if (GnuOwnerCharacter->Combat->bFireButtonPressed && !IsEmptyAmmo())
+		{
+			GnuOwnerCharacter->AddControllerPitchInput(FMath::RandRange(-0.03f, 0.f));
+			GnuOwnerCharacter->AddControllerYawInput(FMath::RandRange(-0.1f, 0.1f));
+		}
+	}
+}
+
+USkeletalMeshComponent* AGnuWeapon::GetMesh()
+{
+	return WeaponMesh;
 }
 
 void AGnuWeapon::OnRep_InitialTransform()
 {
 	WeaponMesh->SetRelativeLocationAndRotation(InitialRelativeLocation, InitialRelativeRotation);
 }
-
-
-
-void AGnuWeapon::SetRecoil(float DeltaTime)
-{
-
-	GnuOwnerCharacter = GnuOwnerCharacter == nullptr ? Cast<AGnuMyCharacter>(GetOwner()) : GnuOwnerCharacter;
-	if (GnuOwnerCharacter)
-	{
-		if (GnuOwnerCharacter->Combat->bFireButtonPressed)
-		{
-			GnuOwnerCharacter->AddControllerPitchInput(FMath::RandRange(-0.03f, 0.f));
-			GnuOwnerCharacter->AddControllerYawInput(FMath::RandRange(-0.1f, 0.1f));
-		}
-		
-	}
-}
-

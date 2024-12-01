@@ -986,6 +986,14 @@ void AGnuMyCharacter::PlayHitReactMontage()
 {
 	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
 
+
+	GetCharacterMovement()->DisableMovement();
+	GetCharacterMovement()->StopMovementImmediately();
+	if (GNUPlayerController)
+	{
+		DisableInput(GNUPlayerController);
+	}
+
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	if (AnimInstance && HitReactMontage)
 	{
@@ -1152,6 +1160,12 @@ void AGnuMyCharacter::Elim()
 
 void AGnuMyCharacter::MultiCastElim_Implementation()
 {
+	// 죽으면 남은 Ammo 0
+	if (GNUPlayerController)
+	{
+		GNUPlayerController->SetHUDWeaponAmmo(0, 30);
+	}
+
 	PlayElimMontage();
 
 	SetDynamicDissolveMaterialInstances();
