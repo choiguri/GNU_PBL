@@ -36,6 +36,13 @@ public:
 
 	void SetHUDDeathCount(int32 Deathcount);
 
+	/*void SetHUDOthersHealth(FString PlayerName, float Health, float MaxHealth, int32 Index);*/
+
+	UFUNCTION(NetMulticast, Reliable)
+	void SetHUDOthersHealth(const TArray<float>& HealthArray);
+	UFUNCTION(NetMulticast, Reliable)
+	void SetHUDOthersName(const TArray<FString>& NameArray);
+
 	virtual void Tick(float DeltaTime) override;
 	virtual float GetServertime();
 	virtual void ReceivedPlayer() override;

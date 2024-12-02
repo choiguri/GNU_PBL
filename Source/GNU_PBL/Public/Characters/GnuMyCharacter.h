@@ -275,7 +275,14 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MultiCastSetHealth();
 
+	//UFUNCTION(Server, Reliable)
+	//void UpdateOthersHealth();
 
+	UFUNCTION(Server, Reliable)
+	void UpdateOthersHealth();
+
+	UFUNCTION(Server, Reliable)
+	void UpdateOthersName();
 
 	// 기존
 	/*UFUNCTION(Server, Reliable)

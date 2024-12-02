@@ -235,7 +235,17 @@ void AGnuMyCharacter::BeginPlay()
 		OnTakeAnyDamage.AddDynamic(this, &AGnuMyCharacter::ReceiveDamage);
 
 	}
+	/*if (GNUPlayerController)
+	{
+		UpdateOthersHealth();
+	}*/
 	
+	/*UpdateOthersHealth();
+	UpdateOthersName();*/
+	FTimerHandle TimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AGnuMyCharacter::UpdateOthersHealth, 7.0f, false);
+	FTimerHandle SecTimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(SecTimerHandle, this, &AGnuMyCharacter::UpdateOthersName, 7.0f, false);
 }
 
 void AGnuMyCharacter::Tick(float DeltaTime)
@@ -1054,7 +1064,8 @@ void AGnuMyCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UD
 	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
 	PlayHitReactMontage();
 	UpdateHUDHealth();
-
+	UpdateOthersHealth();
+	UpdateOthersName();
 	if (Health == 0.f)
 	{
 		AGNUGameMode* GnuGameMode = GetWorld()->GetAuthGameMode<AGNUGameMode>();
@@ -1109,6 +1120,8 @@ void AGnuMyCharacter::OnRep_Health()
 {
 	PlayHitReactMontage();
 	UpdateHUDHealth();
+	UpdateOthersHealth();
+	UpdateOthersName();
 }
 
 void AGnuMyCharacter::OnRep_Stamina()
@@ -1121,6 +1134,43 @@ void AGnuMyCharacter::SetReplicatedHealth()
 {
 	MultiCastSetHealth();
 }
+
+void AGnuMyCharacter::UpdateOthersHealth_Implementation()
+{
+	GNUPlayerController = GNUPlayerController == nullptr ? Cast<AGnuMyPlayerController>(Controller) : GNUPlayerController;
+	AGNUGameMode* GnuGameMode = GetWorld()->GetAuthGameMode<AGNUGameMode>();
+	if (GNUPlayerController && GnuGameMode)
+	{
+		GNUPlayerController->SetHUDOthersHealth(GnuGameMode->GetPlayersHealth());
+	}
+}
+
+void AGnuMyCharacter::UpdateOthersName_Implementation()
+{
+	GNUPlayerController = GNUPlayerController == nullptr ? Cast<AGnuMyPlayerController>(Controller) : GNUPlayerController;
+	AGNUGameMode* GnuGameMode = GetWorld()->GetAuthGameMode<AGNUGameMode>();
+	if (GNUPlayerController && GnuGameMode)
+	{
+		GNUPlayerController->SetHUDOthersName(GnuGameMode->GetPlayersName());
+	};
+}
+
+//void AGnuMyCharacter::UpdateOthersHealth_Implementation()
+//{
+//	if (GEngine)
+//	{
+//		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, FString::Printf(TEXT("UpdateOthersHealth Called")));
+//	}
+//	AGNUGameMode* GnuGameMode = GetWorld()->GetAuthGameMode<AGNUGameMode>();
+//	if (GnuGameMode)
+//	{
+//		GnuGameMode->GetPlayersHealthAndName();
+//		if (GEngine)
+//		{
+//			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, FString::Printf(TEXT("GetPlayersHealth and Name Called")));
+//		}
+//	}
+//}
 
 void AGnuMyCharacter::MultiCastSetHealth_Implementation()
 {

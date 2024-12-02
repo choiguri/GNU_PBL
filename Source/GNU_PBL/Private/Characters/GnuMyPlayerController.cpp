@@ -18,6 +18,7 @@
 
 #include "HUD/GNUOverHeadWidget.h"
 #include "Components/WidgetComponent.h"
+#include "GameModes/GNUGameMode.h"
 
 
 AGnuMyPlayerController::AGnuMyPlayerController()
@@ -68,7 +69,11 @@ void AGnuMyPlayerController::OnPossess(APawn* InPawn)
 				OverHeadNameWidget->ShowPlayerName(GnuCharacter);
 			}
 		}
+		/*GnuCharacter->UpdateOthersHealth();*/
+		GnuCharacter->UpdateOthersHealth();
+		GnuCharacter->UpdateOthersName();
 	}
+	
 }
 
 
@@ -174,6 +179,118 @@ void AGnuMyPlayerController::SetHUDDeathCount(int32 Deathcount)
 		GNUHUD->CharacterOverlay->DeathAmount->SetText(FText::FromString(DeathText));
 	}
 }
+
+void AGnuMyPlayerController::SetHUDOthersHealth_Implementation(const TArray<float>& HealthArray)
+{
+	GNUHUD = GNUHUD == nullptr ? Cast<AGNUHUD>(GetHUD()) : GNUHUD;
+
+	bool bHUDValid = GNUHUD &&
+		GNUHUD->CharacterOverlay &&
+		GNUHUD->CharacterOverlay->HealthBarPlayer1 && GNUHUD->CharacterOverlay->HealthBarPlayer2 &&
+		GNUHUD->CharacterOverlay->HealthBarPlayer3 && GNUHUD->CharacterOverlay->HealthBarPlayer4;
+	int32 Index = 0;
+
+	if (bHUDValid)
+	{
+		for (float Health : HealthArray)
+		{
+			switch (Index)
+			{
+			case 0:
+				GNUHUD->CharacterOverlay->HealthBarPlayer1->SetPercent(Health / 100.f);
+				break;
+			case 1:
+				GNUHUD->CharacterOverlay->HealthBarPlayer2->SetPercent(Health / 100.f);
+				break;
+			case 2:
+				GNUHUD->CharacterOverlay->HealthBarPlayer3->SetPercent(Health / 100.f);
+				break;
+			case 3:
+				GNUHUD->CharacterOverlay->HealthBarPlayer4->SetPercent(Health / 100.f);
+				break;
+			default:
+				break;
+			}
+			Index++;
+		}
+	}
+}
+
+void AGnuMyPlayerController::SetHUDOthersName_Implementation(const TArray<FString>& NameArray)
+{
+	GNUHUD = GNUHUD == nullptr ? Cast<AGNUHUD>(GetHUD()) : GNUHUD;
+
+	bool bHUDValid = GNUHUD&&
+		GNUHUD->CharacterOverlay &&
+		GNUHUD->CharacterOverlay->Player1NameText && GNUHUD->CharacterOverlay->Player2NameText&&
+		GNUHUD->CharacterOverlay->Player3NameText && GNUHUD->CharacterOverlay->Player4NameText;
+	int32 Index = 0;
+	if (bHUDValid)
+	{
+		for (FString Name : NameArray)
+		{
+			switch (Index)
+			{
+			case 0:
+				GNUHUD->CharacterOverlay->Player1NameText->SetText(FText::FromString(Name));
+				break;
+			case 1:
+				GNUHUD->CharacterOverlay->Player2NameText->SetText(FText::FromString(Name));
+				break;
+			case 2:
+				GNUHUD->CharacterOverlay->Player3NameText->SetText(FText::FromString(Name));
+				break;
+			case 3:
+				GNUHUD->CharacterOverlay->Player4NameText->SetText(FText::FromString(Name));
+				break;
+			default:
+				break;
+			}
+			
+			Index++;
+		}
+	}
+}
+
+//void AGnuMyPlayerController::SetHUDOthersHealth(FString PlayerName, float Health, float MaxHealth, int32 Index)
+//{
+//	GNUHUD = GNUHUD == nullptr ? Cast<AGNUHUD>(GetHUD()) : GNUHUD;
+//	bool bHUDValid = GNUHUD &&
+//		GNUHUD->CharacterOverlay &&
+//		GNUHUD->CharacterOverlay->HealthBarPlayer1 && GNUHUD->CharacterOverlay->HealthBarPlayer2 &&
+//		GNUHUD->CharacterOverlay->HealthBarPlayer3 && GNUHUD->CharacterOverlay->HealthBarPlayer4 &&
+//		GNUHUD->CharacterOverlay->Player1NameText && GNUHUD->CharacterOverlay->Player2NameText &&
+//		GNUHUD->CharacterOverlay->Player3NameText && GNUHUD->CharacterOverlay->Player4NameText;
+//
+//	if (bHUDValid)
+//	{
+//		const float HealthPercent = Health / MaxHealth;
+//		FString PlayerNameText = FString::Printf(TEXT("%s"), *PlayerName);
+//
+//		switch (Index)
+//		{
+//		case 0:
+//			GNUHUD->CharacterOverlay->HealthBarPlayer1->SetPercent(HealthPercent);
+//			GNUHUD->CharacterOverlay->Player1NameText->SetText(FText::FromString(PlayerNameText));
+//			break;
+//		case 1:
+//			GNUHUD->CharacterOverlay->HealthBarPlayer2->SetPercent(HealthPercent);
+//			GNUHUD->CharacterOverlay->Player2NameText->SetText(FText::FromString(PlayerNameText));
+//			break;
+//		case 2:
+//			GNUHUD->CharacterOverlay->HealthBarPlayer3->SetPercent(HealthPercent);
+//			GNUHUD->CharacterOverlay->Player3NameText->SetText(FText::FromString(PlayerNameText));
+//			break;
+//		case 3:
+//			GNUHUD->CharacterOverlay->HealthBarPlayer4->SetPercent(HealthPercent);
+//			GNUHUD->CharacterOverlay->Player4NameText->SetText(FText::FromString(PlayerNameText));
+//			break;
+//		default:
+//			break;
+//		}
+//
+//	}
+//}
 
 
 void AGnuMyPlayerController::SetHUDTime()

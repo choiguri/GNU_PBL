@@ -30,4 +30,21 @@ public:
 	int32 GetTotalDeath();
 
 	virtual void RestartGame() override;
+
+	/*UPROPERTY()
+	AGnuMyPlayerController* PlayerController;
+	
+	UPROPERTY()
+	AGnuMyCharacter* PlayerCharacter;
+
+	UPROPERTY()
+	class AGnuPlayerState* CharacaterPlayerState;*/
+
+
+	/*UFUNCTION()
+	void GetPlayersHealthAndName();*/
+
+	TArray<FString> GetPlayersName();
+	TArray<float> GetPlayersHealth();
+
 };
