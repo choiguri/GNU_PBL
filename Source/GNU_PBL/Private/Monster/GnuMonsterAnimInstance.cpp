@@ -48,24 +48,19 @@ void UGnuMonsterAnimInstance::NativeThreadSafeUpdateAnimation(float DeltaSeconds
         return;
     }
 
-
     // 속도 받아오기
     if (MonsterOwner)
     {
         Speed = MonsterOwner->GroundSpeed;
     }
 
-    /*SetGroundSpeed();*/
-    Direction = UKismetAnimationLibrary::CalculateDirection(MonsterOwner->GetVelocity(), MonsterOwner->GetActorRotation());
+    // 각도 받아오기
+    if (MonsterOwner)
+    {
+        Direction_Anim = MonsterOwner->Direction;
+    }
 }
 
-
-void UGnuMonsterAnimInstance::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-    DOREPLIFETIME(UGnuMonsterAnimInstance, Direction);
-}
 
 void UGnuMonsterAnimInstance::PlayMontage(UAnimMontage* MontageToPlay)
 {

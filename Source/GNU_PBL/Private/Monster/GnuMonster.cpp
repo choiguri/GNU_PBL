@@ -11,6 +11,7 @@
 #include "Monster/AttackActor/GnuGroundActor.h"
 #include "Monster/AttackActor/GnuGroundSpikeActor.h"
 #include "Monster/AttackActor/GnuGroundSpikeCollisionActor.h"
+#include "Monster/AttackActor/GnuLavaBurstActor.h"
 // 무기 관련
 #include "Weapons/Bullet.h"
 // 위젯
@@ -29,6 +30,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "KismetAnimationLibrary.h"
 #include <Net/UnrealNetwork.h>
 #include "GNU_PBL/GNU_PBL.h"	// SkeletalMesh 채널 설정
 // 캐릭터
@@ -147,11 +150,18 @@ void AGnuMonster::Tick(float DeltaTime)
 		GroundSpeed = GetVelocity().Size();
 	}
 
+	// 몬스터 각도
+	if (HasAuthority()) // 서버에서만 Directioon 업데이트 
+	{
+		Direction = UKismetAnimationLibrary::CalculateDirection(this->GetVelocity(), this->GetActorRotation());
+	}
+
 
 	// FirebreathActor가 활성화 되면 위치 업데이트
 	if (FirebreathActor)
 	{
-		FVector HeadLocation = GetMesh()->GetSocketLocation(TEXT("HeadSocket")) + FVector(0.f,0.f, -50.f);
+
+		FVector HeadLocation = GetMesh()->GetSocketLocation(TEXT("HeadSocket")) + FVector(0.f, 0.f, -50.f);
 		FVector SpawnLocation = HeadLocation + GetActorForwardVector();  // 몬스터 앞에 생성
 		FRotator SpawnRotation = GetMesh()->GetSocketRotation(TEXT("HeadSocket"));
 		SpawnRotation.Pitch += 70;
@@ -177,7 +187,6 @@ void AGnuMonster::OnRep_Health()
 		MonsterHealthWidget->UpdateBossHP(CurrentHealth, MaxHealth);
 	}
 }
-
 
 // 데미지를 받게 되었을 때
 void AGnuMonster::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
@@ -222,6 +231,7 @@ void AGnuMonster::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamag
 	if (CurrentHealth <= 0)
 	{
 		Die();
+		bIsDead = true;
 	}
 }
 
@@ -268,6 +278,13 @@ void AGnuMonster::StartRetryCooldown()
 void AGnuMonster::Die()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Black, TEXT("Boss has died!"));
+
+	// FirebreathActor 제거
+	if (FirebreathActor)
+	{
+		FirebreathActor->Destroy();
+		FirebreathActor = nullptr; // 포인터 초기화
+	}
 
 	// AIController에서 Behavior Tree 중지
 	AGnuMonsterAIController* AIController = Cast<AGnuMonsterAIController>(GetController());
@@ -517,6 +534,56 @@ void AGnuMonster::SpawnGroundSpikeAttack()
 			}
 		}
 	}
+}
+
+void AGnuMonster::StartCraterAttack()
+{
+	if (CraterActorClass)
+	{
+		GetWorldTimerManager().SetTimer(CraterTimerHandle1, this, &AGnuMonster::SpawnCrater, 2.f, true);
+		GetWorldTimerManager().SetTimer(CraterTimerHandle2, this, &AGnuMonster::SpawnCrater, 2.f, true);
+		GetWorldTimerManager().SetTimer(CraterTimerHandle3, this, &AGnuMonster::SpawnCrater, 2.f, true);
+	}
+
+	DeactivateCapsuleComp();
+}
+
+void AGnuMonster::EndCraterAttack()
+{
+	StopSpawning();
+}
+
+void AGnuMonster::SpawnCrater()
+{
+	if (!CraterActorClass) return;
+
+	FVector Origin = GetActorLocation();
+	Origin.Z = 0.f;
+
+	// 랜덤 방향과 거리
+	float RandomAngle = FMath::RandRange(0.f, 360.f); // 0도 ~ 360도
+	float RandomDistance = FMath::RandRange(0.f, 4000.f); // 최소 ~ 최대 반경
+
+	// 랜덤한 방향으로 위치 계산
+	FVector RandomOffset = FVector(
+		FMath::Cos(FMath::DegreesToRadians(RandomAngle)) * RandomDistance,
+		FMath::Sin(FMath::DegreesToRadians(RandomAngle)) * RandomDistance,
+		0.f // 높이는 고정
+	);
+
+	FVector SpawnLocation = Origin + RandomOffset;
+
+	// 소환
+	AGnuLavaBurstActor* SpawnCrater = GetWorld()->SpawnActor<AGnuLavaBurstActor>(CraterActorClass, SpawnLocation, FRotator::ZeroRotator);
+}
+
+void AGnuMonster::StopSpawning()
+{
+	GetWorldTimerManager().ClearTimer(CraterTimerHandle1);
+	GetWorldTimerManager().ClearTimer(CraterTimerHandle2);
+	GetWorldTimerManager().ClearTimer(CraterTimerHandle3);
+
+	ActivateCapsuleComp();
 }
 
 // 근거리 공격 부분 (3개)
@@ -802,6 +869,10 @@ void AGnuMonster::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 
 
 void AGnuMonster::OnRep_GroundSpeed()
+{
+}
+
+void AGnuMonster::OnRep_Direction()
 {
 }
 

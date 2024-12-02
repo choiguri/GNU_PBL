@@ -29,8 +29,6 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	
-
 	// 몬스터 콜리전 관련 함수
 	void ActivateSkeletalMesh();
 	void ActivateCapsuleComp();
@@ -45,8 +43,17 @@ public:
 	void SpawnGroundAttack(); // 그라운드 돌 공격 소환 함수
 	void SpawnGroundSpikeAttack(); // 그라운드 5방향 스파이크 소환 함수
 
-	void BodyAttack();
+	// Crater 공격 함수
+	void StartCraterAttack();
+	void EndCraterAttack();
+	void SpawnCrater();
+	void StopSpawning();
+	FTimerHandle CraterTimerHandle1;
+	FTimerHandle CraterTimerHandle2;
+	FTimerHandle CraterTimerHandle3;
 
+
+	void BodyAttack();
 	
 	void KnockbackPlayer(ACharacter* PlayerCharacter);	// 공격 맞았으면 플레이어가 뒤로 밀려나도록 하기
 	float KnockbackStrength; // 넉백 힘
@@ -62,13 +69,24 @@ public:
 	UPROPERTY(ReplicatedUsing = OnRep_GroundSpeed, BlueprintReadOnly, Category = "AnimData")
 	float GroundSpeed;
 
+	UPROPERTY(ReplicatedUsing = OnRep_Direction, BlueprintReadOnly, Category = "AnimData")
+	float Direction;
+
 	UFUNCTION()
 	void OnRep_GroundSpeed();
+
+	UFUNCTION()
+	void OnRep_Direction();
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastPlayMontage(UAnimMontage* MontageToPlay);
 
 	//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 애니메이션 관련 끝 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ//
+
+	// 상태들
+	bool bIsDead = false;
+	bool bIsPhaseTwo = false;		// 페이즈 2 여부 확인
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -114,10 +132,6 @@ protected:
 #endif
 
 private:
-	// 페이즈 2 여부 확인
-	bool bIsPhaseTwo = false;
-
-
 	UFUNCTION()	// 몬스터 발톱 공격에 맞았는지
 	void OnClawOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
@@ -182,10 +196,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack|ActorClass")	// Ground Spike의 각 위치(5방향) 별로 발사시킬 콜리전
 	TSubclassOf<class AGnuGroundSpikeCollisionActor> GroundSpikeCollisionClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack|ActorClass")
+	TSubclassOf<class AGnuLavaBurstActor> CraterActorClass;
 
 	// Tick에서 위치 처리를 위해
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack|Actor")
 	AGnuFirebreathActor* FirebreathActor;
+
+	
 
 	// 근접 공격 콜리전 활성, 비활성
 	UFUNCTION()

@@ -38,7 +38,7 @@ public:
 
     // 죽음 상태인지 확인을 위한 변수
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
-    bool bIsDead = true;
+    bool bIsDead;
 
     // 인트로 몽타주 실행 했는지 확인
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
@@ -103,11 +103,8 @@ protected:
     float Speed;
 
     UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "AnimData")
-    float Direction;
+    float Direction_Anim;
 
-
-    // 멀티 관련
-    virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 private:
 
 public:

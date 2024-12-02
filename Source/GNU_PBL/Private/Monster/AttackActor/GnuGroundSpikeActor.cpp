@@ -4,7 +4,6 @@
 #include "Monster/AttackActor/GnuGroundSpikeActor.h"
 #include "NiagaraComponent.h" // UNiagaraComponent 헤더 추가
 #include "NiagaraFunctionLibrary.h" // Niagara 기능을 위한 헤더
-#include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 

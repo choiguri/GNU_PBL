@@ -30,6 +30,11 @@ void UGnuAttackStartNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequen
                 Monster->ActivateBodyCollision(); // 몸통 공격 콜리전 활성화
                 GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, TEXT("Body Collision Activate"));
             }
+            else if (AnimInstance->Montage_IsPlaying(AnimInstance->FlyingDodgeMontage))
+            {
+                Monster->StartCraterAttack(); // 분화구 스폰 시작
+                GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, TEXT("Start Spawn Crater"));
+            }
             else if (AnimInstance->Montage_IsPlaying(AnimInstance->FirebreathAttackMontage))
             {
                 if (Monster->FirebreathActor == nullptr)

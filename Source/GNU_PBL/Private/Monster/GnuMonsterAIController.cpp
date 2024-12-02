@@ -12,100 +12,11 @@
 
 AGnuMonsterAIController::AGnuMonsterAIController()
 {
-    SetUpPerceptionComponent();
-
-    bReplicates = true;
-    SetReplicateMovement(true);
-}
-
-void AGnuMonsterAIController::BeginPlay()
-{
-    Super::BeginPlay();
-
-    // BehaviorTree 실행
-    if (AIBehavior != nullptr)
-    {
-        RunBehaviorTree(AIBehavior);
-
-        if (UBlackboardComponent* BlackboardComp = GetBlackboardComponent())
-        {
-            BlackboardComp->SetValueAsVector(TEXT("StartLocation"), GetPawn()->GetActorLocation());
-        }
-    }
-
-    if (HasAuthority())
-    {
-        TargetLocation = FVector::ZeroVector;
-        TargetDist = 0.0f;
-
-        GetBlackboardComponent()->SetValueAsVector(TEXT("PlayerLocation"), TargetLocation);
-        GetBlackboardComponent()->SetValueAsFloat(TEXT("DistToTarget"), TargetDist);
-
-    }
-
-    SetReplicates(true);
-
-
-    // 타겟 변경 시간 설정
-    TargetUpdateInterval = 15.f;
-
-    // 타이머 설정
-    GetWorld()->GetTimerManager().SetTimer(TargetUpdateTimerHandle, this, &ThisClass::UpdateTarget, TargetUpdateInterval, true);
-}
-
-
-void AGnuMonsterAIController::Tick(float DeltaSeconds)
-{
-    Super::Tick(DeltaSeconds);
-
-    // 플레이어 캐릭터를 감지하여 타겟을 업데이트
-    // 현재 타겟 업데이트
-    ACharacter* CurrentTarget = Cast<ACharacter>(GetBlackboardComponent()->GetValueAsObject(TEXT("TargetActor")));
-
-    if (CurrentTarget)
-    {
-        // 타겟의 위치를 계속 업데이트
-        GetBlackboardComponent()->SetValueAsVector(TEXT("PlayerLocation"), TargetActor->GetActorLocation());
-
-        // GnuMonster의 위치 가져오기
-        AGnuMonster* MonsterActor = Cast<AGnuMonster>(GetPawn());
-        if (MonsterActor)
-        {
-            // 두 Actor 간의 거리 계산
-            TargetDist = FVector::Dist(MonsterActor->GetActorLocation(), TargetActor->GetActorLocation());
-
-            // DistToTarget 블랙보드 키에 저장
-            GetBlackboardComponent()->SetValueAsFloat(TEXT("DistToTarget"), TargetDist);
-        }
-    }
-    else if (bCanRetry && CurrentTarget == nullptr)
-    {
-        // 타겟이 없으면 재시도
-        UpdateTarget();
-        GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("No Target Detected. Retrying..."));
-
-        // 재시도 제한 시작
-        StartRetryCooldown();
-    }
-}
-
-
-void AGnuMonsterAIController::StopBehaviorTree()
-{
-    if (BrainComponent)
-    {
-        BrainComponent->StopLogic(TEXT("Monster Died"));
-    }
-}
-
-// 인식 설정 함수
-void AGnuMonsterAIController::SetUpPerceptionComponent()
-{
     SightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("SightConfig"));
+    AIPerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AIPerceptionComponent"));
+
     if (SightConfig)
     {
-        AIPerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AIPerceptionComponent"));
-
         SightConfig->SightRadius = 4000.f; // 감지 반경
         SightConfig->LoseSightRadius = 5000.0f; // 감지 상실 반경
         SightConfig->PeripheralVisionAngleDegrees = 360.0f; // 시야 각도
@@ -120,80 +31,168 @@ void AGnuMonsterAIController::SetUpPerceptionComponent()
         // 감지 이벤트 연결
         AIPerceptionComponent->OnTargetPerceptionUpdated.AddUniqueDynamic(this, &ThisClass::OnTargetDetected);
     }
+
+    bReplicates = true;
 }
 
+void AGnuMonsterAIController::BeginPlay()
+{
+    Super::BeginPlay();
 
-// 초기 타겟 지정
+    if (AIBehavior)
+    {
+        RunBehaviorTree(AIBehavior);
+        if (UBlackboardComponent* BlackboardComp = GetBlackboardComponent())
+        {
+            BlackboardComp->SetValueAsVector(TEXT("StartLocation"), GetPawn()->GetActorLocation());
+        }
+    }
+
+    TargetUpdateInterval = 15.f;    // 타겟 변경 주기 시간 설정
+    GetWorld()->GetTimerManager().SetTimer(TargetUpdateTimerHandle, this, &ThisClass::UpdateTarget, TargetUpdateInterval, true);    // 타이머 설정
+}
+
+void AGnuMonsterAIController::Tick(float DeltaSeconds)
+{
+    Super::Tick(DeltaSeconds);
+
+    if (HasAuthority())
+    {
+        UpdateTargetDistance();     // 타겟과의 거리 계산
+        UpdateMonsterHealth();      // 몬스터 현재 hp 블랙보드 키값 업데이트
+    }
+
+    ACharacter* CurrentTarget = Cast<ACharacter>(GetBlackboardComponent()->GetValueAsObject(TEXT("TargetActor")));
+    if (CurrentTarget == nullptr && bCanRetry)
+    {
+        UpdateTarget();
+
+        GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("No Target Detected. Retrying..."));
+        StartRetryCooldown();
+    }
+}
+
+// 초기 타겟 감지 설정
 void AGnuMonsterAIController::OnTargetDetected(AActor* Actor, FAIStimulus const Stimulus)
 {
-    if (!GetBlackboardComponent() || !Actor || !Actor->IsValidLowLevel())
+    if (!Stimulus.WasSuccessfullySensed() || !Actor || !Actor->IsA<ACharacter>() || !HasAuthority())
     {
         return;
     }
 
-    // 타겟 탐지 성공 시
-    if (Stimulus.WasSuccessfullySensed())
+    ACharacter* DetectedCharacter = Cast<ACharacter>(Actor);
+    if (DetectedCharacter && DetectedCharacter->IsA(AGnuMyCharacter::StaticClass()))
     {
-        // SensedCharacter가 특정 클래스인지 확인
-        AGnuMyCharacter* SensedCharacter = Cast<AGnuMyCharacter>(Actor);
-        if (SensedCharacter && SensedCharacter->IsA<AGnuMyCharacter>())
-        {
-            // 기존 타겟 가져오기
-            AGnuMyCharacter* CurrentTarget = Cast<AGnuMyCharacter>(GetBlackboardComponent()->GetValueAsObject(FName("TargetActor")));
+        SetNewTarget(DetectedCharacter);
+    }
+}
 
-            // 기존 타겟이 없거나, 가장 가까운 플레이어를 찾기
-            if (!CurrentTarget || IsCloser(SensedCharacter, CurrentTarget))
-            {
-                SetNewTarget(SensedCharacter);
-            }
-        }
+// 꾸준히 감지할 타겟 업데이트 함수
+void AGnuMonsterAIController::UpdateTarget()
+{
+    if (!HasAuthority() || !AIPerceptionComponent)
+    {
+        return;
+    }
 
-        // 콜리전 활성화 시키기
-        APawn* ControlledPawn = GetPawn(); // AI가 컨트롤하는 Pawn
-        AGnuMonster* GnuMonster = Cast<AGnuMonster>(ControlledPawn);
-        if (GnuMonster)
+    TArray<AActor*> DetectedActors;     // 감지된 액터 보관할 배열
+    AIPerceptionComponent->GetCurrentlyPerceivedActors(UAISense_Sight::StaticClass(), DetectedActors); // 인식 AI로 감지된 모든 액터 가져오기
+
+    ACharacter* NewTarget = nullptr;    // 가장 가까운 플레이어 저장할 변수
+    float ClosestDistance = FLT_MAX;        // 가장 가까운 액터까지의 거리 저장할 변수
+
+    for (AActor* Actor : DetectedActors)    // 감지된 액터 하나씩 순회
+    {
+        ACharacter* PlayerCharacter = Cast<ACharacter>(Actor);  // PlayerCharacter가 GnuMyCharacter인지 확인
+        if (PlayerCharacter && PlayerCharacter->IsA(AGnuMyCharacter::StaticClass()))    // GnuMyCharacter로 대체
         {
-            GnuMonster->ActivateSkeletalMesh();
-            GnuMonster->ActivateCapsuleComp();
-        }
-        else
-        {
-            GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Blue, TEXT("Failed ActivateCollision!!"));
-        }
-        
-        // 인트로 몽타주 설정
-        if (ControlledPawn)
-        {
-            // 몬스터 캐스트
-            AGnuMonster* ControlledMonster = Cast<AGnuMonster>(ControlledPawn);
-            if (ControlledMonster)
+            float Distance = FVector::Dist(PlayerCharacter->GetActorLocation(), GetPawn()->GetActorLocation());
+            if (Distance < ClosestDistance)     // 더 가까운 플레이어 찾기
             {
-                // AnimInstance 가져오기
-                UGnuMonsterAnimInstance* AnimInstance = Cast<UGnuMonsterAnimInstance>(ControlledMonster->GetMesh()->GetAnimInstance());
-                if (AnimInstance && AnimInstance->bIsPlayIntro == false)
-                {
-                    // Intro Montage 실행
-                    AnimInstance->PlayIntroMontage();
-                }
+                NewTarget = PlayerCharacter;
+                ClosestDistance = Distance;
             }
         }
     }
+
+    
+    if (NewTarget)
+    {
+        SetNewTarget(NewTarget);    // 새 타겟 설정
+        ActivateMonster();          // 몬스터 콜리전 활성화
+    }
     else
     {
-        // 타겟 상실 시 블랙보드에서 TargetActor와 PlayerLocation 초기화
-        /*GetBlackboardComponent()->ClearValue(FName("TargetActor"));
-        GetBlackboardComponent()->ClearValue(FName("PlayerLocation"));
-        GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Orange, TEXT("Perception Target loss"));*/
+        ClearTarget(); // 인식한 타겟이 없으면 TargacActor 클리어
+    }
+}
 
-        APawn* ControlledPawn = GetPawn(); // AI가 컨트롤하는 Pawn
-        AGnuMonster* GnuMonster = Cast<AGnuMonster>(ControlledPawn);
-        if (GnuMonster)
+// BehaviorTree 종료 함수
+void AGnuMonsterAIController::StopBehaviorTree()
+{
+    if (BrainComponent)
+    {
+        BrainComponent->StopLogic(TEXT("Monster Died"));
+    }
+}
+
+// TargetActor와 거리 계산
+void AGnuMonsterAIController::UpdateTargetDistance()
+{
+    ACharacter* CurrentTarget = Cast<ACharacter>(GetBlackboardComponent()->GetValueAsObject(TEXT("TargetActor")));
+    if (CurrentTarget)
+    {
+        float Distance = FVector::Dist(CurrentTarget->GetActorLocation(), GetPawn()->GetActorLocation());
+        GetBlackboardComponent()->SetValueAsFloat(TEXT("DistToTarget"), Distance);
+    }
+}
+
+void AGnuMonsterAIController::UpdateMonsterHealth()
+{
+    AGnuMonster* GnuMonster = Cast<AGnuMonster>(GetPawn());
+    if (GnuMonster)
+    {
+        GetBlackboardComponent()->SetValueAsFloat(TEXT("CurrentHealth"), GnuMonster->CurrentHealth);
+    }
+}
+
+// 블랙보드 TargetActor 업데이트
+void AGnuMonsterAIController::SetNewTarget(ACharacter* NewTarget)
+{
+    // 타겟 설정
+    if (HasAuthority())
+    {
+        TargetActor = NewTarget;
+        GetBlackboardComponent()->SetValueAsObject(TEXT("TargetActor"), NewTarget);
+    }
+
+    // 타겟을 처음 인식했을 때만 Intro Montage를 실행
+    AGnuMonster* GnuMonster = Cast<AGnuMonster>(GetPawn());
+    if (GnuMonster)
+    {
+        UGnuMonsterAnimInstance* AnimInstance = Cast<UGnuMonsterAnimInstance>(GnuMonster->GetMesh()->GetAnimInstance());
+        if (AnimInstance && AnimInstance->bIsPlayIntro)  // 아직 Intro를 실행하지 않았다면
         {
-            GnuMonster->DeactivateCapsuleComp();
-            GnuMonster->DeactivateSkeletalMesh();
+            // Intro Montage 실행
+            AnimInstance->PlayIntroMontage();
+            AnimInstance->bIsPlayIntro = false;  // 인트로 애니메이션을 실행했으므로 false로 설정
         }
-        
-        UpdateTarget();
+    }
+}
+
+// 인식한 타겟이 사라지면 실행할 함수
+void AGnuMonsterAIController::ClearTarget()
+{
+    // 타겟 삭제
+    TargetActor = nullptr;
+    GetBlackboardComponent()->ClearValue(TEXT("TargetActor"));
+
+    // 몬스터 콜리전 비활성화
+    AGnuMonster* GnuMonster = Cast<AGnuMonster>(GetPawn());
+    if (GnuMonster)
+    {
+        GnuMonster->DeactivateCapsuleComp();
+        GnuMonster->DeactivateSkeletalMesh();
     }
 }
 
@@ -210,79 +209,16 @@ void AGnuMonsterAIController::StartRetryCooldown()
     );
 }
 
-
-// 새 타겟 지정
-void AGnuMonsterAIController::SetNewTarget(ACharacter* NewTarget)
+// 몬스터 콜리전 활성화 함수
+void AGnuMonsterAIController::ActivateMonster()
 {
-    GEngine->AddOnScreenDebugMessage(-1, 4, FColor::Yellow, TEXT("SetNewTarget Function Call!"));
-    if (HasAuthority())
+    AGnuMonster* Monster = Cast<AGnuMonster>(GetPawn());
+    if (Monster)
     {
-        TargetActor = NewTarget;
-
-        GetBlackboardComponent()->SetValueAsObject(TEXT("TargetActor"), TargetActor);
+        Monster->ActivateSkeletalMesh();
+        Monster->ActivateCapsuleComp();
     }
 }
-
-void AGnuMonsterAIController::OnRep_TargetActor()
-{
-    GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Black, TEXT("OnRep_TargetActor"));
-
-    GetBlackboardComponent()->SetValueAsObject("TargetActor", TargetActor);
-}
-
-void AGnuMonsterAIController::OnRep_TargetLocation()
-{
-    GetBlackboardComponent()->SetValueAsVector(TEXT("PlayerLocation"), TargetLocation);
-}
-
-void AGnuMonsterAIController::OnRep_DistToTarget()
-{
-    GetBlackboardComponent()->SetValueAsFloat(TEXT("DistToTarget"), TargetDist);
-}
-
-// 가까운 캐릭터 찾기
-bool AGnuMonsterAIController::IsCloser(ACharacter* NewTarget, ACharacter* CurrentTarget)
-{
-    float NewTargetDistance = FVector::Dist(NewTarget->GetActorLocation(), GetPawn()->GetActorLocation());
-    float CurrentTargetDistance = FVector::Dist(CurrentTarget->GetActorLocation(), GetPawn()->GetActorLocation());
-    return NewTargetDistance < CurrentTargetDistance;
-}
-
-
-// 타겟 업데이트 함수
-void AGnuMonsterAIController::UpdateTarget()
-{
-    ACharacter* CurrentTarget = Cast<ACharacter>(GetBlackboardComponent()->GetValueAsObject(FName("TargetActor")));
-    TArray<AActor*> DetectedActors;
-    AIPerceptionComponent->GetCurrentlyPerceivedActors(UAISense_Sight::StaticClass(), DetectedActors);
-
-    ACharacter* NewTarget = nullptr;
-    float ClosestDistance = FLT_MAX;
-
-    for (AActor* Actor : DetectedActors)
-    {
-        ACharacter* PlayerCharacter = Cast<ACharacter>(Actor);
-        // PlayerCharacter가 GnuMyCharacter인지 확인
-        if (PlayerCharacter && PlayerCharacter->IsA(AGnuMyCharacter::StaticClass())) // GnuMyCharacter로 대체
-        {
-            float Distance = FVector::Dist(PlayerCharacter->GetActorLocation(), GetPawn()->GetActorLocation());
-
-            // 현재 타겟이 없거나 가까운 플레이어를 찾기
-            if (CurrentTarget == nullptr || Distance < ClosestDistance)
-            {
-                NewTarget = PlayerCharacter;
-                ClosestDistance = Distance;
-            }
-        }
-    }
-
-    // 새 타겟 설정
-    if (NewTarget)
-    {
-        SetNewTarget(NewTarget);
-    }
-}
-
 
 void AGnuMonsterAIController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -290,10 +226,9 @@ void AGnuMonsterAIController::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 
     // TargetActor 리플리케이션
     DOREPLIFETIME(AGnuMonsterAIController, TargetActor);
+}
 
-    // TargetLocation 리플리케이션
-    DOREPLIFETIME(AGnuMonsterAIController, TargetLocation);
-
-    // TargetDist 리플리케이션
-    DOREPLIFETIME(AGnuMonsterAIController, TargetDist);
+void AGnuMonsterAIController::OnRep_TargetActor()
+{
+    GetBlackboardComponent()->SetValueAsObject(TEXT("TargetActor"), TargetActor);
 }

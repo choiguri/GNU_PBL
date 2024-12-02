@@ -27,19 +27,21 @@ public:
 	UFUNCTION()
 	void StopBehaviorTree();
 
-	//// 몬스터를 참조하기 위한 변수
-	//UPROPERTY()
-	//AGnuMonster* GnuMonster;
+	void UpdateTargetDistance();
+
+	void UpdateMonsterHealth();
+
+	void ActivateMonster();
 
 	// Behaviortree 변수들 레플리케이트
 	UPROPERTY(ReplicatedUsing = OnRep_TargetActor)
 	AActor* TargetActor;
 
-	UPROPERTY(ReplicatedUsing = OnRep_TargetLocation)
+	/*UPROPERTY(ReplicatedUsing = OnRep_TargetLocation)
 	FVector TargetLocation;
 
 	UPROPERTY(ReplicatedUsing = OnRep_DistToTarget)
-	float TargetDist;
+	float TargetDist;*/
 
 protected:
 	virtual void BeginPlay() override;
@@ -47,12 +49,11 @@ protected:
 	UFUNCTION()
 	void OnRep_TargetActor();
 
-	UFUNCTION()
+	/*UFUNCTION()
 	void OnRep_TargetLocation();
 
 	UFUNCTION()
-	void OnRep_DistToTarget();
-
+	void OnRep_DistToTarget();*/
 
 
 	// 인식 시키는 컴포넌트 추가
@@ -69,15 +70,12 @@ protected:
 	UBehaviorTree* AIBehavior;
 
 
-	// 인식 관련 컴포넌트
-	void SetUpPerceptionComponent();
-
 	UFUNCTION()
 	void UpdateTarget();
 
 	void SetNewTarget(ACharacter* NewTarget);
 
-	bool IsCloser(ACharacter* NewTarget, ACharacter* CurrentTarget);
+	void ClearTarget();
 
 	// Target 지정하는 함수 지정 (Array 형식으로 Actor들 인식시키기)
 	UFUNCTION()
@@ -91,7 +89,6 @@ private:
 	// 타겟 변경 타이머
 	FTimerHandle TargetUpdateTimerHandle;
 	float TargetUpdateInterval;
-
 
 	// Tick 에서 타겟 변경 재시도 쿨다운 타이머
 	FTimerHandle RetryCooldownTimerHandle;
