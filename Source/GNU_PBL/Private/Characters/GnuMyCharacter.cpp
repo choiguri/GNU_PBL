@@ -129,14 +129,13 @@ AGnuMyCharacter::AGnuMyCharacter()
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 
 	SpawnCollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-	isHealCoolDown = false;
 
+	// skill cooltime
+	isHealCoolDown = false;
+	isArrowCoolDown = false;
+	isGrenadeCoolDown = false;
 
 	DissolveTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("DissolveTimelineComponent"));
-
-	
-	
-	
 }
 
 void AGnuMyCharacter::PlayCameraShake()
@@ -454,17 +453,26 @@ void AGnuMyCharacter::ServerMontageOnDodge_Implementation(float Forward, float R
 		return;
 	}
 
-	// 기존
-	/*isReload = false;*/
-	// ��Ÿ�� ����
-	SetDodgeMontage(Forward, Right);
+	isDodge = true;
+
+	FVector AddVector = FVector::ZeroVector;
+	SetDodgeMontage(Forward, Right, &AddVector);
 
 	// 몽타주가 유효한 경우 재생
 	if (DodgeMontage)
 	{
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-
 		PlayAnimMontage(DodgeMontage);
+		//GetCharacterMovement()->AddImpulse(AddVector, true);
+
+		if (AnimInstance)
+		{
+			FOnMontageEnded MontageEndedDelegate;
+			MontageEndedDelegate.BindUObject(this, &AGnuMyCharacter::OnDodgeMontageEnded);
+			AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, DodgeMontage);
+		}
+
+		LaunchCharacter(AddVector, true, true);
 		// 멀티캐스트 호출
 		MultiCastMontage_Dodge(Forward, Right);
 	}
@@ -482,36 +490,85 @@ void AGnuMyCharacter::MultiCastMontage_Dodge_Implementation(float Forward, float
 		return;
 	}
 
-	// 몽타주 설정
-	SetDodgeMontage(Forward, Right);
+	isDodge = true;
+
+	FVector AddVector = FVector::ZeroVector;
+	SetDodgeMontage(Forward, Right, &AddVector);
 
 	// 몽타주가 유효한 경우 재생
 	if (DodgeMontage)
 	{
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-
 		PlayAnimMontage(DodgeMontage);
+
+		if (AnimInstance)
+		{
+			FOnMontageEnded MontageEndedDelegate;
+			MontageEndedDelegate.BindUObject(this, &AGnuMyCharacter::OnDodgeMontageEnded);
+			AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, DodgeMontage);
+		}
+
+		// 캐릭터를 대쉬 방향으로 이동
+		LaunchCharacter(AddVector, true, true);
 	}
 }
 
-void AGnuMyCharacter::SetDodgeMontage(float Forward, float Right)
+void AGnuMyCharacter::SetDodgeMontage(float Forward, float Right, FVector* addVector)
 {
 	DodgeMontage = nullptr;
-
+	
 	if (Forward == 0)
 	{
 		// Forward가 0인 경우, Right를 확인
 		if (Right != 0)
 		{
 			// Right가 0보다 크면 DiveRoll_R_Montage, 그렇지 않으면 DiveRoll_L_Montage 저장
-			DodgeMontage = (Right > 0) ? DiveRoll_R_Montage : DiveRoll_L_Montage;
+			if (Right > 0)
+			{
+				DodgeMontage = DiveRoll_R_Montage;
+				*addVector = GetActorRightVector() * 10000;
+			}
+			else
+			{
+				DodgeMontage = DiveRoll_L_Montage;
+				*addVector = GetActorRightVector() * -10000;
+			}
 		}
 	}
 	else
 	{
 		// Forward가 0보다 크면 DiveRoll_F_Montage, 그렇지 않으면 DiveRoll_B_Montage 저장
-		DodgeMontage = (Forward > 0) ? DiveRoll_F_Montage : DiveRoll_B_Montage;
+		if (Forward > 0)
+		{
+			DodgeMontage = DiveRoll_F_Montage;
+			*addVector = GetActorForwardVector() * 10000;
+		}
+		else
+		{
+			DodgeMontage = DiveRoll_B_Montage;
+			*addVector = GetActorForwardVector() * -10000;
+		}
 	}
+}
+
+void AGnuMyCharacter::OnDodgeMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	if (Montage == DodgeMontage)
+	{
+		isDodge = false; // 구르기 상태 해제
+	}
+}
+
+void AGnuMyCharacter::StartDodgeCooldown()
+{
+	isDodgeCoolDown = true;
+	GetWorld()->GetTimerManager().SetTimer(DodgeCoolDownTimer, this, &AGnuMyCharacter::EndDodgeCooldown, 10.0f, false);
+}
+
+void AGnuMyCharacter::EndDodgeCooldown()
+{
+	isDodgeCoolDown = false; // 쿨타임 해제
+	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, TEXT("Dodge Cooldown ended!"));
 }
 // -------------------------------------------------------------------------
 
@@ -583,7 +640,7 @@ void AGnuMyCharacter::SetDodgeMontage(float Forward, float Right)
 //--------------------------- Heal Skill --------------------------------
 void AGnuMyCharacter::SpawnHeal()
 {
-	if (HealClass)
+	if (HealClass && GetEquippedWeapon())
 	{
 		if (!isHealCoolDown)
 		{
@@ -596,20 +653,20 @@ void AGnuMyCharacter::SpawnHeal()
 
 			if (Heal)
 			{
-				StartCooldown();
+				StartHealCooldown();
 				Heal->SetOwner(this); // 이거 안해주면 GnuHealActor에서 onwer가 누군지 몰라서 오류가 난다
 			}
 		}
 	}
 }
 
-void AGnuMyCharacter::StartCooldown()
+void AGnuMyCharacter::StartHealCooldown()
 {
 	isHealCoolDown = true;
-	GetWorld()->GetTimerManager().SetTimer(HealCoolDownTimer, this, &AGnuMyCharacter::EndCooldown, 10.0f, false);
+	GetWorld()->GetTimerManager().SetTimer(HealCoolDownTimer, this, &AGnuMyCharacter::EndHealCooldown, 10.0f, false);
 }
 
-void AGnuMyCharacter::EndCooldown()
+void AGnuMyCharacter::EndHealCooldown()
 {
 	isHealCoolDown = false; // 쿨타임 해제
 	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, TEXT("Heal Cooldown ended!"));
@@ -622,32 +679,48 @@ void AGnuMyCharacter::SpawnArrow()
 {
 	if (ArrowClass && GetEquippedWeapon())
 	{
-		FVector SpawnLocation = Combat->EquippedWeapon->GetMesh()->GetSocketLocation("MuzzleFlashSocket");
-		FRotator SpawnRotation = Combat->EquippedWeapon->GetMesh()->GetSocketRotation("MuzzleFlashSocket");
-		FTransform SpawnTransform(SpawnRotation, SpawnLocation);
-			
-		
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.Owner = GetOwner();
-		SpawnParams.Instigator = this;
-		UWorld* World = GetWorld();
-		if (World)
+		if (!isArrowCoolDown)
 		{
-			AGnuProjectileActor* Arrow = World->SpawnActor<AGnuProjectileActor>(ArrowClass, SpawnTransform, SpawnParams);
-			if (Arrow)
+			FVector SpawnLocation = Combat->EquippedWeapon->GetMesh()->GetSocketLocation("MuzzleFlashSocket");
+			FRotator SpawnRotation = Combat->EquippedWeapon->GetMesh()->GetSocketRotation("MuzzleFlashSocket");
+			FTransform SpawnTransform(SpawnRotation, SpawnLocation);
+
+
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.Owner = GetOwner();
+			SpawnParams.Instigator = this;
+			UWorld* World = GetWorld();
+			if (World)
 			{
-				Arrow->SetOwner(this);
-				Arrow->LaunchProjectile(this);
+				AGnuProjectileActor* Arrow = World->SpawnActor<AGnuProjectileActor>(ArrowClass, SpawnTransform, SpawnParams);
+				if (Arrow)
+				{
+					StartArrowCooldown();
+					Arrow->SetOwner(this);
+					Arrow->LaunchProjectile(this);
+				}
 			}
 		}
 	}
+}
+
+void AGnuMyCharacter::StartArrowCooldown()
+{
+	isArrowCoolDown = true;
+	GetWorld()->GetTimerManager().SetTimer(ArrowCoolDownTimer, this, &AGnuMyCharacter::EndArrowCooldown, 1.0f, false);
+}
+
+void AGnuMyCharacter::EndArrowCooldown()
+{
+	isArrowCoolDown = false; // 쿨타임 해제
+	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, TEXT("Arrow Cooldown ended!"));
 }
 // -------------------------------------------------------------------------
 
 //--------------------------- Grenade Skill --------------------------------
 void AGnuMyCharacter::SpawnGrenade()
 {
-	if (GrenadeClass)
+	if (GrenadeClass && GetEquippedWeapon())
 	{
 		FVector SpawnLocation = Combat->EquippedWeapon->GetMesh()->GetSocketLocation("MuzzleFlashSocket");
 		FRotator SpawnRotation = Combat->EquippedWeapon->GetMesh()->GetSocketRotation("MuzzleFlashSocket");
@@ -656,10 +729,23 @@ void AGnuMyCharacter::SpawnGrenade()
 		AGnuGrenadeActor* Grenade = GetWorld()->SpawnActor<AGnuGrenadeActor>(GrenadeClass, SpawnTransform);
 		if (Grenade)
 		{
+			StartGrenadeCooldown();
 			Grenade->SetOwner(this);
 			Grenade->LaunchProjectile(this, SpawnLocation, SpawnRotation);
 		}
 	}
+}
+
+void AGnuMyCharacter::StartGrenadeCooldown()
+{
+	isGrenadeCoolDown = true;
+	GetWorld()->GetTimerManager().SetTimer(GrenadeCoolDownTimer, this, &AGnuMyCharacter::EndGrenadeCooldown, 1.0f, false);
+}
+
+void AGnuMyCharacter::EndGrenadeCooldown()
+{
+	isGrenadeCoolDown = false; // 쿨타임 해제
+	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, TEXT("Grenade Cooldown ended!"));
 }
 // -------------------------------------------------------------------------
 

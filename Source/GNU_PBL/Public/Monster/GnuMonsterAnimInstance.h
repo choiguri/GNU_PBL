@@ -25,8 +25,11 @@ public:
     virtual void NativeThreadSafeUpdateAnimation(float DeltaSeconds) override;
 
     // 현재 몬스터를 참조하기 위한 변수
-    UPROPERTY()
+    UPROPERTY(BlueprintReadOnly)
     AGnuMonster* MonsterOwner;
+
+    UPROPERTY(BlueprintReadOnly)
+    bool ShouldMove;
 
     UPROPERTY()
     UCharacterMovementComponent* MosnterMovementComponent;

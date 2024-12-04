@@ -74,7 +74,12 @@ public:
 	void ServerMontageOnDodge(float Forward, float Right); // 서버에서 구르기 몽타주를 실행하는 함수 (컨트롤러에서 호출)
 	UFUNCTION(NetMulticast, Reliable)
 	void MultiCastMontage_Dodge(float Forward, float Right); // 구르기 몽타주 멀티캐스트 (서버가 호출되면 자동으로 호출)
-	void SetDodgeMontage(float Forward, float Right);
+	void SetDodgeMontage(float Forward, float Right, FVector* addVector);
+	void OnDodgeMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+	FTimerHandle DodgeCoolDownTimer;
+	bool isDodgeCoolDown;
+	void StartDodgeCooldown();
+	void EndDodgeCooldown();
 	//---------------------------------------------------------------------------
 
 
@@ -135,23 +140,31 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
 	TSubclassOf<class AGnuProjectileActor> ArrowClass;
 	void SpawnArrow();
+	FTimerHandle ArrowCoolDownTimer;
+	bool isArrowCoolDown;
+	void StartArrowCooldown();
+	void EndArrowCooldown();
 	// -----------------------------------------------------------------------------------------
 	
 
 	// ------------------------------------- Heal Skill ----------------------------------------
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
 	TSubclassOf<class AGnuHealActor> HealClass;
+	void SpawnHeal();
 	FTimerHandle HealCoolDownTimer;
 	bool isHealCoolDown;
-	void SpawnHeal();
-	void StartCooldown();
-	void EndCooldown();
+	void StartHealCooldown();
+	void EndHealCooldown();
 	// -----------------------------------------------------------------------------------------
 
 	// ------------------------------------- Grenade Skill ----------------------------------------
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
 	TSubclassOf<class AGnuGrenadeActor> GrenadeClass;
 	void SpawnGrenade();
+	FTimerHandle GrenadeCoolDownTimer;
+	bool isGrenadeCoolDown;
+	void StartGrenadeCooldown();
+	void EndGrenadeCooldown();
 	// -----------------------------------------------------------------------------------------
 
 	void SetCamera();

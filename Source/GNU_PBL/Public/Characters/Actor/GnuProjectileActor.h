@@ -37,6 +37,15 @@ protected:
     UPROPERTY(VisibleAnywhere)
     UNiagaraComponent* NiagaraComponent;
 
+    UPROPERTY(VisibleAnywhere)
+    UNiagaraComponent* MuzzleComponent;
+
+    UPROPERTY(VisibleAnywhere)
+    UNiagaraComponent* TargetComponent;
+
+    UPROPERTY(VisibleAnywhere)
+    UNiagaraComponent* FlyComponent;
+
     UPROPERTY(EditAnywhere)
     UNiagaraSystem* NiagaraSystem;
 

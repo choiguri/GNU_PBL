@@ -6,6 +6,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "Characters/GnuMyCharacter.h"
 #include "TimerManager.h"  // 타이머 관련 클래스 포함
+#include "Kismet/GameplayStatics.h"
 
 AGnuHealActor::AGnuHealActor()
 {
@@ -46,13 +47,20 @@ void AGnuHealActor::Tick(float DeltaTime)
 
 void AGnuHealActor::Heal()
 {
-
+    ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+    if (OwnerCharacter)
+    {
+        AController* OwnerController = OwnerCharacter->Controller;
+        if (OwnerController)
+        {
+            UGameplayStatics::ApplyDamage(this, -Damage, OwnerController, this, UDamageType::StaticClass());
+        }
+    }
     GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, TEXT("Heal !"));
 }
 
 void AGnuHealActor::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-
 }
 
 void AGnuHealActor::EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)

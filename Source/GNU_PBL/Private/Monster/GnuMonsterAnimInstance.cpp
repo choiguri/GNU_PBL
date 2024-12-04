@@ -30,6 +30,7 @@ void UGnuMonsterAnimInstance::NativeInitializeAnimation()
     // 일단 true로 만들어서 안나오게
     // 계속 들으니까 귀찮음
     bIsPlayIntro = true;
+    ShouldMove = false;
 }
 
 void UGnuMonsterAnimInstance::NativeThreadSafeUpdateAnimation(float DeltaSeconds)
