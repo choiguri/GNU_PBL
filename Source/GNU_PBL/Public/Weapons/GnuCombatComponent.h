@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Weapons/GnuWeapon.h"
 #include "GnuCombatComponent.generated.h"
 
 #define TRACE_LENGTH 80000.f
@@ -71,13 +72,13 @@ private:
 	FTimerHandle FireTimer;
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
-	float FireDelay = .15f;
+	float FireDelay = 0;
 	
 	void StartFireTimer();
 	void FireTimerFinished();
 
-	// ³ªÁß¿¡ ÀÚµ¿ÀÌ ¾Æ´Ñ ¿þÆùÀ» À§ÇØ falseÀÌ¸é ´Ü¹ß·Î
-	// ¾Æ¸¶ GnuWeapon.h ·Î ¿Å°Ü¾ß ÇÔ
+	// ï¿½ï¿½ï¿½ß¿ï¿½ ï¿½Úµï¿½ï¿½ï¿½ ï¿½Æ´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ falseï¿½Ì¸ï¿½ ï¿½Ü¹ß·ï¿½
+	// ï¿½Æ¸ï¿½ GnuWeapon.h ï¿½ï¿½ ï¿½Å°Ü¾ï¿½ ï¿½ï¿½
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	bool bAutomatic = true;
 

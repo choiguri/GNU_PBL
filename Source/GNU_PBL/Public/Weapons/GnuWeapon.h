@@ -53,6 +53,13 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Crosshairs")
 	UTexture2D* CrosshairBottom;
 
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	float RPM = 400.f;
+
+	float Delay = .15f;
+
+
 protected:
 
 	virtual void BeginPlay() override;

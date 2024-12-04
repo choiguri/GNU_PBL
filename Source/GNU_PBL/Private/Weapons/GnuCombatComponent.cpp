@@ -38,7 +38,7 @@ void UGnuCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 
 	SetHUDCrosshairs(DeltaTime);
 
-	// ½Ç½Ã°£ LineTrace °ª HitTarget¿¡ ÇÒ´ç
+	// ï¿½Ç½Ã°ï¿½ LineTrace ï¿½ï¿½ HitTargetï¿½ï¿½ ï¿½Ò´ï¿½
 	if (GnuCharacter && GnuCharacter->IsLocallyControlled())
 	{
 		FHitResult HitResult;
@@ -72,7 +72,7 @@ void UGnuCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 	if (bScreenToWorld)
 	{
 		FVector Start = CrosshairWorldPosition;
-		// Ä«¸Þ¶ó¿Í Ä³¸¯ÅÍÀÇ °Å¸®¸¦ ±¸ÇÏ±â
+		// Ä«ï¿½Þ¶ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Å¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ï±ï¿½
 		if (GnuCharacter)
 		{
 			float DistanceToCharacter = (GnuCharacter->GetActorLocation() - Start).Size();
@@ -124,9 +124,9 @@ void UGnuCombatComponent::SetHUDCrosshairs(float DeltaTime)
 				HUDPackage.CrosshairBottom = nullptr;
 			}
 
-			// ½ÊÀÚ¼± ÆÛÁü °è»ê
-			// Ex Ä³¸¯ÅÍÀÇ ÃÖÀú¼Óµµ 0, ÃÖ°í¼Óµµ 500ÀÌ¸é  => ÃÖÀú¼Óµµ 0, ÃÖ°í¼Óµµ 1
-			// 0°ú 1»çÀÌÀÇ °ªÀ¸·Î º¯È¯
+			// ï¿½ï¿½ï¿½Ú¼ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+			// Ex Ä³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Óµï¿½ 0, ï¿½Ö°ï¿½Óµï¿½ 500ï¿½Ì¸ï¿½  => ï¿½ï¿½ï¿½ï¿½ï¿½Óµï¿½ 0, ï¿½Ö°ï¿½Óµï¿½ 1
+			// 0ï¿½ï¿½ 1ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯
 			
 			FVector2D WalkSpeedRange(0.f, GnuCharacter->GetCharacterMovement()->MaxWalkSpeed);
 			FVector2D VelocityMultiplierRange(0.f, 1.f);
@@ -179,6 +179,8 @@ void UGnuCombatComponent::OnRep_EquippedWeapon()
 void UGnuCombatComponent::FireButtonPressed(bool bPressed)
 {
 	if (EquippedWeapon == nullptr) return;
+
+	if (FireDelay != EquippedWeapon->Delay) FireDelay = EquippedWeapon->Delay;
 
 	bFireButtonPressed = bPressed;
 
@@ -264,7 +266,7 @@ void UGnuCombatComponent::ReloadButtonPressed(bool bPressed)
 {
 	bReloadButtonPressed = bPressed;
 	if (EquippedWeapon == nullptr) return;
-	if (GnuCharacter && !bFireButtonPressed) // !bFireButtonPressed Á¶°ÇÀ» »©¸é ÁÂÅ¬¸¯(¹ß»ç)À» ¶¼Áö ¾Ê¾Æµµ ¹Ù·Î ÀçÀåÀü °¡´É
+	if (GnuCharacter && !bFireButtonPressed) // !bFireButtonPressed ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Å¬ï¿½ï¿½(ï¿½ß»ï¿½)ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¾Æµï¿½ ï¿½Ù·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	{
 		EquippedWeapon->Reload();
 		GnuCharacter->PlayReloadMontage();
@@ -278,18 +280,18 @@ void UGnuCombatComponent::ReloadFinished(bool bPressed)
 	bReloadButtonPressed = bPressed;
 }
 
-// ¹«±â ÀåÂø
+// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 void UGnuCombatComponent::EquipWeapon(AGnuWeapon* WeaponToEquip)
 {
 	if (GnuCharacter == nullptr) return;
 
-	// ÀÌ¹Ì ¹«±â¸¦ ÀåÂø ÁßÀÌ¸é ¹«±â¸¦ ¹ö¸°´Ù
+	// ï¿½Ì¹ï¿½ ï¿½ï¿½ï¿½â¸¦ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì¸ï¿½ ï¿½ï¿½ï¿½â¸¦ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	if (EquippedWeapon != nullptr)
 	{
 		EquippedWeapon->Dropped();
 		EquippedWeapon = nullptr;
 	}
-	// ¹«±â¸¦ ¹ö·ÈÀ» ¶§ OverlapµÇ¾îÀÖ´Â ¹«±â°¡ ÀÖ´Ù¸é ¹«±â ±³Ã¼, ¾Æ´Ï¸é °®°í ÀÖ´Â ¹«±â ¹ö¸®±â
+	// ï¿½ï¿½ï¿½â¸¦ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ Overlapï¿½Ç¾ï¿½ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½â°¡ ï¿½Ö´Ù¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã¼, ï¿½Æ´Ï¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	if (WeaponToEquip == nullptr) return;
 
 	EquippedWeapon = WeaponToEquip;

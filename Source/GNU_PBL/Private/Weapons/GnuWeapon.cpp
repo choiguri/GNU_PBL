@@ -22,21 +22,21 @@ AGnuWeapon::AGnuWeapon()
 
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
 	WeaponMesh->SetupAttachment(Root);
-	SetRootComponent(WeaponMesh);
+	/*SetRootComponent(WeaponMesh);*/
 
 	WeaponMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
 	WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
 	WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	AreaSphere = CreateDefaultSubobject<USphereComponent>(TEXT("AreaSphere"));
-	/*AreaSphere->SetupAttachment(WeaponMesh);*/
-	AreaSphere->SetupAttachment(RootComponent);
+	AreaSphere->SetupAttachment(WeaponMesh);
+	/*AreaSphere->SetupAttachment(RootComponent);*/
 	AreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	PickupWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("PickupWidget"));
-	/*PickupWidget->SetupAttachment(WeaponMesh);*/
-	PickupWidget->SetupAttachment(RootComponent);
+	PickupWidget->SetupAttachment(WeaponMesh);
+	/*PickupWidget->SetupAttachment(RootComponent);*/
 }
 
 void AGnuWeapon::BeginPlay()
@@ -55,6 +55,8 @@ void AGnuWeapon::BeginPlay()
 	{
 		PickupWidget->SetVisibility(false);
 	}
+
+	Delay = 60 / RPM;
 
 	InitialRelativeLocation = WeaponMesh->GetRelativeLocation();
 	InitialRelativeRotation = WeaponMesh->GetRelativeRotation();
