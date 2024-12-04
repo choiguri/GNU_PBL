@@ -12,6 +12,7 @@
 
 class UGnuMonsterHealthBase;
 class UBoxComponent;
+class USphereComponent;
 class UAnimMontage;
 class AGnuMyCharacter;
 
@@ -28,53 +29,101 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// TakeDamage 함수 오버라이드
-	//virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+	// 몬스터 콜리전 관련 함수
+	void ActivateSkeletalMesh();
+	void ActivateCapsuleComp();
+	void DeactivateSkeletalMesh(); // 스켈레탈 메시 비활성화
+	void DeactivateCapsuleComp(); // 캡슐 컴포넌트 비활성화
+
+	//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 몬스터 공격 함수 시작 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ//
+	void SpawnFireball(); // 파이어볼 소환 함수
+	void SpawnFiretornado(); // 파이어토네이도 소환 함수
+	void SpawnFirebreath(); // 파이어브레스 소환 함수
+
+	void SpawnGroundAttack(); // 그라운드 돌 공격 소환 함수
+	void SpawnGroundSpikeAttack(); // 그라운드 5방향 스파이크 소환 함수
+
+	// Crater 공격 함수
+	void StartCraterAttack();
+	void EndCraterAttack();
+	void SpawnCrater();
+	void StopSpawning();
+	FTimerHandle CraterTimerHandle1;
+	FTimerHandle CraterTimerHandle2;
+	FTimerHandle CraterTimerHandle3;
+
+
+	void BodyAttack();
+	
+	void KnockbackPlayer(ACharacter* PlayerCharacter);	// 공격 맞았으면 플레이어가 뒤로 밀려나도록 하기
+	float KnockbackStrength; // 넉백 힘
+	//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 공격 함수 끝 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ//
 
 	// HP 상황에 따라 상태 함수들
 	void Die(); // 사망 함수
 	void DelayedDestroy(); // 타이머가 만료되면 호출될 함수
 	void EnterPhaseTwo(); // 페이즈 2 (할지 안할지 모름)
 
-	// 몬스터 공격 함수
-	void SpawnFireball();  // 파이어볼 소환 함수
-	void SpawnFiretornado(); // 파이어토네이도 소환 함수
-	void SpawnFirebreath(); // 파이어브레스 소환 함수
-	void SpawnGroundAttack(); // 그라운드 돌 공격 소환 함수
-	
 
+	//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 애니메이션 관련 시작 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ//
+	UPROPERTY(ReplicatedUsing = OnRep_GroundSpeed, BlueprintReadOnly, Category = "AnimData")
+	float GroundSpeed;
+
+	UPROPERTY(ReplicatedUsing = OnRep_Direction, BlueprintReadOnly, Category = "AnimData")
+	float Direction;
+
+	UFUNCTION()
+	void OnRep_GroundSpeed();
+
+	UFUNCTION()
+	void OnRep_Direction();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastPlayMontage(UAnimMontage* MontageToPlay);
+
+	//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 애니메이션 관련 끝 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ//
+
+	// 상태들
+	bool bIsDead = false;
+	bool bIsPhaseTwo = false;		// 페이즈 2 여부 확인
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	float KnockbackStrength; // 넉백 힘
 	FTimerHandle DestroyTimerHandle;
-
-	// 몬스터 애님인스턴스 설정
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
-	TSubclassOf<UGnuMonsterAnimInstance> MonsterAnimInstanceClass;
-
-	UFUNCTION()
-	void InitializeAnimInstance();
 
 	UFUNCTION()
 	void InitializeCollisionComponent(UBoxComponent*& CollisionComponent, const FName& ComponentName);
 	
-	
-
 	// 공격 부위별 콜리전 컴포넌트
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack|Collision")
 	UBoxComponent* ClawCollision;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack|Collision")
 	UBoxComponent* TailCollision;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack|Collision")
+	USphereComponent* BodyCollision;
+
+	// 공격 부위별 콜리전 컴포넌트 이름 가져오기
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack|Collision")
 	FName ClawCollisionBoxAttachBoneName;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack|Collision")
 	FName TailCollisionBoxAttachBoneName;
+
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_SetEmissiveColor(const FLinearColor& NewColor);
+
+	// 공격 받았을 때 변경할 머터리얼
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Materials")
+	UMaterialInstanceDynamic* DynamicMaterialInst_1st;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Materials")
+	UMaterialInstanceDynamic* DynamicMaterialInst_2nd;
+
 
 #if WITH_EDITOR
 	//~ Begin UObject Interface.
@@ -82,28 +131,27 @@ protected:
 	//~ End UObject Interface
 #endif
 
-
 private:
-	// 페이즈 2 여부 확인
-	bool bIsPhaseTwo = false;
-
-	// 머터리얼 인스턴스 다이나믹으로 선언
-	UMaterialInstanceDynamic* DynamicMaterialInst_1st;
-	UMaterialInstanceDynamic* DynamicMaterialInst_2nd;
-
-
-	// 충돌 처리 함수
-	//UFUNCTION()	// 몬스터가 맞았는지
-	//void OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
 	UFUNCTION()	// 몬스터 발톱 공격에 맞았는지
 	void OnClawOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()	// 몬스터 꼬리 공격에 맞았는지
 	void OnTailOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-	// 근접 공격 맞았으면 플레이어가 뒤로 밀려나도록 하기
-	void KnockbackPlayer(AGnuMyCharacter* PlayerCharacter);
+	UFUNCTION()	// 몬스터 몸통 공격에 맞았는지
+	void OnBodyOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	// Tick 에서 타겟 변경 재시도 쿨다운 타이머
+	FTimerHandle RetryCooldownTimerHandle;
+	bool bCanRetry = true;
+
+	// 재시도 쿨다운 설정 함수
+	void StartRetryCooldown();
+
+	// 여러번 맞는거 방지하기 위한 Map
+	TMap<AActor*, float> LastHitTime;
+	// 타격 간격 설정 (예: 1초)
+	float AttackCooldown = 1.0f;
 
 public:
 	// 블루프린트 위젯 넣는 곳
@@ -129,34 +177,33 @@ public:
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
 
 
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
-	//float CurrentHealth;
-
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
-	//float MaxHealth;
-
-
 	// 원거리 공격 Actor 소환 class 설정
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack|ActorClass")
 	TSubclassOf<class AGnuFireballActor> FireballClass;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack|ActorClass")
 	TSubclassOf<class AGnuFiretornadoActor> FiretornadoClass;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack|ActorClass")
 	TSubclassOf<class AGnuFirebreathActor> FirebreathClass;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack|ActorClass")
 	TSubclassOf<class AGnuGroundActor> GroundClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack|ActorClass")
+	TSubclassOf<class AGnuGroundSpikeActor> GroundSpikeClass;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack|ActorClass")	// Ground Spike의 각 위치(5방향) 별로 발사시킬 콜리전
+	TSubclassOf<class AGnuGroundSpikeCollisionActor> GroundSpikeCollisionClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack|ActorClass")
+	TSubclassOf<class AGnuLavaBurstActor> CraterActorClass;
+
+	// Tick에서 위치 처리를 위해
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack|Actor")
 	AGnuFirebreathActor* FirebreathActor;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
-	AGnuGroundActor* GroundActor;
+	
 
 	// 근접 공격 콜리전 활성, 비활성
 	UFUNCTION()
@@ -169,4 +216,12 @@ public:
 	UFUNCTION()
 	void DeactivateTailCollision();
 
+	UFUNCTION()
+	void ActivateBodyCollision();
+	UFUNCTION()
+	void DeactivateBodyCollision();
+
+
+	// 멀티 관련
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

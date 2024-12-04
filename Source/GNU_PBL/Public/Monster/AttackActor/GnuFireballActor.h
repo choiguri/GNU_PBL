@@ -4,10 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "Monster/AttackActor/GnuAttackCollisionActor.h"
+#include "Monster/GnuMonster.h"
 #include "GnuFireballActor.generated.h"
 
 class UProjectileMovementComponent;
-
+class UNiagaraComponent;
 
 UCLASS()
 class GNU_PBL_API AGnuFireballActor : public AGnuAttackCollisionActor
@@ -19,24 +20,27 @@ public:
 
     void LaunchProjectile(AActor* IgnoredActor);  // 발사 함수
 
-private:
-    FTimerHandle DestructionTimerHandle; // 파괴 타이머 핸들
-
-    void DestroyFireball(); // 파이어볼 삭제 함수
-
-protected:
-    virtual void BeginPlay() override;
-
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projectile")
     UProjectileMovementComponent* ProjectileMovement;
 
-    UFUNCTION()
-    void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
+    virtual float GetDamage() const override { return 10.0f; }
+
+private:
+    FTimerHandle DestructionTimerHandle; // 파괴 타이머 핸들
+
+    UFUNCTION()
+    void DestroyFireball(); // 파이어볼 삭제 함수
+
+protected:
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "VFX")
+    UNiagaraComponent* NiagaraComponent;
+
+    virtual void BeginPlay() override;
 
     virtual void BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
         UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
 
-    virtual void EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-        UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) override;
+
+    /*virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;*/
 };

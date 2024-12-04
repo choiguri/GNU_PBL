@@ -6,6 +6,9 @@
 #include "GameFramework/PlayerController.h"
 #include "GNUMultiplayerSessionsSubsystem.h"
 #include "GameFramework/GameModeBase.h"
+#include "GameModes/GNUGameMode.h"
+#include "Characters/GnuMyCharacter.h"
+#include "Characters/GnuMyPlayerController.h"
 
 void UGNUReturnToMainMenu::MenuSetup()
 {
@@ -31,6 +34,10 @@ void UGNUReturnToMainMenu::MenuSetup()
 	{
 		ReturnButton->OnClicked.AddDynamic(this, &ThisClass::ReturnButtonClicked);
 	}
+	if (RestartButton)
+	{
+		RestartButton->OnClicked.AddDynamic(this, &ThisClass::RestartButtonClicked);
+	}
 
 	UGameInstance* GameInstance = GetGameInstance();
 	if (GameInstance)
@@ -49,8 +56,6 @@ bool UGNUReturnToMainMenu::Initialize()
 	{
 		return false;
 	}
-
-	
 
 	return true;
 }
@@ -109,5 +114,29 @@ void UGNUReturnToMainMenu::ReturnButtonClicked()
 	if (MultiplayerSessionsSubsystem)
 	{
 		MultiplayerSessionsSubsystem->DestroySession();
+	}
+}
+
+void UGNUReturnToMainMenu::RestartButtonClicked()
+{
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		PlayerController = PlayerController == nullptr ? World->GetFirstPlayerController() : PlayerController;
+		if (PlayerController)
+		{
+			FInputModeGameOnly InputModeData;
+			PlayerController->SetInputMode(InputModeData);
+			PlayerController->SetShowMouseCursor(false);
+		}
+		AGnuMyPlayerController* GnuPlayerController = Cast<AGnuMyPlayerController>(GetOwningPlayer());
+		if (GnuPlayerController)
+		{
+			AGnuMyCharacter* GnuCharacter = Cast<AGnuMyCharacter>(GnuPlayerController->GetPawn());
+			if (GnuCharacter)
+			{
+				GnuCharacter->RestartingGame();
+			}
+		}
 	}
 }

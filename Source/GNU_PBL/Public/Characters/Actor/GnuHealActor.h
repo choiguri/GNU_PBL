@@ -17,19 +17,17 @@ public:
 	AGnuHealActor();
 
 private:
-    FTimerHandle DestructionTimerHandle; // 파괴 타이머 핸들
-
-    void DestroyHeal(); // 파이어볼 삭제 함수
-
+    FTimerHandle DestroyTimer; // 파괴 타이머 핸들
+    FTimerHandle HealTimer;
     FVector PreviousLocation;
-
     float Damage;
+
+    void DestroyActor();
 
 protected:
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaTime) override;
-
-    FTimerHandle DamageHandle;
+    void Heal();
 
     UPROPERTY(VisibleAnywhere)
     UNiagaraComponent* NiagaraComponent;

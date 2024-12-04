@@ -23,6 +23,7 @@ class GNU_PBL_API AGnuMyPlayerController : public APlayerController
 public:
 	AGnuMyPlayerController();
 
+	virtual void OnPossess(APawn* InPawn) override;
 
 	// 추가사항
 	void SetHUDHealth(float Health, float MaxHealth);
@@ -30,6 +31,17 @@ public:
 	void SetHUDStamina(float Stamina, float MaxStamina);
 
 	void SetHUDCombatTime(float CombatTime);
+
+	void SetHUDWeaponAmmo(int32 Ammo, int32 MaxAmmo);
+
+	void SetHUDDeathCount(int32 Deathcount);
+
+	/*void SetHUDOthersHealth(FString PlayerName, float Health, float MaxHealth, int32 Index);*/
+
+	UFUNCTION(NetMulticast, Reliable)
+	void SetHUDOthersHealth(const TArray<float>& HealthArray);
+	UFUNCTION(NetMulticast, Reliable)
+	void SetHUDOthersName(const TArray<FString>& NameArray);
 
 	virtual void Tick(float DeltaTime) override;
 	virtual float GetServertime();
@@ -62,6 +74,7 @@ protected:
 	float TimeSyncRunningTime = 0.0f;
 	void CheckTimeSync(float DeltaTime);
 
+
 private:
 	UPROPERTY(EditAnywhere, Category = "input")
 	TObjectPtr<UInputMappingContext> MyCharacterContext;
@@ -91,9 +104,22 @@ private:
 	TObjectPtr<UInputAction> ZoomInAction; // 카메라 줌
 
 
-	// 추가사항
+
+	// 추가사항 GnuWeapon
 	UPROPERTY(EditAnywhere, Category = "input")
 	TObjectPtr<UInputAction> QuitAction;
+
+	UPROPERTY(EditAnywhere, Category = "input")
+	TObjectPtr<UInputAction> EquipAction;
+
+	UPROPERTY(EditAnywhere, Category = "input")
+	TObjectPtr<UInputAction> Crouch;
+
+	UPROPERTY(EditAnywhere, Category = "input")
+	TObjectPtr<UInputAction> FireAction;
+
+	UPROPERTY(EditAnywhere, Category = "input")
+	TObjectPtr<UInputAction> WeaponReloadAction;
 
 	// Weapon input
 	UPROPERTY(EditAnywhere, Category = "input")
@@ -131,16 +157,23 @@ private:
 	void HealSkill(const struct FInputActionValue& InputActionValue);
 	void GrenadeSkill(const struct FInputActionValue& InputActionValue);
 
+
 	// ------------------ Weapon funtion -------------
+	// 기존
 	void Aiming();
 	void StopAiming();
-	void Fire();
-	void StopFire();
-	void Reload();
-	void Interact(); // 상호작용 함수
+	//void Fire();
+	//void StopFire();
+	//void Reload();
+	//void Interact(); // 상호작용 함수
 	// -----------------------------------------------
 
-
+	// GnuWeapon
+	void EquipButtonPressed();
+	void CrouchButtonPressed();
+	void FireButtonPressed();
+	void FireButtonReleased();
+	void ReloadButtonPressed();
 //
 // 추가사항
 //

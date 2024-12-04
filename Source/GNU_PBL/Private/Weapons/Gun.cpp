@@ -11,6 +11,8 @@
 #include "DrawDebugHelpers.h"
 #include <Characters/GnuMyCharacter.h>
 
+#include "Animation/AnimationAsset.h"
+
 // Sets default values
 AGun::AGun()
 {
@@ -30,13 +32,23 @@ AGun::AGun()
 	{
 		Mesh->SetAnimInstanceClass(AnimBP.Object->GeneratedClass);
 	}
-}
+	bReplicates = true;
+	SetReplicateMovement(true);
+} 
 
+// 총을 발사할 때 꾹누르면 일정 간격으로 총이 나가게 하는 
 void AGun::PullTrigger()
 {
 	if (!GetWorld()->GetTimerManager().IsTimerActive(FireTimerHandle))
 	{
 		GetWorld()->GetTimerManager().SetTimer(FireTimerHandle, this, &AGun::Fire, 60.0 / RPM, true, 0.f);
+		if (HasAuthority())
+		{
+			if (GEngine)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("zzzz")));
+			}
+		}
 	}
 }
 
@@ -52,9 +64,13 @@ void AGun::Fire()
 {	
 	if (RemainAmmo > 0)
 	{
+		if (FireAnimation)
+		{
+			Mesh->PlayAnimation(FireAnimation, false);
+		}
 		
 		UGameplayStatics::SpawnEmitterAttached(MuzzleFlash, Mesh, TEXT("MuzzleFlashSocket"));
-
+		
 		ServerMontageOnFire();
 
 		FTransform fireposition = Mesh->GetSocketTransform(TEXT("FirePosition"), RTS_World);
@@ -115,6 +131,7 @@ void AGun::Fire()
 	UpdateAmmoDisplay();
 }
 
+// 탄퍼짐, 반동 관련
 float AGun::GetRecoilOffset()
 {
 	AGnuMyCharacter* GnuMyCharacter = Cast<AGnuMyCharacter>(GetOwner());
@@ -255,6 +272,8 @@ void AGun::BeginPlay()
 	}
 	
 }
+
+
 
 // Called every frame
 void AGun::Tick(float DeltaTime)

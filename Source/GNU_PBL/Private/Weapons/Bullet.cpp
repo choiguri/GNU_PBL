@@ -20,7 +20,8 @@ ABullet::ABullet()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;	
 
-	
+	bReplicates = true;
+	SetReplicateMovement(true);
 
 	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	SetRootComponent(Root);
@@ -33,9 +34,8 @@ ABullet::ABullet()
 
 	TrailParticle = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("TrailParticle"));
 	TrailParticle->SetupAttachment(Root);
-	
 	movementComp = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("MovementComp"));
-	movementComp->InitialSpeed = 20000;
+	movementComp->InitialSpeed = 10000;
 	movementComp->bShouldBounce = false;
 	movementComp->ProjectileGravityScale = 0.0f;
 	movementComp->SetUpdatedComponent(CollisionComp);

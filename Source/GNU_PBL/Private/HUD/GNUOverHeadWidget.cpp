@@ -21,8 +21,8 @@ void UGNUOverHeadWidget::ShowPlayerName(APawn* InPawn)
 	{
 		FString PlayerName = PlayerState->GetPlayerName();
 
-		FString LocalRoleString = FString::Printf(TEXT("%s"), *PlayerName);
-		SetDisplayText(LocalRoleString);
+		FString PlayerNameString = FString::Printf(TEXT("%s"), *PlayerName);
+		SetDisplayText(PlayerNameString);
 	}
 	/*APlayerState* PlayerState = InPawn->GetPlayerState();
 

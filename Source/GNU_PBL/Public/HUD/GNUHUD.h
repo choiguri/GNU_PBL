@@ -6,6 +6,19 @@
 #include "GameFramework/HUD.h"
 #include "GNUHUD.generated.h"
 
+USTRUCT(BlueprintType)
+struct FHUDPackage
+{
+	GENERATED_BODY()
+public:
+	class UTexture2D* CrosshairCenter;
+	UTexture2D* CrosshairLeft;
+	UTexture2D* CrosshairRight;
+	UTexture2D* CrosshairBottom;
+	UTexture2D* CrosshairTop;
+
+	float CrosshairSpread;
+};
 /**
  * 
  */
@@ -33,4 +46,16 @@ protected:
 	void AddCharacterOverlay();
 
 	/*void AddCharacterOverHead();*/
+
+private:
+	FHUDPackage HUDPackage;
+
+	void DrawCrosshair(UTexture2D* Texture, FVector2D ViewportCenter, FVector2D Spread);
+
+	// 블루프린트에서 조정 가능 
+	UPROPERTY(EditAnywhere)
+	float CrosshairSpreadMax = 16.f;
+
+public:
+	FORCEINLINE void SetHUDPackage(const FHUDPackage& Package) { HUDPackage = Package; };
 };

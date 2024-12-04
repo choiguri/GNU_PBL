@@ -4,7 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GnuMonsterAnimInstance.generated.h"
+
+
+class UCharacterMovementComponent;
+class AGnuMonster;
 
 /**
  * 
@@ -17,13 +22,28 @@ class GNU_PBL_API UGnuMonsterAnimInstance : public UAnimInstance
 public:
     virtual void NativeInitializeAnimation() override;
 
+    virtual void NativeThreadSafeUpdateAnimation(float DeltaSeconds) override;
+
+    // 현재 몬스터를 참조하기 위한 변수
+    UPROPERTY()
+    AGnuMonster* MonsterOwner;
+
+    UPROPERTY()
+    UCharacterMovementComponent* MosnterMovementComponent;
+
     // 몽타주가 끝난 상태인지 확인을 위한 변수
+    // 평상시 true
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Montage")
     bool bIsMontageEnded = true;
 
     // 죽음 상태인지 확인을 위한 변수
-    UPROPERTY(BlueprintReadOnly, Category = "State")
-    bool bIsDead = false;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
+    bool bIsDead;
+
+    // 인트로 몽타주 실행 했는지 확인
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
+    bool bIsPlayIntro = true;
+
 
     // 몽타주 실행 중인 노티파이 이벤트를 처리할 함수
     // cpp는 BlueprintNativeEvent 라고 설정되면 블루프린트에서 재정의 가능하도록 하려는 목적
@@ -32,14 +52,25 @@ public:
     void OnAttackNotifyEvent(FName NotifyName);*/
 
 
-    // 현재 몬스터를 참조하기 위한 변수
-    UPROPERTY(BlueprintReadOnly, Category = "Monster")
-    class AGnuMonster* MonsterOwner;
-
-
     // 애니메이션 몽타주 공격 지정
+    // 
+    // 근거리 공격
+    UPROPERTY(EditDefaultsOnly, Category = "Attack")
+    UAnimMontage* ClawAttackMontage;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Attack")
+    UAnimMontage* TailAttackMontage;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Attack")
+    UAnimMontage* BodyAttackMontage;
+
+
+    // 원거리 공격
     UPROPERTY(EditDefaultsOnly, Category = "Attack")
     UAnimMontage* FireballAttackMontage;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Attack")
+    UAnimMontage* FireballAttackContinuousMontage;
 
     UPROPERTY(EditDefaultsOnly, Category = "Attack")
     UAnimMontage* FlyingAttackMontage;
@@ -48,66 +79,55 @@ public:
     UAnimMontage* FirebreathAttackMontage;
 
     UPROPERTY(EditDefaultsOnly, Category = "Attack")
-    UAnimMontage* ClawAttackMontage;
-
-    UPROPERTY(EditDefaultsOnly, Category = "Attack")
-    UAnimMontage* TailAttackMontage;
-
-    UPROPERTY(EditDefaultsOnly, Category = "Attack")
     UAnimMontage* GroundAttackMontage;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Attack")
+    UAnimMontage* GroundSpikeAttackMontage;
 
     // 그 외 몽타주 지정
     UPROPERTY(EditDefaultsOnly, Category = "Montage")
     UAnimMontage* DragonDieMontage;
 
-    // 임시 예시 재생 몽타주
     UPROPERTY(EditDefaultsOnly, Category = "Montage")
-    UAnimMontage* ExampleAttackMontage;
-    
+    UAnimMontage* IntroShoutingMontage;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Montage")
+    UAnimMontage* DodgeMontage;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Montage")
+    UAnimMontage* FlyingDodgeMontage;
 
 protected:
-    // 몽타주 애니메이션을 재생하기 위한 변수
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
-    UAnimMontage* AttackMontage;
+    // 몬스터 데이터 (속도, 각도 / 멀티처리는 몬스터한테서 설정됨) 
+    UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "AnimData")
+    float Speed;
 
-    // 애니메이션 몽타주 시작 함수
-    UFUNCTION(BlueprintCallable, Category = "Animation")
-    void PlayMontage(UAnimMontage* MontageToPlay);
-
-
-    // 몽타주 애니메이션 끝났을 때 호출 될 함수
-    UFUNCTION()
-    void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
-    
+    UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "AnimData")
+    float Direction_Anim;
 
 private:
 
 public:
+    // 애니메이션 몽타주 시작 함수
+    UFUNCTION(BlueprintCallable, Category = "Animation")
+    void PlayMontage(UAnimMontage* MontageToPlay);
+
+    /*UFUNCTION(Server, Reliable)
+    void Server_PlayMontage(UAnimMontage* MontageToPlay);
+
+    UFUNCTION(NetMulticast, Reliable)
+    void Multicast_PlayMontage(UAnimMontage* MontageToPlay);*/
+
+    // 몽타주 애니메이션 끝났을 때 호출 될 함수
+    UFUNCTION()
+    void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
     // 공격 몽타주 실행 함수
-    UFUNCTION(BlueprintCallable)
-    void PlayFireballAttackMontage();
-
-    UFUNCTION(BlueprintCallable)
-    void PlayFlyingAttackMontage();
-
-    UFUNCTION(BlueprintCallable)
-    void PlayFirebreathAttackMontage();
-
-    UFUNCTION(BlueprintCallable)
-    void PlayClawAttackMontage();
-
-    UFUNCTION(BlueprintCallable)
-    void PlayTailAttackMontage();
-
-    UFUNCTION(BlueprintCallable)
-    void PlayGroundAttackMontage();
-
     // 죽었을 때 몽타주 처리
     UFUNCTION(BlueprintCallable)
     void PlayDieMontage();
 
-    // 애니메이션 예시 실행기
+    // 첫 입장 시 나오는 몽타주
     UFUNCTION(BlueprintCallable)
-    void PlayExampleMontage();
+    void PlayIntroMontage();
 };

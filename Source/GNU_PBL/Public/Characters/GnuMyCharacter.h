@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Characters/GnuBaseCharacter.h"
 #include "Components/TimelineComponent.h" // FTimeline
+#include "Camera/CameraShakeBase.h"
 #include "GameFramework/PlayerState.h"
 #include "GnuMyCharacter.generated.h"
 
@@ -96,13 +97,13 @@ public:
 
 
 	//------------------ Weapon Funtion ---------------------------------------
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
-	bool isReload;
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerMontageOnReload();
-	UFUNCTION(NetMulticast, Reliable)
-	void MultiCastMontage_Reload();
-	void FinishReload();
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
+	//bool isReload;
+	//UFUNCTION(Server, Reliable, WithValidation)
+	//void ServerMontageOnReload(); // �������� ������ ��Ÿ�ָ� �����ϴ� �Լ� (��Ʈ�ѷ����� ȣ��)
+	//UFUNCTION(NetMulticast, Reliable)
+	//void MultiCastMontage_Reload(); // ������ ��Ÿ�� ��Ƽĳ��Ʈ (������ ȣ��Ǹ� �ڵ����� ȣ��)
+	//void FinishReload();
 	//---------------------------------------------------------------------
 
 
@@ -113,16 +114,16 @@ public:
 	UPROPERTY(ReplicatedUsing = OnRep_IsCrouching, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	bool isFire = false;
 
-	void Fire();
-	void StopFire();
-	void Reload();
-	void Interact(); // 상호작용 함수
-	
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerSwitchWeapon(TSubclassOf<AGun> NewGunClass);
-	void SwitchWeapon(TSubclassOf<AGun> NewGunClass);
+	//void Fire();
+	//void StopFire();
+	////void Reload();
+	//void Interact(); // 상호작용 함수
+	//
+	//UFUNCTION(Server, Reliable, WithValidation)
+	//void ServerSwitchWeapon(TSubclassOf<AGun> NewGunClass);
+	//void SwitchWeapon(TSubclassOf<AGun> NewGunClass);
 
-	void PerformSwitchWeapon(TSubclassOf<AGun> NewGunClass);
+	//void PerformSwitchWeapon(TSubclassOf<AGun> NewGunClass);
 
 	bool GetIsCrouching() const;
 	bool GetIsSprinting() const;
@@ -140,7 +141,11 @@ public:
 	// ------------------------------------- Heal Skill ----------------------------------------
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
 	TSubclassOf<class AGnuHealActor> HealClass;
+	FTimerHandle HealCoolDownTimer;
+	bool isHealCoolDown;
 	void SpawnHeal();
+	void StartCooldown();
+	void EndCooldown();
 	// -----------------------------------------------------------------------------------------
 
 	// ------------------------------------- Grenade Skill ----------------------------------------
@@ -150,6 +155,13 @@ public:
 	// -----------------------------------------------------------------------------------------
 
 	void SetCamera();
+
+
+	UPROPERTY(EditDefaultsOnly, Category = "Camera")
+	TSubclassOf<UCameraShakeBase> RoarCameraShake; // 카메라 쉐이크 클래스
+
+	UFUNCTION(BlueprintCallable, Category = "Camera")
+	void PlayCameraShake(); // 카메라 쉐이크 함수
 
 protected:
 	virtual void BeginPlay() override;
@@ -213,16 +225,16 @@ protected:
 
 // Character 합치면서 작성
 private:
-	// 머리 위의 스팀 닉네임 표시
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	class UWidgetComponent* OverHeadWidget;
+	class UWidgetComponent* ReplicatedHealthWidget;
 
 	// HP바 설정
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 	float MaxHealth = 100.f;
 
 	UPROPERTY(ReplicatedUsing = OnRep_Health, VisibleAnywhere, Category = "Player Stats")
-	float Health = 1.f;
+	float Health = 100.f;
 
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 	float MaxStaminaa = 100.f;
@@ -236,15 +248,20 @@ private:
 	UFUNCTION()
 	void OnRep_Stamina();
 
-	class AGnuMyPlayerController* GNUPlayerController;
-
 	UPROPERTY(EditAnywhere, Category = "Player Name")
 	FString LocalPlayerName = TEXT("Unknown Player");
 
 
 public:
-	// 서버에서 수정 -> RepNotify -> 클라이언트 반응
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	UPROPERTY()
+	class AGnuMyPlayerController* GNUPlayerController;
+
+	// 머리 위의 스팀 닉네임 표시
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UWidgetComponent* OverHeadWidget;
+
+	UPROPERTY(VisibleAnywhere)
+	class UGnuCombatComponent* Combat;
 
 	// Implementation으로 정의해서 밑줄이 뜨더라도 오류가 아님
 	UFUNCTION(Client, Reliable)
@@ -253,10 +270,38 @@ public:
 	UFUNCTION(Server, Reliable)
 	void ServerSetPlayerName(const FString& PlayerName);
 
-	//
-	// GNUGameMode와 관련
-	//
-	void Elim();
+	void SetReplicatedHealth();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiCastSetHealth();
+
+	//UFUNCTION(Server, Reliable)
+	//void UpdateOthersHealth();
+
+	UFUNCTION(Server, Reliable)
+	void UpdateOthersHealth();
+
+	UFUNCTION(Server, Reliable)
+	void UpdateOthersName();
+
+	// 기존
+	/*UFUNCTION(Server, Reliable)
+	void ServerFire();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiCastFire();
+
+	UFUNCTION(Server, Reliable)
+	void ServerStopFire();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiCastStopFire();*/
+
+	// 무기 장착
+	void EquipButtonPressed();
+	void FireButtonPressed();
+	void FireButtonReleased();
+	void ReloadButtonPressed();
 
 protected:
 	UFUNCTION()
@@ -264,4 +309,149 @@ protected:
 	
 	void UpdateHUDHealth();
 	void UpdateHUDStamina();
+
+	void PollInit();
+
+////// GnuWeapon Start
+
+private:
+	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
+	class AGnuWeapon* OverlappingWeapon;
+
+	UFUNCTION()
+	void OnRep_OverlappingWeapon(AGnuWeapon* LastWeapon);
+
+	UFUNCTION(Server, Reliable)
+	void ServerEquipButtonPressed();
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	UAnimMontage* FireWeaponMontage;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	UAnimMontage* ReloadWeaponMontage;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	UAnimMontage* HitReactMontage;
+
+	void PlayHitReactMontage();
+
+	void HideCameraIfCharacterClose();
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	UAnimMontage* ElimMontage;
+
+	//
+	// Dissolve Effect
+	//
+
+	UPROPERTY(VisibleAnywhere)
+	UTimelineComponent* DissolveTimeline;
+
+	FOnTimelineFloat DissolveTrack;
+
+	UPROPERTY(EditAnywhere)
+	UCurveFloat* DissolveCurve;
+
+	UFUNCTION()
+	void UpdateDissovleMaterial(float DissolveValue);
+
+	void StartDissolve();
+
+	// 실행 중에 바꿀 수 있는 동적 인스턴스
+	UPROPERTY(VisibleAnywhere, Category = "Elim")
+	UMaterialInstanceDynamic* DynamicDissolveMaterialInstance0;
+
+	UPROPERTY(VisibleAnywhere, Category = "Elim")
+	UMaterialInstanceDynamic* DynamicDissolveMaterialInstance1;
+
+	UPROPERTY(VisibleAnywhere, Category = "Elim")
+	UMaterialInstanceDynamic* DynamicDissolveMaterialInstance2;
+
+	UPROPERTY(VisibleAnywhere, Category = "Elim")
+	UMaterialInstanceDynamic* DynamicDissolveMaterialInstance3;
+
+	UPROPERTY(VisibleAnywhere, Category = "Elim")
+	UMaterialInstanceDynamic* DynamicDissolveMaterialInstance4;
+
+	UPROPERTY(VisibleAnywhere, Category = "Elim")
+	UMaterialInstanceDynamic* DynamicDissolveMaterialInstance5;
+
+	UPROPERTY(VisibleAnywhere, Category = "Elim")
+	UMaterialInstanceDynamic* DynamicDissolveMaterialInstance6;
+
+	UPROPERTY(VisibleAnywhere, Category = "Elim")
+	UMaterialInstanceDynamic* DynamicDissolveMaterialInstance7;
+
+	// 동적 머터리얼 인스턴스와 함께 사용되는 블루프린트에 설정하는 머터리얼 인스턴스
+	UPROPERTY(EditAnywhere, Category = "Elim")
+	UMaterialInstance* DissolveMaterialInstance0;
+	UPROPERTY(EditAnywhere, Category = "Elim")
+	UMaterialInstance* DissolveMaterialInstance1;
+	UPROPERTY(EditAnywhere, Category = "Elim")
+	UMaterialInstance* DissolveMaterialInstance2;
+	UPROPERTY(EditAnywhere, Category = "Elim")
+	UMaterialInstance* DissolveMaterialInstance3;
+	UPROPERTY(EditAnywhere, Category = "Elim")
+	UMaterialInstance* DissolveMaterialInstance4;
+	UPROPERTY(EditAnywhere, Category = "Elim")
+	UMaterialInstance* DissolveMaterialInstance5;
+	UPROPERTY(EditAnywhere, Category = "Elim")
+	UMaterialInstance* DissolveMaterialInstance6;
+	UPROPERTY(EditAnywhere, Category = "Elim")
+	UMaterialInstance* DissolveMaterialInstance7;
+
+	void SetDynamicDissolveMaterialInstances();
+
+	// PlayerState
+	UPROPERTY()
+	class AGnuPlayerState* GnuPlayerState;
+
+
+public:
+	// 복제를 위한 변수 저장
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	void SetOverlappingWeapon(AGnuWeapon* Weapon);
+
+	virtual void PostInitializeComponents() override;
+
+	bool IsWeaponEquipped();
+
+	void PlayFireMontage();
+
+	void PlayReloadMontage();
+
+	UFUNCTION(Server, Reliable)
+	void ServerPlayReloadMontage();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiCastPlayReloadMontage();
+
+	AGnuWeapon* GetEquippedWeapon();
+
+	FVector GetHitTarget() const;
+
+	//
+	// GNUGameMode와 관련
+	//
+	void Elim();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiCastElim();
+
+	void PlayElimMontage();
+
+	FTimerHandle ElimTimer;
+
+	// 부활 시간
+	UPROPERTY(EditDefaultsOnly)
+	float ElimDelay = 3.f;
+
+	void ElimTimerFinished();
+
+	FORCEINLINE float GetHealth() const { return Health; }
+	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
+
+	UFUNCTION(Server, Reliable)
+	void RestartingGame();
 };

@@ -31,8 +31,29 @@ public:
 	class UTextBlock* CombatTimeText;
 
 	UPROPERTY(meta = (BindWidget))
-	class UImage* HighPingImage;
+	UTextBlock* AmmoText;
 
-	UPROPERTY(meta = (BindWidgetAnim), Transient)
-	UWidgetAnimation* HighPingAnimation;
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* DeathAmount;
+
+
+	UPROPERTY(meta = (BindWidget))
+	UProgressBar* HealthBarPlayer1;
+	UPROPERTY(meta = (BindWidget))
+	UProgressBar* HealthBarPlayer2;
+	UPROPERTY(meta = (BindWidget))
+	UProgressBar* HealthBarPlayer3;
+	UPROPERTY(meta = (BindWidget))
+	UProgressBar* HealthBarPlayer4;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* Player1NameText;
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* Player2NameText;
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* Player3NameText;
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* Player4NameText;
+
+
 };

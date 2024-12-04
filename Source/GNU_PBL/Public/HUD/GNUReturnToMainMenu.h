@@ -31,9 +31,17 @@ private:
 	UFUNCTION()
 	void ReturnButtonClicked();
 
+	UPROPERTY(meta = (BindWidget))
+	UButton* RestartButton;
+
+	UFUNCTION()
+	void RestartButtonClicked();
+
 	UPROPERTY()
 	class UGNUMultiplayerSessionsSubsystem* MultiplayerSessionsSubsystem;
 
 	UPROPERTY()
 	class APlayerController* PlayerController;
+
+
 };

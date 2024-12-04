@@ -23,19 +23,37 @@ public:
 
 	virtual void Tick(float DeltaSecond) override;
 
-	// BehaviorTree 종료 함수 (몬스턱 죽었을 때 호출)
+	// BehaviorTree 종료 함수 (몬스터 죽었을 때 호출)
 	UFUNCTION()
 	void StopBehaviorTree();
 
+	void UpdateTargetDistance();
 
-	void AttackNumberInitialization();
+	void UpdateMonsterHealth();
 
-	//~ Begin IGenericTeamAgentInterface Interface.
-	/*virtual ETeamAttitude::Type GetTeamAttitudeTowards(const AActor& Other) const;*/
-	//~ End IGenericTeamAgentInterface Interface
+	void ActivateMonster();
+
+	// Behaviortree 변수들 레플리케이트
+	UPROPERTY(ReplicatedUsing = OnRep_TargetActor)
+	AActor* TargetActor;
+
+	/*UPROPERTY(ReplicatedUsing = OnRep_TargetLocation)
+	FVector TargetLocation;
+
+	UPROPERTY(ReplicatedUsing = OnRep_DistToTarget)
+	float TargetDist;*/
 
 protected:
 	virtual void BeginPlay() override;
+
+	UFUNCTION()
+	void OnRep_TargetActor();
+
+	/*UFUNCTION()
+	void OnRep_TargetLocation();
+
+	UFUNCTION()
+	void OnRep_DistToTarget();*/
 
 
 	// 인식 시키는 컴포넌트 추가
@@ -52,29 +70,27 @@ protected:
 	UBehaviorTree* AIBehavior;
 
 
-	// 인식 관련 컴포넌트
-	void SetUpPerceptionComponent();
-
 	UFUNCTION()
 	void UpdateTarget();
 
 	void SetNewTarget(ACharacter* NewTarget);
 
-	bool IsCloser(ACharacter* NewTarget, ACharacter* CurrentTarget);
+	void ClearTarget();
 
 	// Target 지정하는 함수 지정 (Array 형식으로 Actor들 인식시키기)
 	UFUNCTION()
 	void OnTargetDetected(AActor* Actor, FAIStimulus const Stimulus);
 
+	// 멀티
+	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 private:
 	
+	// 타겟 변경 타이머
 	FTimerHandle TargetUpdateTimerHandle;
-
 	float TargetUpdateInterval;
 
-
-	// 재시도 쿨다운 타이머
+	// Tick 에서 타겟 변경 재시도 쿨다운 타이머
 	FTimerHandle RetryCooldownTimerHandle;
 	bool bCanRetry = true;
 

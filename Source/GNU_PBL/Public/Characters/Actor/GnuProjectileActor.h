@@ -1,14 +1,14 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Characters/Actor/GnuActorCollisionBase.h"
+#include "NiagaraComponent.h"
+#include "NiagaraTypes.h"
 #include "GnuProjectileActor.generated.h"
 
-class UProjectileMovementComponent;
 class UNiagaraComponent;
 class UNiagaraSystem;
+class UProjectileMovementComponent;
 
 UCLASS()
 class GNU_PBL_API AGnuProjectileActor : public AGnuActorCollisionBase
@@ -23,11 +23,12 @@ public:
 private:
     float Damage;
 
-    FTimerHandle TimerHandle; // 파괴 타이머 핸들
+    FTimerHandle TimerHandle; // 타이머 핸들
 
     FVector PreviousLocation; // 나이아가라 이펙트의 이전 위치
 
     void DestroyActor(); // 엑터 삭제 함수
+
 
 protected:
     virtual void BeginPlay() override;
@@ -36,12 +37,18 @@ protected:
     UPROPERTY(VisibleAnywhere)
     UNiagaraComponent* NiagaraComponent;
 
+    UPROPERTY(EditAnywhere)
+    UNiagaraSystem* NiagaraSystem;
+
+    UPROPERTY(VisibleAnywhere, Category = "Components")
+    UProjectileMovementComponent* ProjectileMovementComp;
+
     UPROPERTY(VisibleAnywhere)
     UBoxComponent* ProjectileBoxComponent;
 
+    // 충돌 시 호출되는 함수
     UFUNCTION()
-    void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
-
+    void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
 
     virtual void BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
         UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;

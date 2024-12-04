@@ -16,7 +16,35 @@ class GNU_PBL_API AGNUGameMode : public AGameMode
 
 public:
 	AGNUGameMode();
-	virtual void PlayerEliminated(class AGnuCharacter* ElimmedCharacter, class AGNUPlayerController* VictimController, AGNUPlayerController* Monster);
+	virtual void PlayerEliminated(class AGnuMyCharacter* ElimmedCharacter, class AGnuMyPlayerController* VictimController, AController* Monster);
 
+	virtual void RequestRespawn(ACharacter* ElimedCharacter, AController* ElimedController);
+
+	UPROPERTY()
+	int32 TotalDeath = 0;
+
+	void UpdateTotalDeath();
+
+	bool bOverDeathCount();
+
+	int32 GetTotalDeath();
+
+	virtual void RestartGame() override;
+
+	/*UPROPERTY()
+	AGnuMyPlayerController* PlayerController;
 	
+	UPROPERTY()
+	AGnuMyCharacter* PlayerCharacter;
+
+	UPROPERTY()
+	class AGnuPlayerState* CharacaterPlayerState;*/
+
+
+	/*UFUNCTION()
+	void GetPlayersHealthAndName();*/
+
+	TArray<FString> GetPlayersName();
+	TArray<float> GetPlayersHealth();
+
 };
