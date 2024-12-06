@@ -56,4 +56,6 @@ public:
 	UTextBlock* Player4NameText;
 
 
+	UPROPERTY(meta = (BindWidget))
+	UProgressBar* ArrowSkillCooldownBar;
 };

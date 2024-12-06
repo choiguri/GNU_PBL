@@ -20,12 +20,14 @@ public:
 
     void LaunchProjectile(AActor* IgnoredActor);  // 발사 함수
 
+    // For Launching projectile
+    UFUNCTION(Server, Reliable, WithValidation)
+    void ServerLaunchProjectile(AActor* IgnoredActor);
+
 private:
     float Damage;
 
     FTimerHandle TimerHandle; // 타이머 핸들
-
-    FVector PreviousLocation; // 나이아가라 이펙트의 이전 위치
 
     void DestroyActor(); // 엑터 삭제 함수
 
@@ -37,27 +39,26 @@ protected:
     UPROPERTY(VisibleAnywhere)
     UNiagaraComponent* NiagaraComponent;
 
-    UPROPERTY(VisibleAnywhere)
-    UNiagaraComponent* MuzzleComponent;
-
-    UPROPERTY(VisibleAnywhere)
-    UNiagaraComponent* TargetComponent;
-
-    UPROPERTY(VisibleAnywhere)
-    UNiagaraComponent* FlyComponent;
+    UPROPERTY(EditAnywhere)
+    UNiagaraSystem* MuzzleComponent;
 
     UPROPERTY(EditAnywhere)
-    UNiagaraSystem* NiagaraSystem;
+    UNiagaraSystem* TargetComponent;
+
+    UPROPERTY(EditAnywhere)
+    UNiagaraSystem* FlyComponent;
 
     UPROPERTY(VisibleAnywhere, Category = "Components")
     UProjectileMovementComponent* ProjectileMovementComp;
 
-    UPROPERTY(VisibleAnywhere)
-    UBoxComponent* ProjectileBoxComponent;
 
     // 충돌 시 호출되는 함수
     UFUNCTION()
     void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
+
+    UFUNCTION(Server, Reliable, WithValidation)
+    void ServerOnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
+
 
     virtual void BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
         UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;

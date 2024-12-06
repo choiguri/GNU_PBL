@@ -111,13 +111,19 @@ public:
 	FDele_Player_Aimrate func_Player_Aimrate;
 
 	// ------------------------------------- Arrow Skill ----------------------------------------
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Skill")
 	TSubclassOf<class AGnuProjectileActor> ArrowClass;
 	void SpawnArrow();
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerSpawnArrow();
 	FTimerHandle ArrowCoolDownTimer;
 	bool isArrowCoolDown;
+	float ArrowSkillCoolTime;
+	float ArrowCooldownRemainingTime;
 	void StartArrowCooldown();
 	void EndArrowCooldown();
+	void UpdateArrowCooldownUI();
+
 	// -----------------------------------------------------------------------------------------
 	
 

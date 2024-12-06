@@ -120,6 +120,8 @@ AGnuMyCharacter::AGnuMyCharacter()
 	SpawnCollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
 	// skill cooltime
+	ArrowSkillCoolTime = 3.0f;
+	ArrowCooldownRemainingTime = 0.0f;
 	isHealCoolDown = false;
 	isArrowCoolDown = false;
 	isGrenadeCoolDown = false;
@@ -138,7 +140,6 @@ void AGnuMyCharacter::PlayCameraShake()
 void AGnuMyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
 	// ---------------- ZoomIn 부드럽게 조절되는 타임라인 초기화 ----------------
 	// FOnTimelineFloat : 타임라인에서 플로트(float) 값을 반환하는 델리게이트 타입
 	FOnTimelineFloat ZoomInProgressUpdate;
@@ -166,6 +167,7 @@ void AGnuMyCharacter::BeginPlay()
 	{
 		GNUPlayerController->SetHUDHealth(Health, MaxHealth);
 		GNUPlayerController->SetHUDStamina(Stamina, MaxStaminaa);
+		GNUPlayerController->SetHUDArrowSkillCoolTime(ArrowSkillCoolTime, ArrowCooldownRemainingTime);
 
 	}
 	
@@ -214,7 +216,6 @@ void AGnuMyCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	ZoomInTimeline.TickTimeline(DeltaTime);
 	HideCameraIfCharacterClose();
-
 	PollInit();
 }
 
@@ -564,7 +565,7 @@ void AGnuMyCharacter::EndHealCooldown()
 //--------------------------- Arrow Skill --------------------------------
 void AGnuMyCharacter::SpawnArrow()
 {
-	if (ArrowClass && GetEquippedWeapon())
+	/*if (ArrowClass && GetEquippedWeapon())
 	{
 		if (!isArrowCoolDown)
 		{
@@ -588,13 +589,75 @@ void AGnuMyCharacter::SpawnArrow()
 				}
 			}
 		}
+	}*/
+
+	if (HasAuthority())
+	{
+		// Directly spawn the arrow if the character has authority (server)
+		ServerSpawnArrow();
 	}
+	else
+	{
+		// Call the server to spawn the arrow if we are on the client
+		ServerSpawnArrow();
+	}
+}
+
+void AGnuMyCharacter::ServerSpawnArrow_Implementation()
+{
+	if (ArrowClass && GetEquippedWeapon())
+	{
+		if (!isArrowCoolDown)
+		{
+			FVector SpawnLocation = Combat->EquippedWeapon->GetMesh()->GetSocketLocation("MuzzleFlashSocket");
+			FRotator SpawnRotation = Combat->EquippedWeapon->GetMesh()->GetSocketRotation("MuzzleFlashSocket");
+			FTransform SpawnTransform(SpawnRotation, SpawnLocation);
+
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.Owner = GetOwner();
+			SpawnParams.Instigator = this;
+			UWorld* World = GetWorld();
+			if (World)
+			{
+				AGnuProjectileActor* Arrow = World->SpawnActor<AGnuProjectileActor>(ArrowClass, SpawnTransform, SpawnParams);
+				if (Arrow)
+				{
+					StartArrowCooldown();
+					Arrow->SetOwner(this);
+					Arrow->LaunchProjectile(this);
+				}
+			}
+		}
+	}
+}
+
+bool AGnuMyCharacter::ServerSpawnArrow_Validate()
+{
+	// Add validation logic if needed
+	return true;
 }
 
 void AGnuMyCharacter::StartArrowCooldown()
 {
 	isArrowCoolDown = true;
-	GetWorld()->GetTimerManager().SetTimer(ArrowCoolDownTimer, this, &AGnuMyCharacter::EndArrowCooldown, 1.0f, false);
+	ArrowCooldownRemainingTime = ArrowSkillCoolTime;
+	// 타이머 설정
+	GetWorld()->GetTimerManager().SetTimer(ArrowCoolDownTimer, this, &AGnuMyCharacter::UpdateArrowCooldownUI, 0.1f, true);
+}
+
+void AGnuMyCharacter::UpdateArrowCooldownUI()
+{
+	if (isArrowCoolDown)
+	{
+		// 남은 시간 감소
+		ArrowCooldownRemainingTime -= 0.1f;
+		GNUPlayerController->SetHUDArrowSkillCoolTime(ArrowSkillCoolTime, ArrowCooldownRemainingTime);
+		// 쿨타임이 끝나면 타이머 해제
+		if (ArrowCooldownRemainingTime <= 0)
+		{
+			EndArrowCooldown();
+		}
+	}
 }
 
 void AGnuMyCharacter::EndArrowCooldown()
@@ -656,6 +719,7 @@ void AGnuMyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME(AGnuMyCharacter, isCrouch);
 	DOREPLIFETIME(AGnuMyCharacter, Health);
 	DOREPLIFETIME(AGnuMyCharacter, Stamina);
+	DOREPLIFETIME(AGnuMyCharacter, ArrowClass);
 
 	// GnuWeapon
 	DOREPLIFETIME_CONDITION(AGnuMyCharacter, OverlappingWeapon, COND_OwnerOnly);

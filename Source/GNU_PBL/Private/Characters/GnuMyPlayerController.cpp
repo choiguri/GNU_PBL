@@ -134,6 +134,20 @@ void AGnuMyPlayerController::SetHUDStamina(float Stamina, float MaxStamina)
 	}
 }
 
+void AGnuMyPlayerController::SetHUDArrowSkillCoolTime(float CoolTime, float RemainingTime)
+{
+	GNUHUD = GNUHUD == nullptr ? Cast<AGNUHUD>(GetHUD()) : GNUHUD;
+
+	bool bHUDValid = GNUHUD &&
+		GNUHUD->CharacterOverlay &&
+		GNUHUD->CharacterOverlay->ArrowSkillCooldownBar;
+
+	if (bHUDValid)
+	{
+		GNUHUD->CharacterOverlay->ArrowSkillCooldownBar->SetPercent(RemainingTime / CoolTime); // 전체 1초의 쿨타임 비율로 설정
+	}
+}
+
 void AGnuMyPlayerController::SetHUDCombatTime(float CombatTime)
 {
 	GNUHUD = GNUHUD == nullptr ? Cast<AGNUHUD>(GetHUD()) : GNUHUD;

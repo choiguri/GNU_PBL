@@ -30,6 +30,8 @@ public:
 
 	void SetHUDStamina(float Stamina, float MaxStamina);
 
+	void SetHUDArrowSkillCoolTime(float CoolTime, float RemainingTime);
+
 	void SetHUDCombatTime(float CombatTime);
 
 	void SetHUDWeaponAmmo(int32 Ammo, int32 MaxAmmo);

@@ -7,6 +7,7 @@
 #include "Engine/Engine.h"
 #include "GNU_PBL/GNU_PBL.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 
 AGnuProjectileActor::AGnuProjectileActor()
 {
@@ -14,10 +15,8 @@ AGnuProjectileActor::AGnuProjectileActor()
 
     NiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraComponent"));
     NiagaraComponent->SetupAttachment(BoxComponent);
-
     // ProjectileMovementComponent 생성 및 기본값 설정
     ProjectileMovementComp = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
-    ProjectileMovementComp->UpdatedComponent = ProjectileBoxComponent; // ProjectileBoxComponent와 연결
     ProjectileMovementComp->InitialSpeed = 2000.f;                  // 발사 속도
     ProjectileMovementComp->MaxSpeed = 2000.f;                      // 발사 최대 속도
     ProjectileMovementComp->bRotationFollowsVelocity = true;        // 발사체가 이동 방향으로 회전
@@ -32,12 +31,13 @@ AGnuProjectileActor::AGnuProjectileActor()
     BoxComponent->SetCollisionResponseToChannel(ECC_SkeletalMesh, ECollisionResponse::ECR_Block);
 
     Damage = 10.0f;
+
+    bReplicates = true;  // 네트워크에서 복제할 수 있도록 설정
 }
 
 void AGnuProjectileActor::BeginPlay()
 {
     Super::BeginPlay();
-    PreviousLocation = GetActorLocation();
 
     if(NiagaraComponent)
     { 
@@ -47,19 +47,35 @@ void AGnuProjectileActor::BeginPlay()
     BoxComponent->OnComponentHit.AddDynamic(this, &AGnuProjectileActor::OnHit);
     BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &AGnuProjectileActor::BeginOverlap);
 
-    GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AGnuProjectileActor::DestroyActor, 2.5f, false);
+    GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AGnuProjectileActor::DestroyActor, 1.5f, false);
 
-    if (NiagaraSystem)
+    if (FlyComponent) // 날아가나는 이펙트만 박스에 붙혀서 날림
     {
         NiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
-            NiagaraSystem,
+            FlyComponent,
             BoxComponent,
             FName(),
-            GetActorLocation(), //getactor locatoin
+            GetActorLocation(),
             GetActorRotation(),
             EAttachLocation::KeepWorldPosition,
             true
         );
+    }
+    
+    if (MuzzleComponent) // 머즐 이펙트는 시작하는 위치에 바로 생성시킴
+    {
+        UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+            GetWorld(),
+            MuzzleComponent,
+            GetActorLocation(),
+            GetActorRotation()
+        );
+    }
+
+    if (NiagaraComponent)
+    {
+        // 크기 조정
+        NiagaraComponent->SetWorldScale3D(FVector(1.3f, 1.3f, 1.3f)); // 2배 크기
     }
 }
 
@@ -70,25 +86,96 @@ void AGnuProjectileActor::Tick(float DeltaTime)
 
 void AGnuProjectileActor::LaunchProjectile(AActor* IgnoredActor)
 {
-    if (BoxComponent)
+
+ /*   if (BoxComponent)
     {
-        BoxComponent->IgnoreActorWhenMoving(IgnoredActor, true); // 몬스터와 충돌 무시
+        BoxComponent->IgnoreActorWhenMoving(IgnoredActor, true);
         FVector LaunchDirection = GetActorForwardVector();
         ProjectileMovementComp->Velocity = LaunchDirection * ProjectileMovementComp->InitialSpeed;
+    }*/
+    if (HasAuthority())
+    {
+        if (BoxComponent)
+        {
+            BoxComponent->IgnoreActorWhenMoving(IgnoredActor, true);
+            FVector LaunchDirection = GetActorForwardVector();
+            ProjectileMovementComp->Velocity = LaunchDirection * ProjectileMovementComp->InitialSpeed;
+        }
     }
+    else
+    {
+        ServerLaunchProjectile(IgnoredActor); // Call server function if client
+    }
+}
+
+void AGnuProjectileActor::ServerLaunchProjectile_Implementation(AActor* IgnoredActor)
+{
+    LaunchProjectile(IgnoredActor);
+}
+
+bool AGnuProjectileActor::ServerLaunchProjectile_Validate(AActor* IgnoredActor)
+{
+    return true;  // Validate the request if necessary
 }
 
 void AGnuProjectileActor::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
 {
-    ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
-    if (OwnerCharacter)
+    //ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+    //if (OwnerCharacter)
+    //{
+    //    AController* OwnerController = OwnerCharacter->Controller;
+    //    if (OwnerController)
+    //    {
+    //        UGameplayStatics::ApplyDamage(OtherActor, Damage, OwnerController, this, UDamageType::StaticClass());
+
+    //        NiagaraComponent->DestroyComponent(); // Fly 이펙트 소멸 시키기
+    //        
+    //        if (TargetComponent) // 충돌 시 이펙트 생성
+    //        {
+    //            UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+    //                GetWorld(),
+    //                TargetComponent,
+    //                GetActorLocation(),
+    //                GetActorRotation()
+    //            );
+    //        }
+
+    //    }
+    //}
+    if (HasAuthority())
     {
-        AController* OwnerController = OwnerCharacter->Controller;
-        if (OwnerController)
+        ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+        if (OwnerCharacter)
         {
-            UGameplayStatics::ApplyDamage(OtherActor, Damage, OwnerController, this, UDamageType::StaticClass());
+            AController* OwnerController = OwnerCharacter->Controller;
+            if (OwnerController)
+            {
+                UGameplayStatics::ApplyDamage(OtherActor, Damage, OwnerController, this, UDamageType::StaticClass());
+
+                NiagaraComponent->DestroyComponent(); // Fly effect destroy
+
+                if (TargetComponent) // Spawn target effect
+                {
+                    UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), TargetComponent, GetActorLocation(), GetActorRotation());
+                }
+            }
         }
     }
+    else
+    {
+        ServerOnHit(HitComponent, OtherActor, OtherComponent, NormalImpulse, Hit); // Call server function if client
+    }
+}
+
+// Implement the server function for OnHit
+void AGnuProjectileActor::ServerOnHit_Implementation(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
+{
+    OnHit(HitComponent, OtherActor, OtherComponent, NormalImpulse, Hit);
+}
+
+bool AGnuProjectileActor::ServerOnHit_Validate(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
+{
+    return true;  // Validate if necessary
 }
 
 void AGnuProjectileActor::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -103,7 +190,6 @@ void AGnuProjectileActor::EndOverlap(UPrimitiveComponent* OverlappedComponent, A
 
 void AGnuProjectileActor::DestroyActor()
 {
-    // 소멸 이펙트 재생
     NiagaraComponent->SetAutoDestroy(true); // 소멸 후 자동 삭제 설정
     NiagaraComponent->Deactivate();        // 이펙트 비활성화
     Destroy();

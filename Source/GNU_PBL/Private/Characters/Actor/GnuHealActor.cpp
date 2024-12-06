@@ -21,7 +21,7 @@ AGnuHealActor::AGnuHealActor()
 
     NiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraSystem"));
     NiagaraComponent->SetupAttachment(BoxComponent);
-    Damage = 3.0f;
+    Damage = -3.0f;
 }
 
 
@@ -53,7 +53,7 @@ void AGnuHealActor::Heal()
         AController* OwnerController = OwnerCharacter->Controller;
         if (OwnerController)
         {
-            UGameplayStatics::ApplyDamage(this, -Damage, OwnerController, this, UDamageType::StaticClass());
+            UGameplayStatics::ApplyDamage(OwnerController->GetPawn(), Damage, OwnerController, this, UDamageType::StaticClass());
         }
     }
     GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, TEXT("Heal !"));
