@@ -32,6 +32,12 @@ public:
 
 	void SetHUDArrowSkillCoolTime(float CoolTime, float RemainingTime);
 
+	void SetHUDHealSkillCoolTime(float CoolTime, float RemainingTime);
+	
+	void SetHUDGneradeSkillCoolTime(float CoolTime, float RemainingTime);
+
+	void SetHUDDodgeCoolTime(float CoolTime, float RemainingTime);
+
 	void SetHUDCombatTime(float CombatTime);
 
 	void SetHUDWeaponAmmo(int32 Ammo, int32 MaxAmmo);

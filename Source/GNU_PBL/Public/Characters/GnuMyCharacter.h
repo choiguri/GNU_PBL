@@ -78,8 +78,11 @@ public:
 	void OnDodgeMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 	FTimerHandle DodgeCoolDownTimer;
 	bool isDodgeCoolDown;
+	float DodgeCoolTime;
+	float DodgeCooldownRemainingTime;
 	void StartDodgeCooldown();
 	void EndDodgeCooldown();
+	void UpdateDodgeCooldown();
 	//---------------------------------------------------------------------------
 
 
@@ -128,23 +131,33 @@ public:
 	
 
 	// ------------------------------------- Heal Skill ----------------------------------------
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Skill")
 	TSubclassOf<class AGnuHealActor> HealClass;
 	void SpawnHeal();
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerSpawnHeal();
 	FTimerHandle HealCoolDownTimer;
 	bool isHealCoolDown;
+	float HealSkillCoolTime;
+	float HealCooldownRemainingTime;
 	void StartHealCooldown();
 	void EndHealCooldown();
+	void UpdateHealCooldownUI();
 	// -----------------------------------------------------------------------------------------
 
 	// ------------------------------------- Grenade Skill ----------------------------------------
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Skill")
 	TSubclassOf<class AGnuGrenadeActor> GrenadeClass;
 	void SpawnGrenade();
-	FTimerHandle GrenadeCoolDownTimer;
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerSpawnGrenade();
+	FTimerHandle GneradeCoolDownTimer;
 	bool isGrenadeCoolDown;
+	float GneradeSkillCoolTime;
+	float GneradeCooldownRemainingTime;
 	void StartGrenadeCooldown();
 	void EndGrenadeCooldown();
+	void UpdateGneradeCooldownUI();
 	// -----------------------------------------------------------------------------------------
 
 	void SetCamera();

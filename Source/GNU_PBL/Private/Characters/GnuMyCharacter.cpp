@@ -122,9 +122,16 @@ AGnuMyCharacter::AGnuMyCharacter()
 	// skill cooltime
 	ArrowSkillCoolTime = 3.0f;
 	ArrowCooldownRemainingTime = 0.0f;
+	HealSkillCoolTime = 3.0f;
+	HealCooldownRemainingTime = 0.0f;
+	GneradeSkillCoolTime = 3.0f;
+	GneradeCooldownRemainingTime = 0.0f;
+	DodgeCoolTime = 3.0f;
+	DodgeCooldownRemainingTime = 0.0f;
 	isHealCoolDown = false;
 	isArrowCoolDown = false;
 	isGrenadeCoolDown = false;
+	isDodgeCoolDown = false;
 
 	DissolveTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("DissolveTimelineComponent"));
 }
@@ -168,6 +175,9 @@ void AGnuMyCharacter::BeginPlay()
 		GNUPlayerController->SetHUDHealth(Health, MaxHealth);
 		GNUPlayerController->SetHUDStamina(Stamina, MaxStaminaa);
 		GNUPlayerController->SetHUDArrowSkillCoolTime(ArrowSkillCoolTime, ArrowCooldownRemainingTime);
+		GNUPlayerController->SetHUDHealSkillCoolTime(HealSkillCoolTime, HealCooldownRemainingTime);
+		GNUPlayerController->SetHUDGneradeSkillCoolTime(HealSkillCoolTime, HealCooldownRemainingTime);
+		GNUPlayerController->SetHUDDodgeCoolTime(DodgeCoolTime, DodgeCooldownRemainingTime);
 
 	}
 	
@@ -400,7 +410,7 @@ void AGnuMyCharacter::OnRep_IsCrouching()
 // --------------------------------- Dodge Replicate ------------------------------------
 void AGnuMyCharacter::ServerMontageOnDodge_Implementation(float Forward, float Right)// 서버에서 구르기 애니메이션을 처리하는 함수
 {
-	if (isDodge)
+	if (isDodge || isDodgeCoolDown)
 	{
 		// 구르기 중에 다시 호출하면 중지
 		return;
@@ -416,7 +426,7 @@ void AGnuMyCharacter::ServerMontageOnDodge_Implementation(float Forward, float R
 	{
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 		PlayAnimMontage(DodgeMontage);
-		//GetCharacterMovement()->AddImpulse(AddVector, true);
+		StartDodgeCooldown();
 
 		if (AnimInstance)
 		{
@@ -438,7 +448,7 @@ bool AGnuMyCharacter::ServerMontageOnDodge_Validate(float Forward, float Right)
 
 void AGnuMyCharacter::MultiCastMontage_Dodge_Implementation(float Forward, float Right) // 모든 클라이언트에서 동일한 구르기 애니메이션을 재생하도록 하는 멀티캐스트 함수. 클라이언트와 서버 간의 동기화를 위해 사용
 {
-	if (isDodge)
+	if (isDodge || isDodgeCoolDown)
 	{
 		return;
 	}
@@ -515,18 +525,55 @@ void AGnuMyCharacter::OnDodgeMontageEnded(UAnimMontage* Montage, bool bInterrupt
 void AGnuMyCharacter::StartDodgeCooldown()
 {
 	isDodgeCoolDown = true;
-	GetWorld()->GetTimerManager().SetTimer(DodgeCoolDownTimer, this, &AGnuMyCharacter::EndDodgeCooldown, 10.0f, false);
+	DodgeCooldownRemainingTime = DodgeCoolTime;
+	GetWorld()->GetTimerManager().SetTimer(DodgeCoolDownTimer, this, &AGnuMyCharacter::UpdateDodgeCooldown, 0.1f, true);
+}
+
+void AGnuMyCharacter::UpdateDodgeCooldown()
+{
+	if (isDodgeCoolDown)
+	{
+		// 남은 시간 감소
+		DodgeCooldownRemainingTime -= 0.1f;
+		GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Black, FString::Printf(TEXT("%f"), DodgeCooldownRemainingTime));
+		GNUPlayerController->SetHUDDodgeCoolTime(DodgeCoolTime, DodgeCooldownRemainingTime);
+		// 쿨타임이 끝나면 타이머 해제
+		if (DodgeCooldownRemainingTime <= 0)
+		{
+			EndDodgeCooldown();
+		}
+	}
 }
 
 void AGnuMyCharacter::EndDodgeCooldown()
 {
 	isDodgeCoolDown = false; // 쿨타임 해제
-	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, TEXT("Dodge Cooldown ended!"));
 }
 // -------------------------------------------------------------------------
 
 //--------------------------- Heal Skill --------------------------------
 void AGnuMyCharacter::SpawnHeal()
+{
+	if (HealClass && GetEquippedWeapon())
+	{
+		// 쿨다운 확인
+		if (!isHealCoolDown)
+		{
+			if (HasAuthority())
+			{
+				// 서버에서 화살 스폰
+				ServerSpawnHeal();
+			}
+			else
+			{
+				// 클라이언트 -> 서버 요청
+				ServerSpawnHeal();
+			}
+		}
+	}
+}
+
+void AGnuMyCharacter::ServerSpawnHeal_Implementation()
 {
 	if (HealClass && GetEquippedWeapon())
 	{
@@ -548,16 +595,39 @@ void AGnuMyCharacter::SpawnHeal()
 	}
 }
 
+
+bool AGnuMyCharacter::ServerSpawnHeal_Validate()
+{
+	// Add validation logic if needed
+	return true;
+}
+
 void AGnuMyCharacter::StartHealCooldown()
 {
 	isHealCoolDown = true;
-	GetWorld()->GetTimerManager().SetTimer(HealCoolDownTimer, this, &AGnuMyCharacter::EndHealCooldown, 10.0f, false);
+	HealCooldownRemainingTime = HealSkillCoolTime;
+	// 타이머 설정
+	GetWorld()->GetTimerManager().SetTimer(HealCoolDownTimer, this, &AGnuMyCharacter::UpdateHealCooldownUI, 0.1f, true);
+}
+
+void AGnuMyCharacter::UpdateHealCooldownUI()
+{
+	if (isHealCoolDown)
+	{
+		// 남은 시간 감소
+		HealCooldownRemainingTime -= 0.1f;
+		GNUPlayerController->SetHUDHealSkillCoolTime(HealSkillCoolTime, HealCooldownRemainingTime);
+		// 쿨타임이 끝나면 타이머 해제
+		if (HealCooldownRemainingTime <= 0)
+		{
+			EndHealCooldown();
+		}
+	}
 }
 
 void AGnuMyCharacter::EndHealCooldown()
 {
 	isHealCoolDown = false; // 쿨타임 해제
-	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, TEXT("Heal Cooldown ended!"));
 }
 
 // -------------------------------------------------------------------------
@@ -565,41 +635,22 @@ void AGnuMyCharacter::EndHealCooldown()
 //--------------------------- Arrow Skill --------------------------------
 void AGnuMyCharacter::SpawnArrow()
 {
-	/*if (ArrowClass && GetEquippedWeapon())
+	if (ArrowClass && GetEquippedWeapon())
 	{
+		// 쿨다운 확인
 		if (!isArrowCoolDown)
 		{
-			FVector SpawnLocation = Combat->EquippedWeapon->GetMesh()->GetSocketLocation("MuzzleFlashSocket");
-			FRotator SpawnRotation = Combat->EquippedWeapon->GetMesh()->GetSocketRotation("MuzzleFlashSocket");
-			FTransform SpawnTransform(SpawnRotation, SpawnLocation);
-
-
-			FActorSpawnParameters SpawnParams;
-			SpawnParams.Owner = GetOwner();
-			SpawnParams.Instigator = this;
-			UWorld* World = GetWorld();
-			if (World)
+			if (HasAuthority())
 			{
-				AGnuProjectileActor* Arrow = World->SpawnActor<AGnuProjectileActor>(ArrowClass, SpawnTransform, SpawnParams);
-				if (Arrow)
-				{
-					StartArrowCooldown();
-					Arrow->SetOwner(this);
-					Arrow->LaunchProjectile(this);
-				}
+				// 서버에서 화살 스폰
+				ServerSpawnArrow();
+			}
+			else
+			{
+				// 클라이언트 -> 서버 요청
+				ServerSpawnArrow();
 			}
 		}
-	}*/
-
-	if (HasAuthority())
-	{
-		// Directly spawn the arrow if the character has authority (server)
-		ServerSpawnArrow();
-	}
-	else
-	{
-		// Call the server to spawn the arrow if we are on the client
-		ServerSpawnArrow();
 	}
 }
 
@@ -616,6 +667,7 @@ void AGnuMyCharacter::ServerSpawnArrow_Implementation()
 			FActorSpawnParameters SpawnParams;
 			SpawnParams.Owner = GetOwner();
 			SpawnParams.Instigator = this;
+
 			UWorld* World = GetWorld();
 			if (World)
 			{
@@ -630,6 +682,7 @@ void AGnuMyCharacter::ServerSpawnArrow_Implementation()
 		}
 	}
 }
+
 
 bool AGnuMyCharacter::ServerSpawnArrow_Validate()
 {
@@ -663,7 +716,6 @@ void AGnuMyCharacter::UpdateArrowCooldownUI()
 void AGnuMyCharacter::EndArrowCooldown()
 {
 	isArrowCoolDown = false; // 쿨타임 해제
-	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, TEXT("Arrow Cooldown ended!"));
 }
 // -------------------------------------------------------------------------
 
@@ -672,30 +724,75 @@ void AGnuMyCharacter::SpawnGrenade()
 {
 	if (GrenadeClass && GetEquippedWeapon())
 	{
-		FVector SpawnLocation = Combat->EquippedWeapon->GetMesh()->GetSocketLocation("MuzzleFlashSocket");
-		FRotator SpawnRotation = Combat->EquippedWeapon->GetMesh()->GetSocketRotation("MuzzleFlashSocket");
-		FTransform SpawnTransform(SpawnRotation, SpawnLocation);
-
-		AGnuGrenadeActor* Grenade = GetWorld()->SpawnActor<AGnuGrenadeActor>(GrenadeClass, SpawnTransform);
-		if (Grenade)
+		if (!isGrenadeCoolDown)
 		{
-			StartGrenadeCooldown();
-			Grenade->SetOwner(this);
-			Grenade->LaunchProjectile(this, SpawnLocation, SpawnRotation);
+			if (HasAuthority())
+			{
+				// Directly spawn the arrow if the character has authority (server)
+				ServerSpawnGrenade();
+			}
+			else
+			{
+				// Call the server to spawn the arrow if we are on the client
+				ServerSpawnGrenade();
+			}
 		}
 	}
+}
+
+void AGnuMyCharacter::ServerSpawnGrenade_Implementation()
+{
+	if (GrenadeClass && GetEquippedWeapon())
+	{
+		if (!isGrenadeCoolDown)
+		{
+			FVector SpawnLocation = Combat->EquippedWeapon->GetMesh()->GetSocketLocation("MuzzleFlashSocket");
+			FRotator SpawnRotation = Combat->EquippedWeapon->GetMesh()->GetSocketRotation("MuzzleFlashSocket");
+			FTransform SpawnTransform(SpawnRotation, SpawnLocation);
+
+			AGnuGrenadeActor* Grenade = GetWorld()->SpawnActor<AGnuGrenadeActor>(GrenadeClass, SpawnTransform);
+			if (Grenade)
+			{
+				StartGrenadeCooldown();
+				Grenade->SetOwner(this);
+				Grenade->LaunchProjectile(this, SpawnLocation, SpawnRotation);
+			}
+		}
+	}
+}
+
+bool AGnuMyCharacter::ServerSpawnGrenade_Validate()
+{
+	// Add validation logic if needed
+	return true;
 }
 
 void AGnuMyCharacter::StartGrenadeCooldown()
 {
 	isGrenadeCoolDown = true;
-	GetWorld()->GetTimerManager().SetTimer(GrenadeCoolDownTimer, this, &AGnuMyCharacter::EndGrenadeCooldown, 1.0f, false);
+	GneradeCooldownRemainingTime = GneradeSkillCoolTime;
+	// 타이머 설정
+	GetWorld()->GetTimerManager().SetTimer(GneradeCoolDownTimer, this, &AGnuMyCharacter::UpdateGneradeCooldownUI, 0.1f, true);
+}
+
+void AGnuMyCharacter::UpdateGneradeCooldownUI()
+{
+	if (isGrenadeCoolDown)
+	{
+		// 남은 시간 감소
+		GneradeCooldownRemainingTime -= 0.1f;
+		GNUPlayerController->SetHUDGneradeSkillCoolTime(GneradeSkillCoolTime, GneradeCooldownRemainingTime);
+		// 쿨타임이 끝나면 타이머 해제
+		if (GneradeCooldownRemainingTime <= 0)
+		{
+			EndGrenadeCooldown();
+		}
+	}
 }
 
 void AGnuMyCharacter::EndGrenadeCooldown()
 {
 	isGrenadeCoolDown = false; // 쿨타임 해제
-	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, TEXT("Grenade Cooldown ended!"));
 }
 // -------------------------------------------------------------------------
 
@@ -720,6 +817,8 @@ void AGnuMyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME(AGnuMyCharacter, Health);
 	DOREPLIFETIME(AGnuMyCharacter, Stamina);
 	DOREPLIFETIME(AGnuMyCharacter, ArrowClass);
+	DOREPLIFETIME(AGnuMyCharacter, GrenadeClass);
+	DOREPLIFETIME(AGnuMyCharacter, HealClass);
 
 	// GnuWeapon
 	DOREPLIFETIME_CONDITION(AGnuMyCharacter, OverlappingWeapon, COND_OwnerOnly);

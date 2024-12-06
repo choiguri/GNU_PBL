@@ -58,4 +58,13 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	UProgressBar* ArrowSkillCooldownBar;
+
+	UPROPERTY(meta = (BindWidget))
+	UProgressBar* HealSkillCooldownBar;
+
+	UPROPERTY(meta = (BindWidget))
+	UProgressBar* GneradeSkillCooldownBar;
+
+	UPROPERTY(meta = (BindWidget))
+	UProgressBar* DodgeCooldownBar;
 };

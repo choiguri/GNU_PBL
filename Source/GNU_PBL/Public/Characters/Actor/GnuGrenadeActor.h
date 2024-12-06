@@ -17,12 +17,24 @@ class GNU_PBL_API AGnuGrenadeActor : public AGnuActorCollisionBase
 public:
     AGnuGrenadeActor();
     void LaunchProjectile(AActor* IgnoredActor, FVector SpawnLocation, FRotator SpawnRotation);  // 발사 함수
+    UFUNCTION(Server, Reliable, WithValidation)
+    void ServerLaunchProjectile(AActor* IgnoredActor, FVector SpawnLocation, FRotator SpawnRotation);
 
+    UFUNCTION(NetMulticast, Reliable)
+    void MulticastLaunchProjectile(AActor* IgnoredActor, FVector SpawnLocation, FRotator SpawnRotation);
+
+    UFUNCTION(NetMulticast, Reliable)
+    void MulticastDestroyGrenade();
 private:
     FTimerHandle DestroyTimer; // 파괴 타이머 핸들
     FTimerHandle GrenadeTimer;
     float Damage;
-    void SpawnEMPVortex(AActor* IgnoredActor, FVector SpawnLocation, FRotator SpawnRotation);
+
+    void SpawnGrenade(AActor* IgnoredActor, FVector SpawnLocation, FRotator SpawnRotation);
+
+    UFUNCTION(Server, Reliable, WithValidation)
+    void ServerSpawnGrenade(AActor* IgnoredActor, FVector SpawnLocation, FRotator SpawnRotation);
+
     void DestroyActor(); // 엑터 삭제 함수
 
 protected:
@@ -40,7 +52,7 @@ protected:
 
     // 스폰할 액터 클래스 (BP_Projectile_EMP_Vortex)
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grenade")
-    TSubclassOf<AActor> BP_Projectile_EMP_Vortex;
+    TSubclassOf<AActor> BP_Grenade;
 
     UFUNCTION()
     void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);

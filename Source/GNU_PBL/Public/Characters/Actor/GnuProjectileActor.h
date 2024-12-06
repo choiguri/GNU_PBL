@@ -24,6 +24,11 @@ public:
     UFUNCTION(Server, Reliable, WithValidation)
     void ServerLaunchProjectile(AActor* IgnoredActor);
 
+    UFUNCTION(NetMulticast, Reliable)
+    void MulticastSpawnEffect(UNiagaraSystem* NiagaraSystem, FVector Location, FRotator Rotation);
+
+    UFUNCTION(NetMulticast, Reliable)
+    void MulticastDestroyFlyEffect();
 private:
     float Damage;
 

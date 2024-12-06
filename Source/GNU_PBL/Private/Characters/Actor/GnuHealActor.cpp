@@ -7,6 +7,7 @@
 #include "Characters/GnuMyCharacter.h"
 #include "TimerManager.h"  // 타이머 관련 클래스 포함
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 
 AGnuHealActor::AGnuHealActor()
 {
@@ -22,6 +23,7 @@ AGnuHealActor::AGnuHealActor()
     NiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraSystem"));
     NiagaraComponent->SetupAttachment(BoxComponent);
     Damage = -3.0f;
+    bReplicates = true; // 액터 복제 가능 설정
 }
 
 
@@ -30,8 +32,8 @@ void AGnuHealActor::BeginPlay()
     Super::BeginPlay();
 
     // 힐 시작
-    GetWorld()->GetTimerManager().SetTimer(DestroyTimer, this, &AGnuHealActor::DestroyActor, 5.0f, false);
-    GetWorld()->GetTimerManager().SetTimer(HealTimer, this, &AGnuHealActor::Heal, 1.0f, true);
+    GetWorld()->GetTimerManager().SetTimer(DestroyTimer, this, &AGnuHealActor::DestroyActor, 3.0f, false);
+    GetWorld()->GetTimerManager().SetTimer(HealTimer, this, &AGnuHealActor::Heal, 0.5f, true);
 }
 
 void AGnuHealActor::Tick(float DeltaTime)
@@ -56,7 +58,6 @@ void AGnuHealActor::Heal()
             UGameplayStatics::ApplyDamage(OwnerController->GetPawn(), Damage, OwnerController, this, UDamageType::StaticClass());
         }
     }
-    GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, TEXT("Heal !"));
 }
 
 void AGnuHealActor::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
