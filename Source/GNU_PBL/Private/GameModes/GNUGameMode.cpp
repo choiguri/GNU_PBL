@@ -51,9 +51,15 @@ void AGNUGameMode::RequestRespawn(ACharacter* ElimedCharacter, AController* Elim
 	// 드래곤 피를 어떻게 들고 오느냐가 문제일듯
 	if (bOverDeathCount())
 	{
-		if (GEngine)
+		AGnuMyPlayerController* PlayerController = Cast<AGnuMyPlayerController>(GetWorld()->GetFirstPlayerController());
+		if (PlayerController)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Cyan, FString::Printf(TEXT("TotalDeath is Over")));
+			AGnuMyCharacter* PlayerCharacter = Cast<AGnuMyCharacter>(PlayerController->GetPawn());
+			if (PlayerCharacter)
+			{
+				PlayerCharacter->CreateDefeatResultWidget();
+				return;
+			}
 		}
 
 	}
@@ -185,4 +191,29 @@ TArray<float> AGNUGameMode::GetPlayersHealth()
 
 	return PlayerHealth;
 }
+
+void AGNUGameMode::MonsterEliminated()
+{
+	AGnuMyPlayerController* PlayerController = Cast<AGnuMyPlayerController>(GetWorld()->GetFirstPlayerController());
+	if (PlayerController)
+	{
+		AGnuMyCharacter* PlayerCharacter = Cast<AGnuMyCharacter>(PlayerController->GetPawn());
+		if (PlayerCharacter)
+		{
+			PlayerCharacter->CreateVictoryResultWidget();
+		}
+	}
+}
+
+//bool AGNUGameMode::bIsTimeOver()
+//{
+//	AGnuMyPlayerController* PlayerController = Cast<AGnuMyPlayerController>(GetWorld()->GetFirstPlayerController());
+//	if (PlayerController)
+//	{
+//		uint32 SecondsLeft = FMath::CeilToInt(PlayerController->TotalTime - PlayerController->GetServertime());
+//		return SecondsLeft <= 0;
+//	}
+//
+//	return false;
+//}
 

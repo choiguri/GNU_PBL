@@ -7,6 +7,7 @@
 #include "Components/TimelineComponent.h" // FTimeline
 #include "Camera/CameraShakeBase.h"
 #include "GameFramework/PlayerState.h"
+#include "HUD/GnuResult.h"
 #include "GnuMyCharacter.generated.h"
 
 class USpringArmComponent;
@@ -252,6 +253,20 @@ public:
 	// 머리 위의 스팀 닉네임 표시
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UWidgetComponent* OverHeadWidget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<UGnuResult> ResultWidgetClass;
+
+	UGnuResult* ResultWidget;
+
+	void CreateVictoryResultWidget();
+	void CreateDefeatResultWidget();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiCastCreateVictoryResultWidget();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiCastCreateDefeatResultWidget();
 
 	UPROPERTY(VisibleAnywhere)
 	class UGnuCombatComponent* Combat;

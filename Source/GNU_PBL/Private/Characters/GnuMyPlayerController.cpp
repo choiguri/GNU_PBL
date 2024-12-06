@@ -87,6 +87,15 @@ void AGnuMyPlayerController::Tick(float DeltaTime)
 	SetHUDTime();
 	CheckTimeSync(DeltaTime);
 
+	if (bIsTimeOver())
+	{
+		AGnuMyCharacter* GnuCharacter = Cast<AGnuMyCharacter>(GetPawn());
+		if (GnuCharacter)
+		{
+			GnuCharacter->CreateDefeatResultWidget();
+		}
+	}
+
 }
 
 void AGnuMyPlayerController::ReceivedPlayer()
@@ -356,9 +365,10 @@ void AGnuMyPlayerController::SetHUDTime()
 
 	if (CountdownInt != SecondsLeft)
 	{
-		SetHUDCombatTime(TotalTime - GetServertime());
+		SetHUDCombatTime(FMath::Clamp(TotalTime - GetServertime(), 0, TotalTime));
 
 	}
+
 
 	CountdownInt = SecondsLeft;
 }
@@ -428,9 +438,6 @@ void AGnuMyPlayerController::CheckTimeSync(float DeltaTime)
 
 	}
 }
-
-
-
 
 
 // 서버와 클라이언트 사이의 RoundTripTime 계산 하기 위한 함수들
@@ -743,6 +750,14 @@ void AGnuMyPlayerController::ReloadButtonPressed()
 		}
 	}
 }
+
+bool AGnuMyPlayerController::bIsTimeOver()
+{
+	uint32 SecondsLeft = FMath::CeilToInt(TotalTime - GetServertime());
+
+	return SecondsLeft <= 0;
+}
+
 
 void AGnuMyPlayerController::ArrowSkill(const FInputActionValue& InputActionValue)
 {

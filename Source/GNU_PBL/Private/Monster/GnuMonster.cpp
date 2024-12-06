@@ -35,7 +35,8 @@
 #include "GNU_PBL/GNU_PBL.h"	// SkeletalMesh 채널 설정
 // 캐릭터
 #include "Characters/GnuMyCharacter.h"
-
+// 게임모드
+#include "GameModes/GNUGameMode.h"
 
 AGnuMonster::AGnuMonster()
 {
@@ -77,7 +78,7 @@ AGnuMonster::AGnuMonster()
 	bAlwaysRelevant = true; // 항상 네트워크에서 중요
 
 	// hp 구현
-	MaxHealth = 1000.f;
+	MaxHealth = 1.f;
 	CurrentHealth = MaxHealth;
 
 	// 넉백 힘
@@ -244,6 +245,13 @@ void AGnuMonster::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamag
 	{
 		Die();
 		bIsDead = true;
+		
+		// 죽자마자 바로 결과 화면이 나오기 때문에 타이머를 이용해도 괜찮을듯
+		AGNUGameMode* GNUGameMode = GetWorld()->GetAuthGameMode<AGNUGameMode>();
+		if (GNUGameMode)
+		{
+			GNUGameMode->MonsterEliminated();
+		}
 	}
 }
 

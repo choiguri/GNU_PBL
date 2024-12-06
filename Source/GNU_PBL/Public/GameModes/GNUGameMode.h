@@ -34,4 +34,8 @@ public:
 	TArray<FString> GetPlayersName();
 	TArray<float> GetPlayersHealth();
 
+	void MonsterEliminated();
+	
+	/*bool bIsTimeOver();*/
+
 };

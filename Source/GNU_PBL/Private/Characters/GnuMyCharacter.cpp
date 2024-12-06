@@ -38,6 +38,7 @@
 #include "HUD/GnuReplicatedHealth.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
+#include "HUD/GnuResult.h"
 
 // GnuWeapon
 #include "Weapons/GnuWeapon.h"
@@ -106,6 +107,7 @@ AGnuMyCharacter::AGnuMyCharacter()
 	ReplicatedHealthWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("ReplicatedHealthWidget"));
 	ReplicatedHealthWidget->SetupAttachment(RootComponent);
 
+	
 	// GnuWeaponComponent
 	Combat = CreateDefaultSubobject<UGnuCombatComponent>(TEXT("CombatComponent"));
 	Combat->SetIsReplicated(true);
@@ -1272,6 +1274,36 @@ void AGnuMyCharacter::ServerSetPlayerName_Implementation(const FString& PlayerNa
 			UE_LOG(LogTemp, Warning, TEXT("ClientSetPlayerName"));
 		}
 		
+	}
+}
+
+void AGnuMyCharacter::CreateVictoryResultWidget()
+{
+	MultiCastCreateVictoryResultWidget();
+}
+
+void AGnuMyCharacter::MultiCastCreateVictoryResultWidget_Implementation()
+{
+	if (ResultWidgetClass)
+	{
+		ResultWidget = CreateWidget<UGnuResult>(GetWorld(), ResultWidgetClass);
+		ResultWidget->SetVictoryText();
+		ResultWidget->MenuSetup();
+	}
+}
+
+void AGnuMyCharacter::CreateDefeatResultWidget()
+{
+	MultiCastCreateDefeatResultWidget();
+}
+
+void AGnuMyCharacter::MultiCastCreateDefeatResultWidget_Implementation()
+{
+	if (ResultWidgetClass)
+	{
+		ResultWidget = CreateWidget<UGnuResult>(GetWorld(), ResultWidgetClass);
+		ResultWidget->SetDefeatText();
+		ResultWidget->MenuSetup();
 	}
 }
 

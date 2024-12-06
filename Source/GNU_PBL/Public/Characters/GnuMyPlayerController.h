@@ -55,6 +55,11 @@ public:
 	virtual float GetServertime();
 	virtual void ReceivedPlayer() override;
 
+	float TotalTime = 10.f; // 나중에 total 게임 시간 설정 해야 함
+	uint32 CountdownInt = 0;
+
+	bool bIsTimeOver();
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
@@ -171,6 +176,8 @@ private:
 	void FireButtonPressed();
 	void FireButtonReleased();
 	void ReloadButtonPressed();
+
+
 //
 // 추가사항
 //
@@ -186,8 +193,7 @@ private:
 
 	bool bReturnToMainMenuOpen = false;
 
-	float TotalTime = 120.f; // 나중에 total 게임 시간 설정 해야 함
-	uint32 CountdownInt = 0;
+
 };
 
 // TObjectPtr :  스마트 포인터 타입으로, 주로 UObject 기반 객체를 안전하게 관리하는 데 사용
