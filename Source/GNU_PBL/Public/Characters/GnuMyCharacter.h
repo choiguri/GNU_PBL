@@ -100,35 +100,9 @@ public:
 	void ZoomInFinished(); // 타임라인이 끝났을 때 호출될 함수
 	//---------------------------------------------------------------------------------------------
 
-
-	//------------------ Weapon Funtion ---------------------------------------
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
-	//bool isReload;
-	//UFUNCTION(Server, Reliable, WithValidation)
-	//void ServerMontageOnReload(); // �������� ������ ��Ÿ�ָ� �����ϴ� �Լ� (��Ʈ�ѷ����� ȣ��)
-	//UFUNCTION(NetMulticast, Reliable)
-	//void MultiCastMontage_Reload(); // ������ ��Ÿ�� ��Ƽĳ��Ʈ (������ ȣ��Ǹ� �ڵ����� ȣ��)
-	//void FinishReload();
-	//---------------------------------------------------------------------
-
-
-	//------------------ Weapon Funtion ---------------------------------------
-	void Aiming();
-	void StopAiming();
-
 	UPROPERTY(ReplicatedUsing = OnRep_IsCrouching, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	bool isFire = false;
 
-	//void Fire();
-	//void StopFire();
-	////void Reload();
-	//void Interact(); // 상호작용 함수
-	//
-	//UFUNCTION(Server, Reliable, WithValidation)
-	//void ServerSwitchWeapon(TSubclassOf<AGun> NewGunClass);
-	//void SwitchWeapon(TSubclassOf<AGun> NewGunClass);
-
-	//void PerformSwitchWeapon(TSubclassOf<AGun> NewGunClass);
 
 	bool GetIsCrouching() const;
 	bool GetIsSprinting() const;
@@ -217,19 +191,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	UAnimMontage* Reload_Montage;
 
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<AGun> GunClass;
-
-	
-	UPROPERTY()
-	AGun* Gun; // Gun Actor
-
-
-	TSubclassOf<UUserWidget> CrossHairWidgetClass;
-
-	UPROPERTY()
-	class UCrossHair* pCrossHair; // CrossHair UI
-
 	// 공격 맞았는지 체크
 	UPROPERTY(VisibleInstanceOnly)
 	AGnuAttackCollisionActor* OverlapItem;
@@ -297,18 +258,6 @@ public:
 	UFUNCTION(Server, Reliable)
 	void UpdateOthersName();
 
-	// 기존
-	/*UFUNCTION(Server, Reliable)
-	void ServerFire();
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MultiCastFire();
-
-	UFUNCTION(Server, Reliable)
-	void ServerStopFire();
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MultiCastStopFire();*/
 
 	// 무기 장착
 	void EquipButtonPressed();

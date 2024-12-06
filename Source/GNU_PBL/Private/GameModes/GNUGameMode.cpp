@@ -133,42 +133,6 @@ void AGNUGameMode::RestartGame()
 	Super::RestartGame();
 }
 
-//void AGNUGameMode::GetPlayersHealthAndName()
-//{
-//	TArray<float> PlayerHealth;
-//	TArray<FString> PlayerName;
-//
-//	int32 Index = 0;  // Manually track the index for PlayerName and PlayerHealth
-//
-//	// Loop through all player controllers
-//	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
-//	{
-//		AGnuMyPlayerController* PlayerController = Cast<AGnuMyPlayerController>(*Iterator);
-//		if (PlayerController)
-//		{
-//			AGnuMyCharacter* PlayerCharacter = Cast<AGnuMyCharacter>(PlayerController->GetPawn());
-//			if (PlayerCharacter)
-//			{
-//				PlayerHealth.EmplaceAt(Index, PlayerCharacter->GetHealth());
-//			}
-//
-//			AGnuPlayerState* CharacaterPlayerState = Cast<AGnuPlayerState>(PlayerController->PlayerState);
-//			if (CharacaterPlayerState)
-//			{
-//				PlayerName.EmplaceAt(Index, CharacaterPlayerState->GetPlayerName());
-//			}
-//
-//			//// Set the HUD health and name for each player using the manually tracked index
-//			//PlayerController->SetHUDOthersHealth(*PlayerName[Index], PlayerHealth[Index], 100.f, Index);
-//			//if (GEngine)
-//			//{
-//			//	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Black, FString::Printf(TEXT("Index : %d, PlayerName : %s, PlayerHealth : %.2f"), Index, *PlayerName[Index], PlayerHealth[Index]));
-//			//}
-//		}
-//		Index++;
-//	}
-//}
-
 TArray<FString> AGNUGameMode::GetPlayersName()
 {
 	TArray<FString> PlayerName;
@@ -183,6 +147,10 @@ TArray<FString> AGNUGameMode::GetPlayersName()
 			if (CharacaterPlayerState)
 			{
 				PlayerName.EmplaceAt(Index, CharacaterPlayerState->GetPlayerName());
+			}
+			else
+			{
+				PlayerName.EmplaceAt(Index, "");
 			}
 		}
 		Index++;
@@ -205,6 +173,10 @@ TArray<float> AGNUGameMode::GetPlayersHealth()
 			if (PlayerCharacter)
 			{
 				PlayerHealth.EmplaceAt(Index, PlayerCharacter->GetHealth());
+			}
+			else
+			{
+				PlayerHealth.EmplaceAt(Index, 0.0f);
 			}
 		}
 		Index++;

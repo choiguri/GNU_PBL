@@ -169,9 +169,9 @@ void UGnuMyAnimInstance::SetWeapon()
 	}
 }
 
-void UGnuMyAnimInstance::ServerSetAnimState_Implementation() // Ŭ���̾�Ʈ���� ������Ʈ ���� ��û�� ������ �������� ServerSprintStart_Implementation�� ����
+void UGnuMyAnimInstance::ServerSetAnimState_Implementation() 
 {
-	SetWeapon(); //  �� �Լ��� ���������� ����
+	SetWeapon(); 
 	if (GEngine)
 	{
 		FString s = FString::Printf(TEXT("Server SetWeapon called: %d"), (int32)EAnimState);
@@ -182,24 +182,18 @@ void UGnuMyAnimInstance::ServerSetAnimState_Implementation() // Ŭ���̾�
 
 bool UGnuMyAnimInstance::ServerSetAnimState_Validate()
 {
-	return true; // �ʿ��� ��ȿ�� �˻� ������ ���⿡ �߰�
+	return true;
 }
 
 
-void UGnuMyAnimInstance::ClientSetAnimState_Implementation() // Ŭ���̾�Ʈ�� ��� �ݿ��ϴ� ��������� ���� - Ŭ���̾�Ʈ �ϰ����� ������
+void UGnuMyAnimInstance::ClientSetAnimState_Implementation() 
 {
-	// �ּ��� Ǯ�� Ŭ���̾�Ʈ���� ������Ʈ ���¸� ������ �ݿ��� �� ������, �� ����� ������ ����� ��ٸ��� �ʱ� ������ ������ Ŭ���̾�Ʈ�� �ϰ����� ������ �� ����
+	
 	// UpdateSprintState(true);
 }
 
 
-void UGnuMyAnimInstance::OnRep_SetAnimState() 	// Ŭ���̾�Ʈ�� ����ȭ �Ǵ� �Լ� -> �������� isSprint ���� ����� �� Ŭ���̾�Ʈ���� �� ��ȭ�� �����ϰ� ����Ǵ� �Լ� (��, ������ �����ϴ� ������Ʈ ���¸� Ŭ���̾�Ʈ�� ����ȭ �ϴ� ���)
+void UGnuMyAnimInstance::OnRep_SetAnimState() 	
 {
 	SetWeapon();
-	if (GEngine)
-	{
-		FString s = FString::Printf(TEXT("OnRep called: %d"), (int32)EAnimState);
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, s);
-	}
-
 }

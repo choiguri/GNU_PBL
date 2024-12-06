@@ -157,17 +157,6 @@ private:
 	void HealSkill(const struct FInputActionValue& InputActionValue);
 	void GrenadeSkill(const struct FInputActionValue& InputActionValue);
 
-
-	// ------------------ Weapon funtion -------------
-	// 기존
-	void Aiming();
-	void StopAiming();
-	//void Fire();
-	//void StopFire();
-	//void Reload();
-	//void Interact(); // 상호작용 함수
-	// -----------------------------------------------
-
 	// GnuWeapon
 	void EquipButtonPressed();
 	void CrouchButtonPressed();

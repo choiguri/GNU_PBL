@@ -319,17 +319,10 @@ void AGnuMyPlayerController::SetupInputComponent()
 	EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::ToggleCrouch);
 	EnhancedInputComponent->BindAction(ToggleCameraAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::ToggleCamera);
 	EnhancedInputComponent->BindAction(ZoomInAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::ToggleZoomIn);
-	/*EnhancedInputComponent->BindAction(WeaponChangeAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::WeaponChange);*/
+
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::Jump);
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AGnuMyPlayerController::StopJumping);
 
-	// 기존
-	/*EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::Interact);
-	EnhancedInputComponent->BindAction(ShotAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::Fire);
-	EnhancedInputComponent->BindAction(ShotAction, ETriggerEvent::Completed, this, &AGnuMyPlayerController::StopFire);*/
-	//EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::Aiming);
-	//EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Completed, this, &AGnuMyPlayerController::StopAiming);
-	//EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::Reload);
 	EnhancedInputComponent->BindAction(ArrowSkillAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::ArrowSkill);
 	EnhancedInputComponent->BindAction(HealSkillAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::HealSkill);
 	EnhancedInputComponent->BindAction(GrenadeSkillAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::GrenadeSkill);
@@ -613,82 +606,6 @@ void AGnuMyPlayerController::StopJumping(const FInputActionValue& InputActionVal
 		}
 	}
 }
-
-// 기존
-void AGnuMyPlayerController::Aiming()
-{
-	if (APawn* ControlledPawn = GetPawn<APawn>())
-	{
-		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
-		if (MyCharacter)
-		{
-			MyCharacter->Aiming(); 
-		}
-	}
-}
-
-void AGnuMyPlayerController::StopAiming()
-{
-	if (APawn* ControlledPawn = GetPawn<APawn>())
-	{
-		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
-		if (MyCharacter)
-		{
-			MyCharacter->StopAiming(); 
-		}
-	}
-}
-
-// 기존
-//void AGnuMyPlayerController::Fire()
-//{
-//	if (APawn* ControlledPawn = GetPawn<APawn>())
-//	{
-//		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
-//		if (MyCharacter)
-//		{
-//			MyCharacter->Fire();
-//		}
-//	}
-//}
-//
-//void AGnuMyPlayerController::StopFire()
-//{
-//	if (APawn* ControlledPawn = GetPawn<APawn>())
-//	{
-//		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
-//		if (MyCharacter)
-//		{
-//			MyCharacter->StopFire();
-//		}
-//	}
-//}
-//
-//
-//void AGnuMyPlayerController::Reload()
-//{
-//	if (APawn* ControlledPawn = GetPawn<APawn>())
-//	{
-//		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
-//		if (MyCharacter)
-//		{
-//			MyCharacter->ServerMontageOnReload();
-//		}
-//	}
-//}
-
-//
-//void AGnuMyPlayerController::Interact()
-//{
-//	if (APawn* ControlledPawn = GetPawn<APawn>())
-//	{
-//		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
-//		if (MyCharacter)
-//		{
-//			MyCharacter->Interact();
-//		}
-//	}
-//}
 
 void AGnuMyPlayerController::EquipButtonPressed()
 {

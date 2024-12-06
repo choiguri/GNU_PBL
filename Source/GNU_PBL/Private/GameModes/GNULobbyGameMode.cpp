@@ -30,7 +30,7 @@ void AGNULobbyGameMode::PostLogin(APlayerController* NewPlayer)
 	}
 
 	// 플레이어가 n명일 때 GameMap으로 이동 
-	if (NumberOfPlayers == 2) // 나중에 수정 필요
+	if (NumberOfPlayers == 4) // 나중에 수정 필요
 	{
 		bUseSeamlessTravel = true;
 		UWorld* World = GetWorld();
@@ -51,12 +51,12 @@ void AGNULobbyGameMode::Logout(AController* Exiting)
 	{
 		int32 NumberOfPlayers = GameState.Get()->PlayerArray.Num();
 
-		GEngine->AddOnScreenDebugMessage(1, 60.f, FColor::Yellow,
-			FString::Printf(TEXT("Players in Game: %d"), NumberOfPlayers - 1));
+		/*GEngine->AddOnScreenDebugMessage(1, 60.f, FColor::Yellow,
+			FString::Printf(TEXT("Players in Game: %d"), NumberOfPlayers - 1));*/
 
 		FString PlayerName = PlayerState->GetPlayerName();
 
-		GEngine->AddOnScreenDebugMessage(-1, 60.f, FColor::Cyan,
-			FString::Printf(TEXT("%s has exited the game"), *PlayerName));
+		/*GEngine->AddOnScreenDebugMessage(-1, 60.f, FColor::Cyan,
+			FString::Printf(TEXT("%s has exited the game"), *PlayerName));*/
 	}
 }
