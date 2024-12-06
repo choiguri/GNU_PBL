@@ -35,6 +35,9 @@ public:
 	void DeactivateSkeletalMesh(); // 스켈레탈 메시 비활성화
 	void DeactivateCapsuleComp(); // 캡슐 컴포넌트 비활성화
 
+	void SetDirection();
+	void SetGroundSpeed();
+
 	//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 몬스터 공격 함수 시작 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ//
 	void SpawnFireball(); // 파이어볼 소환 함수
 	void SpawnFiretornado(); // 파이어토네이도 소환 함수
@@ -71,6 +74,10 @@ public:
 
 	UPROPERTY(ReplicatedUsing = OnRep_Direction, BlueprintReadOnly, Category = "AnimData")
 	float Direction;
+
+	// 초기 회전 각도
+	FRotator InitialRotation;
+
 
 	UFUNCTION()
 	void OnRep_GroundSpeed();

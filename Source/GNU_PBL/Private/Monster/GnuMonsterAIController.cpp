@@ -33,6 +33,7 @@ AGnuMonsterAIController::AGnuMonsterAIController()
     }
 
     bReplicates = true;
+    TargetActor = nullptr;
 }
 
 void AGnuMonsterAIController::BeginPlay()
@@ -62,6 +63,7 @@ void AGnuMonsterAIController::Tick(float DeltaSeconds)
         UpdateMonsterHealth();      // 몬스터 현재 hp 블랙보드 키값 업데이트
     }
 
+    // TargetActor 없을 때 계속 확인하기
     ACharacter* CurrentTarget = Cast<ACharacter>(GetBlackboardComponent()->GetValueAsObject(TEXT("TargetActor")));
     if (CurrentTarget == nullptr && bCanRetry)
     {
@@ -75,15 +77,23 @@ void AGnuMonsterAIController::Tick(float DeltaSeconds)
 // 초기 타겟 감지 설정
 void AGnuMonsterAIController::OnTargetDetected(AActor* Actor, FAIStimulus const Stimulus)
 {
-    if (!Stimulus.WasSuccessfullySensed() || !Actor || !Actor->IsA<ACharacter>() || !HasAuthority())
+    if (!Stimulus.WasSuccessfullySensed() || !Actor || !HasAuthority() || !Actor->IsValidLowLevel() || !Actor->IsValidLowLevelFast())
     {
+        GEngine->AddOnScreenDebugMessage(1, 4, FColor::Red, TEXT("Actor Failed!"));
         return;
     }
-
-    ACharacter* DetectedCharacter = Cast<ACharacter>(Actor);
-    if (DetectedCharacter && DetectedCharacter->IsA(AGnuMyCharacter::StaticClass()))
+    else
     {
-        SetNewTarget(DetectedCharacter);
+        UpdateTarget();
+    }
+
+    if (Actor && Actor->IsA<ACharacter>())
+    {
+        ACharacter* DetectedCharacter = Cast<ACharacter>(Actor);
+        if (DetectedCharacter && DetectedCharacter->IsA(AGnuMyCharacter::StaticClass()))
+        {
+            SetNewTarget(DetectedCharacter);
+        }
     }
 }
 
@@ -115,7 +125,6 @@ void AGnuMonsterAIController::UpdateTarget()
         }
     }
 
-    
     if (NewTarget)
     {
         SetNewTarget(NewTarget);    // 새 타겟 설정

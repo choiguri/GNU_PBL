@@ -136,6 +136,9 @@ void AGnuMonster::BeginPlay()
 		DynamicMaterialInst_2nd = UMaterialInstanceDynamic::Create(Material_2nd, this);
 		GetMesh()->SetMaterial(1, DynamicMaterialInst_2nd);
 	}
+
+	// 초기 회전 방향 확인
+	InitialRotation = GetActorRotation();
 }
 
 
@@ -143,18 +146,28 @@ void AGnuMonster::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// 몬스터 이속
-	if (HasAuthority()) // 서버에서만 GroundSpeed 업데이트
+	
+	if (HasAuthority())
 	{
-		GroundSpeed = GetVelocity().Size();
+		SetGroundSpeed();
+		SetDirection();
 	}
 
 	// 몬스터 각도
-	if (HasAuthority()) // 서버에서만 Directioon 업데이트 
-	{
-		Direction = UKismetAnimationLibrary::CalculateDirection(this->GetVelocity(), this->GetActorRotation());
-	}
+	//if (HasAuthority()) // 서버에서만 Directioon 업데이트 
+	//{
+	//	FRotator CurrentRotation = GetActorRotation();
+	//	Direction = CurrentRotation.Yaw - InitialRotation.Yaw;
+	//}
 
+	/*if (HasAuthority())
+	{
+		UE_LOG(LogTemp, Log, TEXT("Direction(Server): %f"), Direction);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("Direction(Client): %f"), Direction);
+	}*/
 
 	// FirebreathActor가 활성화 되면 위치 업데이트
 	if (FirebreathActor)
@@ -796,6 +809,35 @@ void AGnuMonster::DeactivateCapsuleComp()
 	}
 }
 
+void AGnuMonster::SetGroundSpeed()
+{
+	GroundSpeed = GetVelocity().Size();	// 몬스터 이속 업데이트
+}
+
+void AGnuMonster::SetDirection()
+{
+	InitialRotation = GetActorRotation();
+
+	// 방향 업데이트
+	if (AGnuMonsterAIController* AIController = Cast<AGnuMonsterAIController>(GetController()))
+	{
+		if (AIController->TargetActor != nullptr)
+		{
+			FVector MonsterForward = GetActorForwardVector();
+			FVector ToTarget = (AIController->TargetActor->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+
+			// 몬스터의 정면 방향과 타겟 방향 간의 각도 차이
+			FVector CrossProduct = FVector::CrossProduct(MonsterForward, ToTarget);
+			float DotProduct = FVector::DotProduct(MonsterForward, ToTarget);
+			Direction = FMath::RadiansToDegrees(FMath::Atan2(CrossProduct.Z, DotProduct));
+		}
+		else
+		{
+			Direction = 0.f; // 타겟이 없으면 방향 초기화
+		}
+	}
+}
+
 // 공격 컴포넌트
 void AGnuMonster::ActivateClawCollision()
 {
@@ -864,6 +906,9 @@ void AGnuMonster::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 
 	// GroundSpeed를 복제
 	DOREPLIFETIME(AGnuMonster, GroundSpeed);
+
+	DOREPLIFETIME(AGnuMonster, Direction);
+
 }
 
 

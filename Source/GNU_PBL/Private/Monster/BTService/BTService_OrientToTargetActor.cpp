@@ -39,7 +39,6 @@ FString UBTService_OrientToTargetActor::GetStaticDescription() const
 	return FString::Printf(TEXT("Orient roation to %s Key %s"), *KeyDescription, *GetStaticServiceDescription());
 }
 
-
 // 항상 실행 하는 곳
 void UBTService_OrientToTargetActor::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {

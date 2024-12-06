@@ -53,13 +53,11 @@ void UGnuMonsterAnimInstance::NativeThreadSafeUpdateAnimation(float DeltaSeconds
     if (MonsterOwner)
     {
         Speed = MonsterOwner->GroundSpeed;
-    }
-
-    // 각도 받아오기
-    if (MonsterOwner)
-    {
         Direction_Anim = MonsterOwner->Direction;
     }
+
+    /*FString DebugMessage = FString::Printf(TEXT("Speed: %.2f, Direction: %.2f"), Speed, Direction_Anim);
+    GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Green, DebugMessage);*/
 }
 
 

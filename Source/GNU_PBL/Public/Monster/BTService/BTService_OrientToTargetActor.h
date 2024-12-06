@@ -17,8 +17,6 @@ class GNU_PBL_API UBTService_OrientToTargetActor : public UBTService
 public:
 	UBTService_OrientToTargetActor();
 
-
-
 protected:
 	virtual void InitializeFromAsset(UBehaviorTree& Asset);
 
