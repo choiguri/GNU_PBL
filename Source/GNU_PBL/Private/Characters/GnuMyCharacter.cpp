@@ -227,6 +227,13 @@ void AGnuMyCharacter::Tick(float DeltaTime)
 	ZoomInTimeline.TickTimeline(DeltaTime);
 	HideCameraIfCharacterClose();
 	PollInit();
+	if (IsPlayingReactMontage())
+	{
+		if (GetCharacterMovement()->IsMovingOnGround())
+		{
+			GetCharacterMovement()->DisableMovement();
+		}
+	}
 }
 
 void AGnuMyCharacter::SetCamera()
@@ -420,7 +427,7 @@ void AGnuMyCharacter::ServerMontageOnDodge_Implementation(float Forward, float R
 
 	FVector AddVector = FVector::ZeroVector;
 	SetDodgeMontage(Forward, Right, &AddVector);
-
+	if (IsPlayingReactMontage()) return;
 	// 몽타주가 유효한 경우 재생
 	if (DodgeMontage)
 	{
@@ -452,7 +459,7 @@ void AGnuMyCharacter::MultiCastMontage_Dodge_Implementation(float Forward, float
 	{
 		return;
 	}
-
+	if (IsPlayingReactMontage()) return;
 	isDodge = true;
 
 	FVector AddVector = FVector::ZeroVector;
@@ -605,6 +612,7 @@ bool AGnuMyCharacter::ServerSpawnHeal_Validate()
 void AGnuMyCharacter::StartHealCooldown()
 {
 	isHealCoolDown = true;
+<<<<<<< Updated upstream
 	HealCooldownRemainingTime = HealSkillCoolTime;
 	// 타이머 설정
 	GetWorld()->GetTimerManager().SetTimer(HealCoolDownTimer, this, &AGnuMyCharacter::UpdateHealCooldownUI, 0.1f, true);
@@ -623,6 +631,9 @@ void AGnuMyCharacter::UpdateHealCooldownUI()
 			EndHealCooldown();
 		}
 	}
+=======
+	GetWorld()->GetTimerManager().SetTimer(HealCoolDownTimer, this, &AGnuMyCharacter::EndHealCooldown, 1.0f, false);
+>>>>>>> Stashed changes
 }
 
 void AGnuMyCharacter::EndHealCooldown()
@@ -934,6 +945,7 @@ void AGnuMyCharacter::PlayFireMontage()
 	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
 
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (IsPlayingReactMontage()) return;
 	if (AnimInstance && FireWeaponMontage)
 	{
 		AnimInstance->Montage_Play(FireWeaponMontage);
@@ -965,19 +977,46 @@ void AGnuMyCharacter::PlayHitReactMontage()
 {
 	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
 
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && AnimInstance->IsAnyMontagePlaying())
+	{
+		AnimInstance->Montage_Stop(0.0f);
+	}
 
-	GetCharacterMovement()->DisableMovement();
-	GetCharacterMovement()->StopMovementImmediately();
+	// 캐릭터의 이동을 비활성화 한다. 캐릭터가 이동되지 않는다. 
+	//GetCharacterMovement()->DisableMovement();
+
+	//// 캐릭터의 속도를 0으로 만들어 이동 중이면 즉시 멈춘다. 
+	//GetCharacterMovement()->StopMovementImmediately();
+	if (GetCharacterMovement()->IsFalling())
+	{
+		FVector FallVelocity = GetCharacterMovement()->Velocity;
+		FallVelocity.Z = -200.f;
+		GetCharacterMovement()->Launch(FallVelocity);
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Falling);
+		//if (GetCharacterMovement()->IsMovingOnGround())
+		//{
+		//	GetCharacterMovement()->DisableMovement();
+		//}
+	}
+	else
+	{
+		GetCharacterMovement()->DisableMovement();
+		GetCharacterMovement()->StopMovementImmediately();
+	}
+
+	
 	if (GNUPlayerController)
 	{
 		DisableInput(GNUPlayerController);
 	}
 
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	if (AnimInstance && HitReactMontage)
 	{
 		AnimInstance->Montage_Play(HitReactMontage);
 	}
+	Combat->bReloadButtonPressed = false;
+	isDodge = false;
 }
 
 void AGnuMyCharacter::PlayElimMontage()
@@ -1025,6 +1064,12 @@ void AGnuMyCharacter::HideCameraIfCharacterClose()
 			Combat->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = false;
 		}
 	}
+}
+
+bool AGnuMyCharacter::IsPlayingReactMontage()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	return (AnimInstance && AnimInstance->Montage_IsPlaying(HitReactMontage));
 }
 
 void AGnuMyCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)

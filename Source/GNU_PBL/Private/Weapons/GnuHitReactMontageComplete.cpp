@@ -16,5 +16,6 @@ void UGnuHitReactMontageComplete::Notify(USkeletalMeshComponent* MeshComp, UAnim
 		{
 			Character->EnableInput(Character->GNUPlayerController);
 		}
+		Character->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 	}
 }

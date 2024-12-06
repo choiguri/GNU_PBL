@@ -284,6 +284,10 @@ public:
 	void FireButtonReleased();
 	void ReloadButtonPressed();
 
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	UAnimMontage* HitReactMontage;
+
+	bool IsPlayingReactMontage();
 protected:
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
@@ -311,8 +315,7 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	UAnimMontage* ReloadWeaponMontage;
 
-	UPROPERTY(EditAnywhere, Category = "Combat")
-	UAnimMontage* HitReactMontage;
+
 
 	void PlayHitReactMontage();
 

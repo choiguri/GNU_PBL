@@ -180,6 +180,8 @@ void UGnuCombatComponent::FireButtonPressed(bool bPressed)
 {
 	if (EquippedWeapon == nullptr) return;
 
+	if (GnuCharacter->IsPlayingReactMontage()) return;
+
 	if (FireDelay != EquippedWeapon->Delay) FireDelay = EquippedWeapon->Delay;
 
 	bFireButtonPressed = bPressed;
@@ -205,6 +207,7 @@ void UGnuCombatComponent::FireButtonPressed(bool bPressed)
 void UGnuCombatComponent::StartFireTimer()
 {
 	if (EquippedWeapon == nullptr || GnuCharacter == nullptr) return;
+	if (GnuCharacter->IsPlayingReactMontage()) return;
 	if (GnuCharacter->isSprint)
 	{
 		GnuCharacter->ServerSprintEnd();
@@ -222,6 +225,7 @@ void UGnuCombatComponent::StartFireTimer()
 void UGnuCombatComponent::FireTimerFinished()
 {
 	bCanFire = true;
+	if (GnuCharacter->IsPlayingReactMontage()) return;
 	if (GnuCharacter->isSprint)
 	{
 		GnuCharacter->ServerSprintEnd();
@@ -266,6 +270,7 @@ void UGnuCombatComponent::ReloadButtonPressed(bool bPressed)
 {
 	bReloadButtonPressed = bPressed;
 	if (EquippedWeapon == nullptr) return;
+	if (GnuCharacter->IsPlayingReactMontage()) return;
 	if (GnuCharacter && !bFireButtonPressed) // !bFireButtonPressed ������ ���� ��Ŭ��(�߻�)�� ���� �ʾƵ� �ٷ� ������ ����
 	{
 		EquippedWeapon->Reload();
