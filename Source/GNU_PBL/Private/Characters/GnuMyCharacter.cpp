@@ -612,7 +612,6 @@ bool AGnuMyCharacter::ServerSpawnHeal_Validate()
 void AGnuMyCharacter::StartHealCooldown()
 {
 	isHealCoolDown = true;
-<<<<<<< Updated upstream
 	HealCooldownRemainingTime = HealSkillCoolTime;
 	// 타이머 설정
 	GetWorld()->GetTimerManager().SetTimer(HealCoolDownTimer, this, &AGnuMyCharacter::UpdateHealCooldownUI, 0.1f, true);
@@ -631,9 +630,6 @@ void AGnuMyCharacter::UpdateHealCooldownUI()
 			EndHealCooldown();
 		}
 	}
-=======
-	GetWorld()->GetTimerManager().SetTimer(HealCoolDownTimer, this, &AGnuMyCharacter::EndHealCooldown, 1.0f, false);
->>>>>>> Stashed changes
 }
 
 void AGnuMyCharacter::EndHealCooldown()
