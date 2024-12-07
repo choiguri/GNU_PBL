@@ -55,7 +55,7 @@ public:
 	virtual float GetServertime();
 	virtual void ReceivedPlayer() override;
 
-	float TotalTime = 10.f; // 나중에 total 게임 시간 설정 해야 함
+	float TotalTime = 600.f; // 나중에 total 게임 시간 설정 해야 함
 	uint32 CountdownInt = 0;
 
 	bool bIsTimeOver();

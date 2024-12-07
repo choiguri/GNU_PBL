@@ -30,6 +30,7 @@
 #include "Characters/Actor/GnuProjectileActor.h"
 #include "Characters/Actor/GnuHealActor.h"
 #include "Characters/Actor/GnuGrenadeActor.h"
+#include "Engine/SkeletalMeshSocket.h"
 
 // Character 합치면서 추가
 #include "Components/WidgetComponent.h"
@@ -665,29 +666,43 @@ void AGnuMyCharacter::SpawnArrow()
 
 void AGnuMyCharacter::ServerSpawnArrow_Implementation()
 {
-	if (ArrowClass && GetEquippedWeapon())
+	if (ArrowClass && GetEquippedWeapon() && Combat)
 	{
 		if (!isArrowCoolDown)
 		{
-			FVector SpawnLocation = Combat->EquippedWeapon->GetMesh()->GetSocketLocation("MuzzleFlashSocket");
-			FRotator SpawnRotation = Combat->EquippedWeapon->GetMesh()->GetSocketRotation("MuzzleFlashSocket");
-			FTransform SpawnTransform(SpawnRotation, SpawnLocation);
+			FVector SkillHitTarget = Combat->GetHitTarget();
+			const USkeletalMeshSocket* MuzzleFlashSocket = GetEquippedWeapon()->GetWeaponMesh()->GetSocketByName(FName("MuzzleFlashSocket"));
 
-			FActorSpawnParameters SpawnParams;
-			SpawnParams.Owner = GetOwner();
-			SpawnParams.Instigator = this;
-
-			UWorld* World = GetWorld();
-			if (World)
+			if (MuzzleFlashSocket)
 			{
-				AGnuProjectileActor* Arrow = World->SpawnActor<AGnuProjectileActor>(ArrowClass, SpawnTransform, SpawnParams);
-				if (Arrow)
+				FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(GetEquippedWeapon()->GetWeaponMesh());
+
+				FVector ToTarget = SkillHitTarget - SocketTransform.GetLocation();
+				FRotator TargetRotation = ToTarget.Rotation();
+
+				FActorSpawnParameters SpawnParams;
+				SpawnParams.Owner = GetOwner();
+				SpawnParams.Instigator = this;
+
+				UWorld* World = GetWorld();
+				if (World)
 				{
-					StartArrowCooldown();
-					Arrow->SetOwner(this);
-					Arrow->LaunchProjectile(this);
+					AGnuProjectileActor* Arrow = World->SpawnActor<AGnuProjectileActor>(ArrowClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
+					if (Arrow)
+					{
+						StartArrowCooldown();
+						Arrow->SetOwner(this);
+						Arrow->LaunchProjectile(this);
+					}
 				}
 			}
+
+			/*FVector SpawnLocation = Combat->EquippedWeapon->GetMesh()->GetSocketLocation("MuzzleFlashSocket");
+			FRotator SpawnRotation = Combat->EquippedWeapon->GetMesh()->GetSocketRotation("MuzzleFlashSocket");
+			FTransform SpawnTransform(SpawnRotation, SpawnLocation);*/
+
+			
+
 		}
 	}
 }
@@ -751,20 +766,42 @@ void AGnuMyCharacter::SpawnGrenade()
 
 void AGnuMyCharacter::ServerSpawnGrenade_Implementation()
 {
-	if (GrenadeClass && GetEquippedWeapon())
+	if (GrenadeClass && GetEquippedWeapon() && Combat)
 	{
 		if (!isGrenadeCoolDown)
 		{
-			FVector SpawnLocation = Combat->EquippedWeapon->GetMesh()->GetSocketLocation("MuzzleFlashSocket");
-			FRotator SpawnRotation = Combat->EquippedWeapon->GetMesh()->GetSocketRotation("MuzzleFlashSocket");
-			FTransform SpawnTransform(SpawnRotation, SpawnLocation);
+			FVector SkillHitTarget = Combat->GetHitTarget();
+			const USkeletalMeshSocket* MuzzleFlashSocket = GetEquippedWeapon()->GetWeaponMesh()->GetSocketByName(FName("MuzzleFlashSocket"));
 
-			AGnuGrenadeActor* Grenade = GetWorld()->SpawnActor<AGnuGrenadeActor>(GrenadeClass, SpawnTransform);
-			if (Grenade)
+			if (MuzzleFlashSocket)
 			{
-				StartGrenadeCooldown();
-				Grenade->SetOwner(this);
-				Grenade->LaunchProjectile(this, SpawnLocation, SpawnRotation);
+				FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(GetEquippedWeapon()->GetWeaponMesh());
+
+				FVector ToTarget = SkillHitTarget - SocketTransform.GetLocation();
+				FRotator TargetRotation = ToTarget.Rotation();
+
+				FActorSpawnParameters SpawnParams;
+				SpawnParams.Owner = GetOwner();
+				SpawnParams.Instigator = this;
+
+				UWorld* World = GetWorld();
+				if (World)
+				{
+					AGnuProjectileActor* Grenade = World->SpawnActor<AGnuProjectileActor>(GrenadeClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
+					if (Grenade)
+					{
+						StartArrowCooldown();
+						Grenade->SetOwner(this);
+						Grenade->LaunchProjectile(this);
+					}
+					else
+					{
+						if (GEngine)
+						{
+							GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Cyan, FString::Printf(TEXT("No Grenade")));
+						}
+					}
+				}
 			}
 		}
 	}

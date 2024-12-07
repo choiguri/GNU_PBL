@@ -28,6 +28,8 @@ public:
 
 	bool bReloadButtonPressed;
 
+	FORCEINLINE FVector GetHitTarget() { return HitTarget; }
+
 protected:
 
 	virtual void BeginPlay() override;
