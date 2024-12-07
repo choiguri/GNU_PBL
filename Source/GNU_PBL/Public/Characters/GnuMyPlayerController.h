@@ -46,7 +46,7 @@ public:
 
 	/*void SetHUDOthersHealth(FString PlayerName, float Health, float MaxHealth, int32 Index);*/
 
-	UFUNCTION(NetMulticast, Reliable)
+	UFUNCTION()
 	void SetHUDOthersHealth(const TArray<float>& HealthArray);
 	UFUNCTION(NetMulticast, Reliable)
 	void SetHUDOthersName(const TArray<FString>& NameArray);

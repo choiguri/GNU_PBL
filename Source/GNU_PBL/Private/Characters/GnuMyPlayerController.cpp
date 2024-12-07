@@ -253,7 +253,7 @@ void AGnuMyPlayerController::SetHUDDeathCount(int32 Deathcount)
 	}
 }
 
-void AGnuMyPlayerController::SetHUDOthersHealth_Implementation(const TArray<float>& HealthArray)
+void AGnuMyPlayerController::SetHUDOthersHealth(const TArray<float>& HealthArray)
 {
 	GNUHUD = GNUHUD == nullptr ? Cast<AGNUHUD>(GetHUD()) : GNUHUD;
 

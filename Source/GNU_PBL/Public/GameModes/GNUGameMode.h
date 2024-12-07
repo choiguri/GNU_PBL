@@ -35,7 +35,7 @@ public:
 	TArray<float> GetPlayersHealth();
 
 	void MonsterEliminated();
-	
+
 	/*bool bIsTimeOver();*/
 
 };

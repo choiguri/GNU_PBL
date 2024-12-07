@@ -288,11 +288,21 @@ public:
 	//void UpdateOthersHealth();
 
 	UFUNCTION(Server, Reliable)
+	void ServerUpdateOthersHealth();
+
+	UFUNCTION(NetMulticast, Reliable)
 	void UpdateOthersHealth();
 
 	UFUNCTION(Server, Reliable)
 	void UpdateOthersName();
 
+	//UFUNCTION()
+	//void OnRep_OthersHealth();
+	
+	UPROPERTY(Replicated)
+	TArray<float> OthersHealth;
+
+	FTimerHandle TickHandle;
 
 	// 무기 장착
 	void EquipButtonPressed();

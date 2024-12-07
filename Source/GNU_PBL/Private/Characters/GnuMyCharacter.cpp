@@ -183,7 +183,7 @@ void AGnuMyCharacter::BeginPlay()
 		GNUPlayerController->SetHUDDodgeCoolTime(DodgeCoolTime, DodgeCooldownRemainingTime);
 
 	}
-	
+
 	//ServerSetPlayerName(LocalPlayerName);
 
 	if (OverHeadWidget)
@@ -219,9 +219,9 @@ void AGnuMyCharacter::BeginPlay()
 	/*UpdateOthersHealth();
 	UpdateOthersName();*/
 	FTimerHandle TimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AGnuMyCharacter::UpdateOthersHealth, 7.0f, false);
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AGnuMyCharacter::ServerUpdateOthersHealth, 5.0f, false);
 	FTimerHandle SecTimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(SecTimerHandle, this, &AGnuMyCharacter::UpdateOthersName, 7.0f, false);
+	GetWorld()->GetTimerManager().SetTimer(SecTimerHandle, this, &AGnuMyCharacter::UpdateOthersName, 5.0f, false);
 }
 
 void AGnuMyCharacter::Tick(float DeltaTime)
@@ -237,6 +237,8 @@ void AGnuMyCharacter::Tick(float DeltaTime)
 			GetCharacterMovement()->DisableMovement();
 		}
 	}
+
+	ServerUpdateOthersHealth();
 
 }
 
@@ -869,6 +871,7 @@ void AGnuMyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME(AGnuMyCharacter, GrenadeClass);
 	DOREPLIFETIME(AGnuMyCharacter, HealClass);
 
+	DOREPLIFETIME(AGnuMyCharacter, OthersHealth);
 	// GnuWeapon
 	DOREPLIFETIME_CONDITION(AGnuMyCharacter, OverlappingWeapon, COND_OwnerOnly);
 
@@ -1127,7 +1130,7 @@ void AGnuMyCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UD
 		PlayHitReactMontage();
 	}
 	UpdateHUDHealth();
-	UpdateOthersHealth();
+	ServerUpdateOthersHealth();
 	UpdateOthersName();
 	if (Health == 0.f)
 	{
@@ -1186,7 +1189,8 @@ void AGnuMyCharacter::OnRep_Health(float LastHealth)
 		PlayHitReactMontage();
 	}
 	UpdateHUDHealth();
-	UpdateOthersHealth();
+	ServerUpdateOthersHealth();
+	//UpdateOthersHealth();
 	UpdateOthersName();
 }
 
@@ -1206,15 +1210,32 @@ void AGnuMyCharacter::SetReplicatedHealth()
 	MultiCastSetHealth();
 }
 
+//void AGnuMyCharacter::OnRep_OthersHealth()
+//{
+//	UpdateOthersHealth();
+//}
+
+void AGnuMyCharacter::ServerUpdateOthersHealth_Implementation()
+{
+	AGNUGameMode* GnuGameMode = GetWorld()->GetAuthGameMode<AGNUGameMode>();
+	if (GnuGameMode)
+	{
+		OthersHealth = GnuGameMode->GetPlayersHealth();
+		
+		/*ClientUpdateOthersHealth(OthersHealth);*/
+	}
+	UpdateOthersHealth();
+}
+
 void AGnuMyCharacter::UpdateOthersHealth_Implementation()
 {
 	GNUPlayerController = GNUPlayerController == nullptr ? Cast<AGnuMyPlayerController>(Controller) : GNUPlayerController;
-	AGNUGameMode* GnuGameMode = GetWorld()->GetAuthGameMode<AGNUGameMode>();
-	if (GNUPlayerController && GnuGameMode)
+	if (GNUPlayerController)
 	{
-		GNUPlayerController->SetHUDOthersHealth(GnuGameMode->GetPlayersHealth());
+		GNUPlayerController->SetHUDOthersHealth(OthersHealth);
 	}
 }
+
 
 void AGnuMyCharacter::UpdateOthersName_Implementation()
 {
