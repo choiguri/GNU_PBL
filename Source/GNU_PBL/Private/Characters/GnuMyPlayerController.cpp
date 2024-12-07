@@ -216,6 +216,13 @@ void AGnuMyPlayerController::SetHUDCombatTime(float CombatTime)
 		FString TimeText = FString::Printf(TEXT("%02d : %02d"), Minutes, Seconds);
 		GNUHUD->CharacterOverlay->CombatTimeText->SetText(FText::FromString(TimeText));
 	}
+
+	AGnuMyCharacter* StaminaCharacter = Cast<AGnuMyCharacter>(GetPawn());
+
+	if (StaminaCharacter)
+	{
+		StaminaCharacter->AutoRecoverStamina();
+	}
 }
 
 void AGnuMyPlayerController::SetHUDWeaponAmmo(int32 Ammo, int32 MaxAmmo)

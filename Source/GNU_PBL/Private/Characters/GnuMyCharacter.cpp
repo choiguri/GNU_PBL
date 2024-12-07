@@ -176,7 +176,7 @@ void AGnuMyCharacter::BeginPlay()
 	if (GNUPlayerController)
 	{
 		GNUPlayerController->SetHUDHealth(Health, MaxHealth);
-		GNUPlayerController->SetHUDStamina(Stamina, MaxStaminaa);
+		GNUPlayerController->SetHUDStamina(Stamina, MaxStamina);
 		GNUPlayerController->SetHUDArrowSkillCoolTime(ArrowSkillCoolTime, ArrowCooldownRemainingTime);
 		GNUPlayerController->SetHUDHealSkillCoolTime(HealSkillCoolTime, HealCooldownRemainingTime);
 		GNUPlayerController->SetHUDGneradeSkillCoolTime(HealSkillCoolTime, HealCooldownRemainingTime);
@@ -237,6 +237,7 @@ void AGnuMyCharacter::Tick(float DeltaTime)
 			GetCharacterMovement()->DisableMovement();
 		}
 	}
+
 }
 
 void AGnuMyCharacter::SetCamera()
@@ -446,6 +447,8 @@ void AGnuMyCharacter::ServerMontageOnDodge_Implementation(float Forward, float R
 		}
 
 		LaunchCharacter(AddVector, true, true);
+		ConsumeStamina(10.f);
+		UpdateHUDStamina();
 		// 멀티캐스트 호출
 		MultiCastMontage_Dodge(Forward, Right);
 	}
@@ -458,7 +461,7 @@ bool AGnuMyCharacter::ServerMontageOnDodge_Validate(float Forward, float Right)
 
 void AGnuMyCharacter::MultiCastMontage_Dodge_Implementation(float Forward, float Right) // 모든 클라이언트에서 동일한 구르기 애니메이션을 재생하도록 하는 멀티캐스트 함수. 클라이언트와 서버 간의 동기화를 위해 사용
 {
-	if (isDodge || isDodgeCoolDown)
+	if (isDodge || isDodgeCoolDown || Stamina < 10)
 	{
 		return;
 	}
@@ -483,6 +486,7 @@ void AGnuMyCharacter::MultiCastMontage_Dodge_Implementation(float Forward, float
 
 		// 캐릭터를 대쉬 방향으로 이동
 		LaunchCharacter(AddVector, true, true);
+
 	}
 }
 
@@ -564,7 +568,7 @@ void AGnuMyCharacter::EndDodgeCooldown()
 //--------------------------- Heal Skill --------------------------------
 void AGnuMyCharacter::SpawnHeal()
 {
-	if (HealClass && GetEquippedWeapon())
+	if (HealClass && GetEquippedWeapon() && Stamina > 10)
 	{
 		// 쿨다운 확인
 		if (!isHealCoolDown)
@@ -600,6 +604,8 @@ void AGnuMyCharacter::ServerSpawnHeal_Implementation()
 			{
 				StartHealCooldown();
 				Heal->SetOwner(this); // 이거 안해주면 GnuHealActor에서 onwer가 누군지 몰라서 오류가 난다
+				ConsumeStamina(10.f);
+				UpdateHUDStamina();
 			}
 		}
 	}
@@ -645,7 +651,7 @@ void AGnuMyCharacter::EndHealCooldown()
 //--------------------------- Arrow Skill --------------------------------
 void AGnuMyCharacter::SpawnArrow()
 {
-	if (ArrowClass && GetEquippedWeapon())
+	if (ArrowClass && GetEquippedWeapon() && Stamina > 10)
 	{
 		// 쿨다운 확인
 		if (!isArrowCoolDown)
@@ -693,6 +699,8 @@ void AGnuMyCharacter::ServerSpawnArrow_Implementation()
 						StartArrowCooldown();
 						Arrow->SetOwner(this);
 						Arrow->LaunchProjectile(this);
+						ConsumeStamina(10.f);
+						UpdateHUDStamina();
 					}
 				}
 			}
@@ -746,7 +754,7 @@ void AGnuMyCharacter::EndArrowCooldown()
 //--------------------------- Grenade Skill --------------------------------
 void AGnuMyCharacter::SpawnGrenade()
 {
-	if (GrenadeClass && GetEquippedWeapon())
+	if (GrenadeClass && GetEquippedWeapon() && Stamina > 10)
 	{
 		if (!isGrenadeCoolDown)
 		{
@@ -793,13 +801,8 @@ void AGnuMyCharacter::ServerSpawnGrenade_Implementation()
 						StartArrowCooldown();
 						Grenade->SetOwner(this);
 						Grenade->LaunchProjectile(this);
-					}
-					else
-					{
-						if (GEngine)
-						{
-							GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Cyan, FString::Printf(TEXT("No Grenade")));
-						}
+						ConsumeStamina(10.f);
+						UpdateHUDStamina();
 					}
 				}
 			}
@@ -1107,10 +1110,22 @@ bool AGnuMyCharacter::IsPlayingReactMontage()
 	return (AnimInstance && AnimInstance->Montage_IsPlaying(HitReactMontage));
 }
 
+void AGnuMyCharacter::AutoRecoverStamina()
+{
+	if (Stamina < 100)
+	{
+		Stamina = FMath::Clamp(Stamina + 1, 0, MaxStamina);
+		UpdateHUDStamina();
+	}
+}
+
 void AGnuMyCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
 {
 	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
-	PlayHitReactMontage();
+	if (Damage > 0)
+	{
+		PlayHitReactMontage();
+	}
 	UpdateHUDHealth();
 	UpdateOthersHealth();
 	UpdateOthersName();
@@ -1142,7 +1157,7 @@ void AGnuMyCharacter::UpdateHUDStamina()
 	GNUPlayerController = GNUPlayerController == nullptr ? Cast<AGnuMyPlayerController>(Controller) : GNUPlayerController;
 	if (GNUPlayerController)
 	{
-		GNUPlayerController->SetHUDStamina(Stamina, MaxStaminaa);
+		GNUPlayerController->SetHUDStamina(Stamina, MaxStamina);
 	}
 }
 
@@ -1164,9 +1179,12 @@ void AGnuMyCharacter::PollInit()
 
 
 
-void AGnuMyCharacter::OnRep_Health()
+void AGnuMyCharacter::OnRep_Health(float LastHealth)
 {
-	PlayHitReactMontage();
+	if (Health < LastHealth)
+	{
+		PlayHitReactMontage();
+	}
 	UpdateHUDHealth();
 	UpdateOthersHealth();
 	UpdateOthersName();
@@ -1174,7 +1192,12 @@ void AGnuMyCharacter::OnRep_Health()
 
 void AGnuMyCharacter::OnRep_Stamina()
 {
+	UpdateHUDStamina();
+}
 
+void AGnuMyCharacter::ConsumeStamina(float MinusStamina)
+{
+	Stamina = FMath::Clamp(Stamina - MinusStamina, 0, MaxStamina);
 }
 
 

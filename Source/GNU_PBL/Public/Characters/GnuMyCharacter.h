@@ -231,13 +231,13 @@ private:
 	float Health = 100.f;
 
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
-	float MaxStaminaa = 100.f;
+	float MaxStamina = 100.f;
 
 	UPROPERTY(ReplicatedUsing = OnRep_Stamina, VisibleAnywhere, Category = "Player Stats")
-	float Stamina = 1.f;
+	float Stamina = 100.f;
 
 	UFUNCTION()
-	void OnRep_Health();
+	void OnRep_Health(float LastHealth);
 
 	UFUNCTION()
 	void OnRep_Stamina();
@@ -245,6 +245,7 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Player Name")
 	FString LocalPlayerName = TEXT("Unknown Player");
 
+	void ConsumeStamina(float MinusStamina);
 
 public:
 	UPROPERTY()
@@ -303,6 +304,8 @@ public:
 	UAnimMontage* HitReactMontage;
 
 	bool IsPlayingReactMontage();
+
+	void AutoRecoverStamina();
 protected:
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
