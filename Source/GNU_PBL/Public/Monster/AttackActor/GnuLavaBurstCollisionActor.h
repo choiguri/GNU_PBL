@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Monster/AttackActor/GnuAttackCollisionActor.h"
-#include "GnuGroundSpikeCollisionActor.generated.h"
+#include "GnuLavaBurstCollisionActor.generated.h"
 
 
 class UProjectileMovementComponent;
@@ -12,13 +12,12 @@ class UProjectileMovementComponent;
  * 
  */
 UCLASS()
-class GNU_PBL_API AGnuGroundSpikeCollisionActor : public AGnuAttackCollisionActor
+class GNU_PBL_API AGnuLavaBurstCollisionActor : public AGnuAttackCollisionActor
 {
 	GENERATED_BODY()
 	
-
 public:
-    AGnuGroundSpikeCollisionActor();
+    AGnuLavaBurstCollisionActor();
 
     void LaunchProjectile(AActor* IgnoredActor);  // 발사 함수
 
@@ -28,7 +27,7 @@ public:
 private:
     FTimerHandle DestructionTimerHandle; // 파괴 타이머 핸들
 
-    void DestroyGroundSpikeCollision(); // 파이어볼 삭제 함수
+    void DestroyLavaBurstCollision(); // 삭제 함수
 
 protected:
     virtual void BeginPlay() override;

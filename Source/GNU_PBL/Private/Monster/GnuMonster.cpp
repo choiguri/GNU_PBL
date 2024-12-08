@@ -12,7 +12,7 @@
 #include "Monster/AttackActor/GnuGroundSpikeActor.h"
 #include "Monster/AttackActor/GnuGroundSpikeCollisionActor.h"
 #include "Monster/AttackActor/GnuLavaBurstActor.h"
-
+#include "Monster/AttackActor/GnuLavaBurstCollisionActor.h"
 // 위젯
 #include "Monster/Widget/GnuMonsterHealthBase.h"
 // 라이브러리 함수
@@ -78,25 +78,20 @@ AGnuMonster::AGnuMonster()
 	bAlwaysRelevant = true; // 항상 네트워크에서 중요
 
 	// hp 구현
-	MaxHealth = 1.f;
+	MaxHealth = 500.f;
 	CurrentHealth = MaxHealth;
 
-	// 넉백 힘
+	// 넉백 힘 초기화
 	KnockbackStrength = 0.f;
-
-	// 몬스터 이동 속도
-	GroundSpeed = 0.f;
 }
-
 
 void AGnuMonster::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// 타겟 인식 전 콜리전 비활성화
-	DeactivateSkeletalMesh();
-	DeactivateCapsuleComp();
-
+	
+	DeactivateSkeletalMesh();	// 타겟 인식 전 콜리전 비활성화
+	ActivateCapsuleComp();		// 캡슐 컴포넌트는 활성화
+	
 	// Health 위젯이 설정되어 있으면 생성하여 화면에 추가
 	// 플레이어를 인식하면 UI가 뜨도록 변경해야함 (추후 수정)
 	if (MonsterHealthWidgetClass)
@@ -120,6 +115,13 @@ void AGnuMonster::BeginPlay()
 		TailCollision->OnComponentBeginOverlap.AddDynamic(this, &AGnuMonster::OnTailOverlapBegin);
 	}
 
+	UCharacterMovementComponent* MovementComp = GetCharacterMovement();
+	if (MovementComp)
+	{
+		// 예를 들어, 이동 속도나 다른 값들을 출력해서 확인
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("Max Walk Speed: %f"), MovementComp->MaxWalkSpeed));
+	}
+
 	// 서버에서 데미지 관리
 	if (HasAuthority())
 	{
@@ -137,9 +139,6 @@ void AGnuMonster::BeginPlay()
 		DynamicMaterialInst_2nd = UMaterialInstanceDynamic::Create(Material_2nd, this);
 		GetMesh()->SetMaterial(1, DynamicMaterialInst_2nd);
 	}
-
-	// 초기 회전 방향 확인
-	InitialRotation = GetActorRotation();
 }
 
 
@@ -154,20 +153,13 @@ void AGnuMonster::Tick(float DeltaTime)
 		SetDirection();
 	}
 
-	// 몬스터 각도
-	//if (HasAuthority()) // 서버에서만 Directioon 업데이트 
-	//{
-	//	FRotator CurrentRotation = GetActorRotation();
-	//	Direction = CurrentRotation.Yaw - InitialRotation.Yaw;
-	//}
-
 	/*if (HasAuthority())
 	{
-		UE_LOG(LogTemp, Log, TEXT("Direction(Server): %f"), Direction);
+		UE_LOG(LogTemp, Log, TEXT("GroundSpeed(Server): %f"), GroundSpeed);
 	}
 	else
 	{
-		UE_LOG(LogTemp, Log, TEXT("Direction(Client): %f"), Direction);
+		UE_LOG(LogTemp, Log, TEXT("GroundSpeed(Client): %f"), GroundSpeed);
 	}*/
 
 	// FirebreathActor가 활성화 되면 위치 업데이트
@@ -290,7 +282,7 @@ void AGnuMonster::StartRetryCooldown()
 	GetWorld()->GetTimerManager().SetTimer(
 		RetryCooldownTimerHandle,
 		[this]() { bCanRetry = true;},
-		0.15f, // 쿨다운 시간 (초)
+		0.1f, // 쿨다운 시간 (초)
 		false // 반복하지 않음
 	);
 }
@@ -348,12 +340,10 @@ void AGnuMonster::DelayedDestroy()
 	Destroy();
 }
 
-
 void AGnuMonster::EnterPhaseTwo()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Entering Phase Two!"));
 }
-
 
 //ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ Attack 관련 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 // 원거리 공격 부분 5개
@@ -383,18 +373,10 @@ void AGnuMonster::SpawnFireball()
 	}
 }
 
-
 void AGnuMonster::SpawnFiretornado()
 {
 	if (FiretornadoClass)
 	{
-		//FVector BaseSpawnLocation = GetActorLocation() + GetActorForwardVector() * 500;
-		//BaseSpawnLocation.Z = 0.f;	// 높이 0으로 만들어서 바닥 높이에서 생성되도록
-
-		//FVector SpawnLocation1 = BaseSpawnLocation; // 원래 위치
-		//FVector SpawnLocation2 = BaseSpawnLocation + FVector(0.f, 500.f, 0.f);  // 약간 오른쪽으로 이동
-		//FVector SpawnLocation3 = BaseSpawnLocation + FVector(0.f, -500.f, 0.f);  // 약간 왼쪽으로 이동
-
 		// 컨트롤러 회전값 사용하여 방향 계산
 		FRotator MonsterRotation = GetController()->GetControlRotation(); // 몬스터의 컨트롤러 회전값
 		FVector ForwardVector = MonsterRotation.Vector();                 // 몬스터의 정면 방향
@@ -458,7 +440,6 @@ void AGnuMonster::SpawnFirebreath()
 		SpawnParams.SpawnCollisionHandlingOverride =							// 생성된 액터가 스폰될 때 충돌 처리 방식 설정 
 			ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;	// 충돌이 발생할 경우, 가능한 위치로 조정하여 액터를 생성
 
-
 		if (FirebreathActor == nullptr)
 		{
 			FirebreathActor = GetWorld()->SpawnActor<AGnuFirebreathActor>(FirebreathClass, SpawnLocation, HeadRotation, SpawnParams);
@@ -491,17 +472,7 @@ void AGnuMonster::SpawnGroundAttack()
 		AGnuGroundActor* Ground = GetWorld()->SpawnActor<AGnuGroundActor>(GroundClass, SpawnLocation, SpawnRotation, SpawnParams);
 		if (Ground)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, TEXT("Ground Actor Spawned Successfully"));
-		}
-		else
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Ground Actor Spawn Failed"));
-		}
-
-
-		if (Ground)
-		{
-			// 파이어볼을 발사하는 메서드 호출
+			// Ground Collision Box Component를 발사하는 메서드 호출
 			Ground->LaunchProjectile(this, &SpawnLocation, &SpawnRotation);
 			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Orange, TEXT("Start Ground LaunchProjectile"));
 		}
@@ -531,7 +502,7 @@ void AGnuMonster::SpawnGroundSpikeAttack()
 			ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;	// 충돌이 발생할 경우, 가능한 위치로 조정하여 액터를 생성
 
 
-		// 나이아가라 시스템에 맞는 콜리전 스폰 (5 방향, 5개)
+		// 나이아가라 파티클 방향에 맞는 콜리전 스폰 (5방향, 5개)
 		for (int32 i = 0; i < SpikeCount; i++)
 		{
 			float CurrentAngle = i * AngleIncrement;	// 각도 계산
@@ -556,6 +527,7 @@ void AGnuMonster::SpawnGroundSpikeAttack()
 	}
 }
 
+// 체력 반피 이하일때 HP 회복 10% / 패턴 발동
 void AGnuMonster::StartCraterAttack()
 {
 	if (CraterActorClass)
@@ -591,10 +563,22 @@ void AGnuMonster::SpawnCrater()
 		0.f // 높이는 고정
 	);
 
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;                         // 소유자를 현재 몬스터로 설정
+	SpawnParams.Instigator = Cast<APawn>(this);       // Instigator(데미지를 유발한 주체)를 현재 몬스터로 설정
+	SpawnParams.SpawnCollisionHandlingOverride =							// 생성된 액터가 스폰될 때 충돌 처리 방식 설정 
+		ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;	// 충돌이 발생할 경우, 가능한 위치로 조정하여 액터를 생성
+
+
 	FVector SpawnLocation = Origin + RandomOffset;
 
-	// 소환
-	AGnuLavaBurstActor* SpawnCrater = GetWorld()->SpawnActor<AGnuLavaBurstActor>(CraterActorClass, SpawnLocation, FRotator::ZeroRotator);
+	// 소환 (Niagara Comp / Attack Collision)
+	AGnuLavaBurstActor* SpawnCrater = GetWorld()->SpawnActor<AGnuLavaBurstActor>(CraterActorClass, SpawnLocation, FRotator::ZeroRotator, SpawnParams);
+	AGnuLavaBurstCollisionActor* SpawnCraterCollision = GetWorld()->SpawnActor<AGnuLavaBurstCollisionActor>(CraterCollisionClass, SpawnLocation, FRotator::ZeroRotator, SpawnParams);
+	if (SpawnCraterCollision)
+	{
+		SpawnCraterCollision->LaunchProjectile(this); // 발사 실행
+	}
 }
 
 void AGnuMonster::StopSpawning()
@@ -706,7 +690,6 @@ void AGnuMonster::OnClawOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor
 	}
 }
 
-
 // Tail 공격시 overlap 되면 불러질 함수
 void AGnuMonster::OnTailOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
@@ -743,6 +726,8 @@ void AGnuMonster::OnTailOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor
 		}
 	}
 }
+
+// Body 공격시 overlap 되면 불러질 함수
 void AGnuMonster::OnBodyOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor && OtherActor != this)
@@ -824,8 +809,6 @@ void AGnuMonster::SetGroundSpeed()
 
 void AGnuMonster::SetDirection()
 {
-	InitialRotation = GetActorRotation();
-
 	// 방향 업데이트
 	if (AGnuMonsterAIController* AIController = Cast<AGnuMonsterAIController>(GetController()))
 	{
@@ -887,7 +870,7 @@ void AGnuMonster::InitializeCollisionComponent(UBoxComponent*& CollisionComponen
 	//CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly); // 오버랩을 위해 QueryOnly로 설정
 }
 
-// 블루프린트에서 Attach Socket 설정 가능한 가변형 함수 사용시 주의해야함
+// 블루프린트에서 Attach Socket 설정 가능한 가변형 함수, 사용시 주의해야함
 #if WITH_EDITOR
 void AGnuMonster::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
@@ -918,7 +901,6 @@ void AGnuMonster::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	DOREPLIFETIME(AGnuMonster, Direction);
 
 }
-
 
 void AGnuMonster::OnRep_GroundSpeed()
 {

@@ -32,6 +32,7 @@ public:
 	void UpdateMonsterHealth();
 
 	void ActivateMonster();
+	void DeactivateMonster();
 
 	// Behaviortree 변수들 레플리케이트
 	UPROPERTY(ReplicatedUsing = OnRep_TargetActor)
@@ -73,7 +74,7 @@ protected:
 	UFUNCTION()
 	void UpdateTarget();
 
-	void SetNewTarget(ACharacter* NewTarget);
+	void SetNewTarget(AActor* NewTarget);
 
 	void ClearTarget();
 

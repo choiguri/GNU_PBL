@@ -43,11 +43,6 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
     bool bIsDead;
 
-    // 인트로 몽타주 실행 했는지 확인
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
-    bool bIsPlayIntro = true;
-
-
     // 몽타주 실행 중인 노티파이 이벤트를 처리할 함수
     // cpp는 BlueprintNativeEvent 라고 설정되면 블루프린트에서 재정의 가능하도록 하려는 목적
     // 이 함수의 기본 구현을 C++에서 찾을 때는 _Implementation이 붙은 함수 이름을 기준으로 호출
@@ -103,7 +98,7 @@ public:
 protected:
     // 몬스터 데이터 (속도, 각도 / 멀티처리는 몬스터한테서 설정됨) 
     UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "AnimData")
-    float Speed;
+    float Speed_Anim;
 
     UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "AnimData")
     float Direction_Anim;
@@ -115,12 +110,6 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Animation")
     void PlayMontage(UAnimMontage* MontageToPlay);
 
-    /*UFUNCTION(Server, Reliable)
-    void Server_PlayMontage(UAnimMontage* MontageToPlay);
-
-    UFUNCTION(NetMulticast, Reliable)
-    void Multicast_PlayMontage(UAnimMontage* MontageToPlay);*/
-
     // 몽타주 애니메이션 끝났을 때 호출 될 함수
     UFUNCTION()
     void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
@@ -129,8 +118,4 @@ public:
     // 죽었을 때 몽타주 처리
     UFUNCTION(BlueprintCallable)
     void PlayDieMontage();
-
-    // 첫 입장 시 나오는 몽타주
-    UFUNCTION(BlueprintCallable)
-    void PlayIntroMontage();
 };

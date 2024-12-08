@@ -106,11 +106,3 @@ void AGnuFireballActor::BeginOverlap(UPrimitiveComponent* OverlappedComponent, A
         GEngine->AddOnScreenDebugMessage(-1, 4, FColor::Yellow, TEXT("Begin Overlap with : ") + OtherActor->GetName());
     }
 }
-
-//void AGnuFireballActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-//{
-//    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-//
-//    DOREPLIFETIME(AGnuFireballActor, ProjectileVelocity);
-//    DOREPLIFETIME(AGnuFireballActor, OwnerActor);
-//}

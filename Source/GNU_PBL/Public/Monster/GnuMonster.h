@@ -47,10 +47,10 @@ public:
 	void SpawnGroundSpikeAttack(); // 그라운드 5방향 스파이크 소환 함수
 
 	// Crater 공격 함수
-	void StartCraterAttack();
-	void EndCraterAttack();
-	void SpawnCrater();
-	void StopSpawning();
+	void StartCraterAttack();	// 분화구 타이머 실행
+	void EndCraterAttack();		// 분화구 타이머 초기화
+	void SpawnCrater();			// 스폰 분화구
+	void StopSpawning();		// 
 	FTimerHandle CraterTimerHandle1;
 	FTimerHandle CraterTimerHandle2;
 	FTimerHandle CraterTimerHandle3;
@@ -75,10 +75,6 @@ public:
 	UPROPERTY(ReplicatedUsing = OnRep_Direction, BlueprintReadOnly, Category = "AnimData")
 	float Direction;
 
-	// 초기 회전 각도
-	FRotator InitialRotation;
-
-
 	UFUNCTION()
 	void OnRep_GroundSpeed();
 
@@ -93,7 +89,6 @@ public:
 	// 상태들
 	bool bIsDead = false;
 	bool bIsPhaseTwo = false;		// 페이즈 2 여부 확인
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -172,10 +167,10 @@ public:
 
 	// HP 관련 구현부
 	UPROPERTY(EditAnywhere, Category = "Health")
-	float MaxHealth = 1000.f;
+	float MaxHealth = 0.f;
 
 	UPROPERTY(ReplicatedUsing = OnRep_Health, VisibleAnywhere, Category = "Health")
-	float CurrentHealth = 1.f;
+	float CurrentHealth = 0.f;
 
 	UFUNCTION()
 	void OnRep_Health();
@@ -206,11 +201,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack|ActorClass")
 	TSubclassOf<class AGnuLavaBurstActor> CraterActorClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack|ActorClass")
+	TSubclassOf<class AGnuLavaBurstCollisionActor> CraterCollisionClass;
+
 	// Tick에서 위치 처리를 위해
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack|Actor")
 	AGnuFirebreathActor* FirebreathActor;
 
-	
 
 	// 근접 공격 콜리전 활성, 비활성
 	UFUNCTION()

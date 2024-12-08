@@ -17,8 +17,8 @@ AGnuMonsterAIController::AGnuMonsterAIController()
 
     if (SightConfig)
     {
-        SightConfig->SightRadius = 4000.f; // 감지 반경
-        SightConfig->LoseSightRadius = 5000.0f; // 감지 상실 반경
+        SightConfig->SightRadius = 5000.f; // 감지 반경
+        SightConfig->LoseSightRadius = 6000.f; // 감지 상실 반경
         SightConfig->PeripheralVisionAngleDegrees = 360.0f; // 시야 각도
         SightConfig->SetMaxAge(60.0f); // 감지 정보 최대 시간
         SightConfig->DetectionByAffiliation.bDetectEnemies = true; // 적 감지
@@ -27,7 +27,6 @@ AGnuMonsterAIController::AGnuMonsterAIController()
 
         AIPerceptionComponent->ConfigureSense(*SightConfig);
         AIPerceptionComponent->SetDominantSense(SightConfig->GetSenseImplementation());
-
         // 감지 이벤트 연결
         AIPerceptionComponent->OnTargetPerceptionUpdated.AddUniqueDynamic(this, &ThisClass::OnTargetDetected);
     }
@@ -74,6 +73,7 @@ void AGnuMonsterAIController::Tick(float DeltaSeconds)
     }
 }
 
+
 // 초기 타겟 감지 설정
 void AGnuMonsterAIController::OnTargetDetected(AActor* Actor, FAIStimulus const Stimulus)
 {
@@ -87,6 +87,7 @@ void AGnuMonsterAIController::OnTargetDetected(AActor* Actor, FAIStimulus const 
         UpdateTarget();
     }
 
+
     if (Actor && Actor->IsA<ACharacter>())
     {
         ACharacter* DetectedCharacter = Cast<ACharacter>(Actor);
@@ -95,6 +96,46 @@ void AGnuMonsterAIController::OnTargetDetected(AActor* Actor, FAIStimulus const 
             SetNewTarget(DetectedCharacter);
         }
     }
+    else
+    {
+        GEngine->AddOnScreenDebugMessage(1, 4, FColor::Red, TEXT("IsA<ACharacter> Failed!"));
+    }
+
+    //if (!Stimulus.WasSuccessfullySensed())
+    //{
+    //    GEngine->AddOnScreenDebugMessage(1, 4, FColor::Red, TEXT("WasSuccessfullySensed Failed!"));
+    //    return;
+    //}
+
+    //if (!Actor)
+    //{
+    //    GEngine->AddOnScreenDebugMessage(1, 4, FColor::Red, TEXT("Actor Failed!"));
+    //    return;
+    //}
+
+    //if (!HasAuthority())
+    //{
+    //    GEngine->AddOnScreenDebugMessage(1, 4, FColor::Red, TEXT("HasAuthority Failed!"));
+    //    return;
+    //}
+
+    //if (!IsValid(Actor))
+    //{
+    //    GEngine->AddOnScreenDebugMessage(1, 4, FColor::Red, TEXT("IsValid Failed!"));
+    //    return;
+    //}
+
+    //if (!Actor->IsValidLowLevel())
+    //{
+    //    GEngine->AddOnScreenDebugMessage(1, 4, FColor::Red, TEXT("IsValidLowLevel Failed!"));
+    //    return;
+    //}
+    //
+    //if (!Actor->IsValidLowLevelFast())
+    //{
+    //    GEngine->AddOnScreenDebugMessage(1, 4, FColor::Red, TEXT("IsValidLowLevelFast Failed!"));
+    //    return;
+    //}
 }
 
 // 꾸준히 감지할 타겟 업데이트 함수
@@ -153,6 +194,11 @@ void AGnuMonsterAIController::UpdateTargetDistance()
     {
         float Distance = FVector::Dist(CurrentTarget->GetActorLocation(), GetPawn()->GetActorLocation());
         GetBlackboardComponent()->SetValueAsFloat(TEXT("DistToTarget"), Distance);
+        GetBlackboardComponent()->SetValueAsVector(TEXT("PlayerLocation"), CurrentTarget->GetActorLocation());
+    }
+    else
+    {
+        ClearTarget();
     }
 }
 
@@ -166,26 +212,14 @@ void AGnuMonsterAIController::UpdateMonsterHealth()
 }
 
 // 블랙보드 TargetActor 업데이트
-void AGnuMonsterAIController::SetNewTarget(ACharacter* NewTarget)
+void AGnuMonsterAIController::SetNewTarget(AActor* NewTarget)
 {
     // 타겟 설정
     if (HasAuthority())
     {
         TargetActor = NewTarget;
-        GetBlackboardComponent()->SetValueAsObject(TEXT("TargetActor"), NewTarget);
-    }
-
-    // 타겟을 처음 인식했을 때만 Intro Montage를 실행
-    AGnuMonster* GnuMonster = Cast<AGnuMonster>(GetPawn());
-    if (GnuMonster)
-    {
-        UGnuMonsterAnimInstance* AnimInstance = Cast<UGnuMonsterAnimInstance>(GnuMonster->GetMesh()->GetAnimInstance());
-        if (AnimInstance && AnimInstance->bIsPlayIntro)  // 아직 Intro를 실행하지 않았다면
-        {
-            // Intro Montage 실행
-            AnimInstance->PlayIntroMontage();
-            AnimInstance->bIsPlayIntro = false;  // 인트로 애니메이션을 실행했으므로 false로 설정
-        }
+        GetBlackboardComponent()->SetValueAsObject(TEXT("TargetActor"), TargetActor);
+        GEngine->AddOnScreenDebugMessage(1, 4, FColor::Blue, TEXT("Set New Target Successfully!"));
     }
 }
 
@@ -200,8 +234,7 @@ void AGnuMonsterAIController::ClearTarget()
     AGnuMonster* GnuMonster = Cast<AGnuMonster>(GetPawn());
     if (GnuMonster)
     {
-        GnuMonster->DeactivateCapsuleComp();
-        GnuMonster->DeactivateSkeletalMesh();
+        DeactivateMonster();
     }
 }
 
@@ -225,7 +258,17 @@ void AGnuMonsterAIController::ActivateMonster()
     if (Monster)
     {
         Monster->ActivateSkeletalMesh();
-        Monster->ActivateCapsuleComp();
+        /*Monster->ActivateCapsuleComp();*/
+    }
+}
+
+void AGnuMonsterAIController::DeactivateMonster()
+{
+    AGnuMonster* Monster = Cast<AGnuMonster>(GetPawn());
+    if (Monster)
+    {
+        Monster->DeactivateSkeletalMesh();
+        /*Monster->DeactivateCapsuleComp();*/
     }
 }
 

@@ -26,10 +26,6 @@ void UGnuMonsterAnimInstance::NativeInitializeAnimation()
 
     // 초기값 설정
     bIsMontageEnded = true;
-
-    // 일단 true로 만들어서 안나오게
-    // 계속 들으니까 귀찮음
-    bIsPlayIntro = true;
     ShouldMove = false;
 }
 
@@ -52,7 +48,7 @@ void UGnuMonsterAnimInstance::NativeThreadSafeUpdateAnimation(float DeltaSeconds
     // 속도 받아오기
     if (MonsterOwner)
     {
-        Speed = MonsterOwner->GroundSpeed;
+        Speed_Anim = MonsterOwner->GroundSpeed;
         Direction_Anim = MonsterOwner->Direction;
     }
 
@@ -103,15 +99,5 @@ void UGnuMonsterAnimInstance::PlayDieMontage()
     if (MonsterOwner)
     {
         MonsterOwner->MulticastPlayMontage(DragonDieMontage);
-    }
-}
-
-// 처음 한번만 실행하도록 bool형 선언
-void UGnuMonsterAnimInstance::PlayIntroMontage()
-{
-    if (bIsPlayIntro == false)
-    {
-        PlayMontage(IntroShoutingMontage);
-        bIsPlayIntro = true;
     }
 }
