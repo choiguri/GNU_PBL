@@ -13,30 +13,30 @@ void AGNULobbyGameMode::PostLogin(APlayerController* NewPlayer)
 
 	if (GameState)
 	{
-		if (GEngine)
+		/*if (GEngine)
 		{
 			GEngine->AddOnScreenDebugMessage(1, 60.f, FColor::Yellow,
 				FString::Printf(TEXT("Players in Game: %d"), NumberOfPlayers));
-		}
+		}*/
 	}
 	APlayerState* PlayerState = NewPlayer->GetPlayerState<APlayerState>();
 	if (PlayerState)
 	{
 		FString PlayerName = PlayerState->GetPlayerName();
 
-		GEngine->AddOnScreenDebugMessage(-1, 60.f, FColor::Cyan,
-			FString::Printf(TEXT("%s has joined the game"), *PlayerName));
+		/*GEngine->AddOnScreenDebugMessage(-1, 60.f, FColor::Cyan,
+			FString::Printf(TEXT("%s has joined the game"), *PlayerName));*/
 
 	}
 
 	// 플레이어가 n명일 때 GameMap으로 이동 
-	if (NumberOfPlayers == 4) // 나중에 수정 필요
+	if (NumberOfPlayers == 3) // 나중에 수정 필요
 	{
 		bUseSeamlessTravel = true;
 		UWorld* World = GetWorld();
 		if (World)
 		{
-			World->ServerTravel(FString("/Game/GNU/Maps/GameMap?listen"));
+			World->ServerTravel(FString("/Game/GNU/Maps/DesignGameMap?listen"));
 		}
 	}
 }

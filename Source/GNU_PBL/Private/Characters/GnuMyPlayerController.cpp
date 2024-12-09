@@ -113,15 +113,15 @@ void AGnuMyPlayerController::SetHUDHealth(float Health, float MaxHealth)
 
 	bool bHUDValid = GNUHUD &&
 		GNUHUD->CharacterOverlay &&
-		GNUHUD->CharacterOverlay->HealthBar &&
-		GNUHUD->CharacterOverlay->HealthText;
+		GNUHUD->CharacterOverlay->HealthBar; /*&&
+		GNUHUD->CharacterOverlay->HealthText;*/
 
 	if (bHUDValid)
 	{
 		const float HealthPercent = Health / MaxHealth;
 		GNUHUD->CharacterOverlay->HealthBar->SetPercent(HealthPercent);
-		FString HealthText = FString::Printf(TEXT("%d / %d"), FMath::CeilToInt(Health), FMath::CeilToInt(MaxHealth));
-		GNUHUD->CharacterOverlay->HealthText->SetText(FText::FromString(HealthText));
+		/*FString HealthText = FString::Printf(TEXT("%d / %d"), FMath::CeilToInt(Health), FMath::CeilToInt(MaxHealth));
+		GNUHUD->CharacterOverlay->HealthText->SetText(FText::FromString(HealthText));*/
 	}
 }
 
@@ -131,15 +131,15 @@ void AGnuMyPlayerController::SetHUDStamina(float Stamina, float MaxStamina)
 
 	bool bHUDValid = GNUHUD &&
 		GNUHUD->CharacterOverlay &&
-		GNUHUD->CharacterOverlay->StaminaBar &&
-		GNUHUD->CharacterOverlay->StaminaText;
+		GNUHUD->CharacterOverlay->StaminaBar; /*&&
+		GNUHUD->CharacterOverlay->StaminaText;*/
 
 	if (bHUDValid)
 	{
 		const float HealthPercent = Stamina / MaxStamina;
 		GNUHUD->CharacterOverlay->StaminaBar->SetPercent(HealthPercent);
-		FString HealthText = FString::Printf(TEXT("%d / %d"), FMath::CeilToInt(Stamina), FMath::CeilToInt(MaxStamina));
-		GNUHUD->CharacterOverlay->StaminaText->SetText(FText::FromString(HealthText));
+		/*FString HealthText = FString::Printf(TEXT("%d / %d"), FMath::CeilToInt(Stamina), FMath::CeilToInt(MaxStamina));
+		GNUHUD->CharacterOverlay->StaminaText->SetText(FText::FromString(HealthText));*/
 	}
 }
 
@@ -217,12 +217,12 @@ void AGnuMyPlayerController::SetHUDCombatTime(float CombatTime)
 		GNUHUD->CharacterOverlay->CombatTimeText->SetText(FText::FromString(TimeText));
 	}
 
-	AGnuMyCharacter* StaminaCharacter = Cast<AGnuMyCharacter>(GetPawn());
+	/*AGnuMyCharacter* StaminaCharacter = Cast<AGnuMyCharacter>(GetPawn());*/
 
-	if (StaminaCharacter)
-	{
-		StaminaCharacter->AutoRecoverStamina();
-	}
+	//if (StaminaCharacter)
+	//{
+	//	StaminaCharacter->AutoRecoverStamina();
+	//}
 }
 
 void AGnuMyPlayerController::SetHUDWeaponAmmo(int32 Ammo, int32 MaxAmmo)

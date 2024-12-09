@@ -168,6 +168,7 @@ void UGNUMenu::OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionR
 
 		if (FoundGameList)
 		{
+			FoundGameList->ClearChildren();
 			FoundGameList->SetVisibility(ESlateVisibility::Visible);
 			FoundGameList->AddChild(FoundList);
 		}

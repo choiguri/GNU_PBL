@@ -68,7 +68,7 @@ void AGnuMonsterAIController::Tick(float DeltaSeconds)
     {
         UpdateTarget();
 
-        GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("No Target Detected. Retrying..."));
+       /* GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("No Target Detected. Retrying..."));*/
         StartRetryCooldown();
     }
 }
@@ -79,7 +79,7 @@ void AGnuMonsterAIController::OnTargetDetected(AActor* Actor, FAIStimulus const 
 {
     if (!Stimulus.WasSuccessfullySensed() || !Actor || !HasAuthority() || !Actor->IsValidLowLevel() || !Actor->IsValidLowLevelFast())
     {
-        GEngine->AddOnScreenDebugMessage(1, 4, FColor::Red, TEXT("Actor Failed!"));
+        /*GEngine->AddOnScreenDebugMessage(1, 4, FColor::Red, TEXT("Actor Failed!"));*/
         return;
     }
     else
@@ -98,7 +98,7 @@ void AGnuMonsterAIController::OnTargetDetected(AActor* Actor, FAIStimulus const 
     }
     else
     {
-        GEngine->AddOnScreenDebugMessage(1, 4, FColor::Red, TEXT("IsA<ACharacter> Failed!"));
+        /*GEngine->AddOnScreenDebugMessage(1, 4, FColor::Red, TEXT("IsA<ACharacter> Failed!"));*/
     }
 
     //if (!Stimulus.WasSuccessfullySensed())
@@ -219,7 +219,7 @@ void AGnuMonsterAIController::SetNewTarget(AActor* NewTarget)
     {
         TargetActor = NewTarget;
         GetBlackboardComponent()->SetValueAsObject(TEXT("TargetActor"), TargetActor);
-        GEngine->AddOnScreenDebugMessage(1, 4, FColor::Blue, TEXT("Set New Target Successfully!"));
+        /*GEngine->AddOnScreenDebugMessage(1, 4, FColor::Blue, TEXT("Set New Target Successfully!"));*/
     }
 }
 

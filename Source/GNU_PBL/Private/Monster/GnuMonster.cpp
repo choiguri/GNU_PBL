@@ -78,7 +78,7 @@ AGnuMonster::AGnuMonster()
 	bAlwaysRelevant = true; // 항상 네트워크에서 중요
 
 	// hp 구현
-	MaxHealth = 500.f;
+	MaxHealth = 1000.f;
 	CurrentHealth = MaxHealth;
 
 	// 넉백 힘 초기화
@@ -119,7 +119,7 @@ void AGnuMonster::BeginPlay()
 	if (MovementComp)
 	{
 		// 예를 들어, 이동 속도나 다른 값들을 출력해서 확인
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("Max Walk Speed: %f"), MovementComp->MaxWalkSpeed));
+		/*GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("Max Walk Speed: %f"), MovementComp->MaxWalkSpeed));*/
 	}
 
 	// 서버에서 데미지 관리
@@ -196,11 +196,11 @@ void AGnuMonster::OnRep_Health()
 // 데미지를 받게 되었을 때
 void AGnuMonster::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
 {
-	if (GEngine)
+	/*if (GEngine)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Red, FString::Printf(TEXT("Current Health : %f"), CurrentHealth));
 		GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Red, FString::Printf(TEXT("Max Health : %f"), MaxHealth));
-	}
+	}*/
 
 	CurrentHealth = FMath::Clamp(CurrentHealth - Damage, 0.f, MaxHealth);
 
@@ -226,11 +226,11 @@ void AGnuMonster::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamag
 	{
 		MonsterHealthWidget->UpdateBossHP(CurrentHealth, MaxHealth); 			
 	}
-	if (GEngine)	
+	/*if (GEngine)	
 	{
 		GEngine->AddOnScreenDebugMessage(1, 3.f, FColor::Blue, FString::Printf(TEXT("HasAuthority")));
 
-	}
+	}*/
 
 	// 몬스터 죽음 처리
 	if (CurrentHealth <= 0)
@@ -368,7 +368,7 @@ void AGnuMonster::SpawnFireball()
 		{
 			// 파이어볼을 발사하는 메서드 호출
 			Fireball->LaunchProjectile(this);
-			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Orange, TEXT("Start Fireball LaunchProjectile"));
+			/*GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Orange, TEXT("Start Fireball LaunchProjectile"));*/
 		}
 	}
 }
@@ -415,13 +415,13 @@ void AGnuMonster::SpawnFiretornado()
 		if (Firetornado && Firetornado2 && Firetornado3)
 		{
 			Firetornado->LaunchProjectile(this);
-			GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Orange, TEXT("Start Firetornado LaunchProjectile"));
+			/*GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Orange, TEXT("Start Firetornado LaunchProjectile"));*/
 
 			Firetornado2->LaunchProjectile(this);
-			GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Orange, TEXT("Start Firetornado2 LaunchProjectile"));
+			/*GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Orange, TEXT("Start Firetornado2 LaunchProjectile"));*/
 
 			Firetornado3->LaunchProjectile(this);
-			GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Orange, TEXT("Start Firetornado3 LaunchProjectile"));
+			/*GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Orange, TEXT("Start Firetornado3 LaunchProjectile"));*/
 		}
 	}
 }
@@ -474,7 +474,7 @@ void AGnuMonster::SpawnGroundAttack()
 		{
 			// Ground Collision Box Component를 발사하는 메서드 호출
 			Ground->LaunchProjectile(this, &SpawnLocation, &SpawnRotation);
-			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Orange, TEXT("Start Ground LaunchProjectile"));
+			/*GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Orange, TEXT("Start Ground LaunchProjectile"));*/
 		}
 	}
 }
@@ -675,7 +675,7 @@ void AGnuMonster::OnClawOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor
 			// 데미지 처리
 			float DamageAmount = 30.0f; // 데미지 양
 			UGameplayStatics::ApplyDamage(OtherActor, DamageAmount, GetController(), this, UDamageType::StaticClass());
-			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Claw Attack Overlap"));
+			/*GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Claw Attack Overlap"));*/
 
 			// 플레이어에게 넉백 적용
 			KnockbackStrength = 5000.f;
@@ -685,7 +685,7 @@ void AGnuMonster::OnClawOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor
 		}
 		else
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("This is not TargetChracter"));
+			/*GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("This is not TargetChracter"));*/
 		}
 	}
 }
@@ -712,7 +712,7 @@ void AGnuMonster::OnTailOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor
 			// 데미지 처리
 			float DamageAmount = 40.0f; // 데미지 양
 			UGameplayStatics::ApplyDamage(OtherActor, DamageAmount, GetController(), this, UDamageType::StaticClass());
-			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Tail Take Damage Overlap"));
+			/*GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Tail Take Damage Overlap"));*/
 
 			// 플레이어에게 넉백 적용
 			KnockbackStrength = 10000.f;
@@ -722,7 +722,7 @@ void AGnuMonster::OnTailOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor
 		}
 		else
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("This is not TargetChracter"));
+			/*GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("This is not TargetChracter"));*/
 		}
 	}
 }
@@ -749,7 +749,7 @@ void AGnuMonster::OnBodyOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor
 			// 데미지 처리
 			float DamageAmount = 35.0f; // 데미지 양
 			UGameplayStatics::ApplyDamage(OtherActor, DamageAmount, GetController(), this, UDamageType::StaticClass());
-			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Tail Take Damage Overlap"));
+			/*GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Tail Take Damage Overlap"));*/
 
 			// 플레이어에게 넉백 적용
 			KnockbackStrength = 30000.f;
@@ -759,7 +759,7 @@ void AGnuMonster::OnBodyOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor
 		}
 		else
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("This is not TargetChracter"));
+			/*GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("This is not TargetChracter"));*/
 		}
 	}
 }

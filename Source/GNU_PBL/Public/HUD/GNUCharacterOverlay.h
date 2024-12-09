@@ -18,14 +18,14 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	class UProgressBar* HealthBar;
 
-	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* HealthText;
+	/*UPROPERTY(meta = (BindWidget))
+	class UTextBlock* HealthText;*/
 
 	UPROPERTY(meta = (BindWidget))
 	UProgressBar* StaminaBar;
 
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* StaminaText;
+	/*UPROPERTY(meta = (BindWidget))
+	UTextBlock* StaminaText;*/
 
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* CombatTimeText;
