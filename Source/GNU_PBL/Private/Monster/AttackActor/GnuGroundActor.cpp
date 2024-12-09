@@ -177,12 +177,7 @@ void AGnuGroundActor::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AAc
             {
                 UE_LOG(LogTemp, Warning, TEXT("TargetCharacter cast failed"));
             }
-
-
-
-            GEngine->AddOnScreenDebugMessage(-1, 4, FColor::Black, TEXT("Apply Damage!!"));
         }
 
-        GEngine->AddOnScreenDebugMessage(-1, 4, FColor::Yellow, TEXT("Begin Overlap with : ") + OtherActor->GetName());
     }
 }

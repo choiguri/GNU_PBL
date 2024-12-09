@@ -59,7 +59,6 @@ void AGnuMonsterAIController::Tick(float DeltaSeconds)
     if (HasAuthority())
     {
         UpdateTargetDistance();     // 타겟과의 거리 계산
-        UpdateMonsterHealth();      // 몬스터 현재 hp 블랙보드 키값 업데이트
     }
 
     // TargetActor 없을 때 계속 확인하기
@@ -79,7 +78,6 @@ void AGnuMonsterAIController::OnTargetDetected(AActor* Actor, FAIStimulus const 
 {
     if (!Stimulus.WasSuccessfullySensed() || !Actor || !HasAuthority() || !Actor->IsValidLowLevel() || !Actor->IsValidLowLevelFast())
     {
-        /*GEngine->AddOnScreenDebugMessage(1, 4, FColor::Red, TEXT("Actor Failed!"));*/
         return;
     }
     else
@@ -100,42 +98,6 @@ void AGnuMonsterAIController::OnTargetDetected(AActor* Actor, FAIStimulus const 
     {
         /*GEngine->AddOnScreenDebugMessage(1, 4, FColor::Red, TEXT("IsA<ACharacter> Failed!"));*/
     }
-
-    //if (!Stimulus.WasSuccessfullySensed())
-    //{
-    //    GEngine->AddOnScreenDebugMessage(1, 4, FColor::Red, TEXT("WasSuccessfullySensed Failed!"));
-    //    return;
-    //}
-
-    //if (!Actor)
-    //{
-    //    GEngine->AddOnScreenDebugMessage(1, 4, FColor::Red, TEXT("Actor Failed!"));
-    //    return;
-    //}
-
-    //if (!HasAuthority())
-    //{
-    //    GEngine->AddOnScreenDebugMessage(1, 4, FColor::Red, TEXT("HasAuthority Failed!"));
-    //    return;
-    //}
-
-    //if (!IsValid(Actor))
-    //{
-    //    GEngine->AddOnScreenDebugMessage(1, 4, FColor::Red, TEXT("IsValid Failed!"));
-    //    return;
-    //}
-
-    //if (!Actor->IsValidLowLevel())
-    //{
-    //    GEngine->AddOnScreenDebugMessage(1, 4, FColor::Red, TEXT("IsValidLowLevel Failed!"));
-    //    return;
-    //}
-    //
-    //if (!Actor->IsValidLowLevelFast())
-    //{
-    //    GEngine->AddOnScreenDebugMessage(1, 4, FColor::Red, TEXT("IsValidLowLevelFast Failed!"));
-    //    return;
-    //}
 }
 
 // 꾸준히 감지할 타겟 업데이트 함수
@@ -168,8 +130,14 @@ void AGnuMonsterAIController::UpdateTarget()
 
     if (NewTarget)
     {
-        SetNewTarget(NewTarget);    // 새 타겟 설정
-        ActivateMonster();          // 몬스터 콜리전 활성화
+        SetNewTarget(NewTarget);            // 새 타겟 설정
+        ActivateMonsterCollision();         // 몬스터 콜리전 활성화
+        
+        if (!bActivateHealthBar)
+        {
+            bActivateHealthBar = true;
+            ActivateMonsterHealthBar();         // 몬스터 위젯 활성화
+        }
     }
     else
     {
@@ -234,7 +202,7 @@ void AGnuMonsterAIController::ClearTarget()
     AGnuMonster* GnuMonster = Cast<AGnuMonster>(GetPawn());
     if (GnuMonster)
     {
-        DeactivateMonster();
+        DeactivateMonsterCollision();
     }
 }
 
@@ -252,23 +220,30 @@ void AGnuMonsterAIController::StartRetryCooldown()
 }
 
 // 몬스터 콜리전 활성화 함수
-void AGnuMonsterAIController::ActivateMonster()
+void AGnuMonsterAIController::ActivateMonsterCollision()
 {
     AGnuMonster* Monster = Cast<AGnuMonster>(GetPawn());
     if (Monster)
     {
         Monster->ActivateSkeletalMesh();
-        /*Monster->ActivateCapsuleComp();*/
     }
 }
 
-void AGnuMonsterAIController::DeactivateMonster()
+void AGnuMonsterAIController::DeactivateMonsterCollision()
 {
     AGnuMonster* Monster = Cast<AGnuMonster>(GetPawn());
     if (Monster)
     {
         Monster->DeactivateSkeletalMesh();
-        /*Monster->DeactivateCapsuleComp();*/
+    }
+}
+
+void AGnuMonsterAIController::ActivateMonsterHealthBar()
+{
+    AGnuMonster* Monster = Cast<AGnuMonster>(GetPawn());
+    if (Monster)
+    {
+        Monster->SetHealthWidget();
     }
 }
 

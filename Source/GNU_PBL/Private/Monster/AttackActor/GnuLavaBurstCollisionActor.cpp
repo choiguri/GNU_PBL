@@ -59,7 +59,6 @@ void AGnuLavaBurstCollisionActor::LaunchProjectile(AActor* IgnoredActor)
         BoxComponent->IgnoreActorWhenMoving(IgnoredActor, true); // 자신과 충돌 무시
 
         FVector UpVector = FVector(0, 0, 1);
-        GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Blue, FString::Printf(TEXT("UpVector: %s"), *UpVector.ToString()));
         ProjectileMovement->Velocity = UpVector * ProjectileMovement->InitialSpeed; // 각 방향, 속도로 발사
     }
 }
@@ -79,9 +78,6 @@ void AGnuLavaBurstCollisionActor::BeginOverlap(UPrimitiveComponent* OverlappedCo
         {
             AController* OwnerController = OwnerCharacter->Controller;
             UGameplayStatics::ApplyDamage(OtherActor, Damage, OwnerController, this, DamageType);
-            GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Black, TEXT("Apply Damage!!"));
         }
-
-        GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Yellow, TEXT("Begin Overlap with : ") + OtherActor->GetName());
     }
 }

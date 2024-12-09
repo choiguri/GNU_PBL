@@ -28,22 +28,18 @@ public:
 	void StopBehaviorTree();
 
 	void UpdateTargetDistance();
-
 	void UpdateMonsterHealth();
 
-	void ActivateMonster();
-	void DeactivateMonster();
+	void ActivateMonsterCollision();
+	void DeactivateMonsterCollision();
+	void ActivateMonsterHealthBar();
 
 	// Behaviortree 변수들 레플리케이트
 	UPROPERTY(ReplicatedUsing = OnRep_TargetActor)
 	AActor* TargetActor;
 
-	/*UPROPERTY(ReplicatedUsing = OnRep_TargetLocation)
-	FVector TargetLocation;
-
-	UPROPERTY(ReplicatedUsing = OnRep_DistToTarget)
-	float TargetDist;*/
-
+	
+	bool bActivateHealthBar = false;
 protected:
 	virtual void BeginPlay() override;
 

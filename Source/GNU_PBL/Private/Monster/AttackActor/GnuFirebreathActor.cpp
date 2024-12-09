@@ -122,9 +122,6 @@ void AGnuFirebreathActor::BeginOverlap(UPrimitiveComponent* OverlappedComponent,
         {
             AController* OwnerController = OwnerCharacter->Controller;
             UGameplayStatics::ApplyDamage(OtherActor, GetDamage(), OwnerController, this, DamageType);
-            GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Black, TEXT("Apply Damage!!"));
         }
-
-        GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Magenta, TEXT("Begin Overlap with : ") + OtherActor->GetName());
     }
 }

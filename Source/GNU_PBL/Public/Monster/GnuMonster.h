@@ -37,6 +37,8 @@ public:
 
 	void SetDirection();
 	void SetGroundSpeed();
+	UFUNCTION(NetMulticast, Reliable)
+	void SetHealthWidget();
 
 	//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 몬스터 공격 함수 시작 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ//
 	void SpawnFireball(); // 파이어볼 소환 함수
@@ -50,14 +52,10 @@ public:
 	void StartCraterAttack();	// 분화구 타이머 실행
 	void EndCraterAttack();		// 분화구 타이머 초기화
 	void SpawnCrater();			// 스폰 분화구
-	void StopSpawning();		// 
-	FTimerHandle CraterTimerHandle1;
-	FTimerHandle CraterTimerHandle2;
-	FTimerHandle CraterTimerHandle3;
-
+	void ScheduleNextCrater(FTimerHandle& TimerHandle);	// 스폰 분화구 랜덤 스타트
+	void SpawnCraterAndReschedule();
 
 	void BodyAttack();
-	
 	void KnockbackPlayer(ACharacter* PlayerCharacter);	// 공격 맞았으면 플레이어가 뒤로 밀려나도록 하기
 	float KnockbackStrength; // 넉백 힘
 	//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 공격 함수 끝 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ//
@@ -87,8 +85,9 @@ public:
 	//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 애니메이션 관련 끝 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ//
 
 	// 상태들
-	bool bIsDead = false;
+	bool bIsDead = false;			// 죽음 상태 확인
 	bool bIsPhaseTwo = false;		// 페이즈 2 여부 확인
+	bool bCanRetry = true;			// 재시도 여부
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -143,27 +142,30 @@ private:
 	UFUNCTION()	// 몬스터 몸통 공격에 맞았는지
 	void OnBodyOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-	// Tick 에서 타겟 변경 재시도 쿨다운 타이머
-	FTimerHandle RetryCooldownTimerHandle;
-	bool bCanRetry = true;
-
+	
 	// 재시도 쿨다운 설정 함수
 	void StartRetryCooldown();
 
-	// 여러번 맞는거 방지하기 위한 Map
+	// 여러번 맞는거 방지하기 위한 Map	(근접 공격에 다 적용)
 	TMap<AActor*, float> LastHitTime;
 	// 타격 간격 설정 (예: 1초)
 	float AttackCooldown = 1.0f;
 
+	// 타임 핸들러
+	FTimerHandle SpawnTimerHandle;
+	FTimerHandle CraterTimerHandle1;
+	FTimerHandle CraterTimerHandle2;
+	FTimerHandle CraterTimerHandle3;
+	FTimerHandle CraterTimerHandle4;
+	FTimerHandle CraterTimerHandle5;
+
+	FTimerHandle RetryCooldownTimerHandle;	// Tick 에서 타겟 변경 재시도 쿨다운 타이머
 public:
 	// 블루프린트 위젯 넣는 곳
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	TSubclassOf<UGnuMonsterHealthBase> MonsterHealthWidgetClass;
 
 	UGnuMonsterHealthBase* MonsterHealthWidget;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	UUserWidget* MonsterWidget;
 
 	// HP 관련 구현부
 	UPROPERTY(EditAnywhere, Category = "Health")

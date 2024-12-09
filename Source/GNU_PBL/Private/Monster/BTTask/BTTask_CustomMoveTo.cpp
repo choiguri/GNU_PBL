@@ -9,14 +9,9 @@
 #include "GameFramework/Character.h"
 #include "Kismet/KismetMathLibrary.h"  // 랜덤 숫자 생성을 위한 헤더
 #include "Math/UnrealMathUtility.h"  // FVector::RandCone을 위한 헤더
-
-#include "BehaviorTree/BlackboardComponent.h"
-#include "AIController.h"
-#include "NavigationSystem.h"
-#include "GameFramework/Actor.h"
-#include "GameFramework/Character.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "NavFilters/NavigationQueryFilter.h"
+
 
 UBTTask_CustomMoveTo::UBTTask_CustomMoveTo()
 {
@@ -40,6 +35,17 @@ EBTNodeResult::Type UBTTask_CustomMoveTo::ExecuteTask(UBehaviorTreeComponent& Ow
 
     // 허용 가능 반경을 최소~최대 값 사이에서 랜덤으로 설정
     RandomAcceptanceRadius = FMath::RandRange(MinRadius, MaxRadius);
+
+    ACharacter* ControlledCharacter = Cast<ACharacter>(AIController->GetPawn());
+    if (ControlledCharacter)
+    {
+        float DistanceToTarget = FVector::Dist(ControlledCharacter->GetActorLocation(), CurrentTargetLocation);
+        if (DistanceToTarget <= RandomAcceptanceRadius)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Already within acceptance radius."));
+            return EBTNodeResult::Succeeded; // 목표 반경 안에 있으면 즉시 성공
+        }
+    }
 
     // 첫 MoveToLocation 호출
     EPathFollowingRequestResult::Type MoveResult = AIController->MoveToLocation(
@@ -65,6 +71,19 @@ void UBTTask_CustomMoveTo::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* No
 
     UPathFollowingComponent* PathFollowingComp = AIController->GetPathFollowingComponent();
     if (!PathFollowingComp) return;
+
+    // 현재 위치와 목표 위치 비교
+    ACharacter* ControlledCharacter = Cast<ACharacter>(AIController->GetPawn());
+    if (ControlledCharacter)
+    {
+        float DistanceToTarget = FVector::Dist(ControlledCharacter->GetActorLocation(), CurrentTargetLocation);
+        if (DistanceToTarget <= RandomAcceptanceRadius)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Reached target within acceptance radius during tick."));
+            FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded); // 목표 반경 안에 도달하면 태스크 성공
+            return;
+        }
+    }
 
     // 새로운 TargetLocation 확인
     FVector NewTargetLocation = BlackboardComp->GetValueAsVector(TargetLocationKey.SelectedKeyName);

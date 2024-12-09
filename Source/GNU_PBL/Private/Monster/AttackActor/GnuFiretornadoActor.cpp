@@ -12,6 +12,10 @@ AGnuFiretornadoActor::AGnuFiretornadoActor()
 {
     // 와 미친 이거 하나 때문에 안날라가고 있었음;;
     PrimaryActorTick.bCanEverTick = true;
+    bReplicates = true; // 복제 활성화
+
+    // 이동 복제 활성화 (bReplicateMovement 대신)
+    SetReplicateMovement(true);
 
     // ProjectileMovementComponent 생성 및 기본값 설정
     ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
@@ -28,34 +32,11 @@ AGnuFiretornadoActor::AGnuFiretornadoActor()
         BoxComponent->SetCollisionResponseToAllChannels(ECR_Ignore); // 모든 채널에 대해 무시
         BoxComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap); // 캐릭터에 대해 오버랩 허용
     }
-
-    Monster = nullptr;
 }
 
 void AGnuFiretornadoActor::BeginPlay()
 {
     Super::BeginPlay();
-
-    AActor* OwnerActor = GetOwner();
-    if (OwnerActor)
-    {
-        Monster = Cast<AGnuMonster>(OwnerActor);
-        if (Monster)
-        {
-            UE_LOG(LogTemp, Warning, TEXT("Monster assigned successfully!"));
-        }
-        else
-        {
-            UE_LOG(LogTemp, Warning, TEXT("Failed to assign Monster"));
-        }
-    }
-
-
-    // 초기 속도 확인
-    if (ProjectileMovement)
-    {
-        GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, FString::Printf(TEXT("Projectile Velocity: %s"), *ProjectileMovement->Velocity.ToString()));
-    }
 
     // 충돌을 위해 이벤트 바인딩
     if (BoxComponent)
@@ -70,7 +51,7 @@ void AGnuFiretornadoActor::BeginPlay()
 
 void AGnuFiretornadoActor::LaunchProjectile(AActor* IgnoredActor)
 {
-    if (ProjectileMovement)
+    if (ProjectileMovement && HasAuthority())
     {
         BoxComponent->IgnoreActorWhenMoving(IgnoredActor, true); // 몬스터와 충돌 무시
 
@@ -86,7 +67,7 @@ void AGnuFiretornadoActor::DestroyFiretornado()
 
 void AGnuFiretornadoActor::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-    if (OtherActor && (OtherActor != this) && !Monster)
+    if (OtherActor && (OtherActor != this))
     {
         // 충돌한 액터가 벽이나 캐릭터일 때
         ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
@@ -94,9 +75,6 @@ void AGnuFiretornadoActor::BeginOverlap(UPrimitiveComponent* OverlappedComponent
         {
             AController* OwnerController = OwnerCharacter->Controller;
             UGameplayStatics::ApplyDamage(OtherActor, GetDamage(), OwnerController, this, DamageType);
-            GEngine->AddOnScreenDebugMessage(-1, 4, FColor::Black, TEXT("Apply Damage!!"));
         }
-
-        GEngine->AddOnScreenDebugMessage(-1, 4, FColor::Yellow, TEXT("Begin Overlap with : ") + OtherActor->GetName());
     }
 }

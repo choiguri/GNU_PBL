@@ -52,7 +52,6 @@ void AGnuFireballActor::BeginPlay()
     }
     else
     {
-        UE_LOG(LogTemp, Warning, TEXT("DestroyGround called prematurely"));
         NiagaraComponent->Deactivate();
         Destroy();
     }
@@ -100,9 +99,8 @@ void AGnuFireballActor::BeginOverlap(UPrimitiveComponent* OverlappedComponent, A
         {
             AController* OwnerController = OwnerCharacter->Controller;
             UGameplayStatics::ApplyDamage(OtherActor, GetDamage(), OwnerController, this, DamageType);
-            GEngine->AddOnScreenDebugMessage(-1, 4, FColor::Black, TEXT("Apply Damage!!"));
+            /*GEngine->AddOnScreenDebugMessage(-1, 4, FColor::Black, TEXT("Apply Damage!!"));*/
         }
-
-        GEngine->AddOnScreenDebugMessage(-1, 4, FColor::Yellow, TEXT("Begin Overlap with : ") + OtherActor->GetName());
+        /*GEngine->AddOnScreenDebugMessage(-1, 4, FColor::Yellow, TEXT("Begin Overlap with : ") + OtherActor->GetName());*/
     }
 }

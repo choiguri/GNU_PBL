@@ -9,8 +9,6 @@ void UGnuMonsterHealthBase::UpdateBossHP(float CurrentHP, float MaxHP)
 {
     if (ProgressBar_Health)
     {
-        GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Yellow, FString::Printf(TEXT("Health Update Call")));
-
         float HPPercent = FMath::Clamp(CurrentHP / MaxHP, 0.0f, 1.0f);
         ProgressBar_Health->SetPercent(HPPercent);
     }

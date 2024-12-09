@@ -91,14 +91,6 @@ void AGnuMonster::BeginPlay()
 	
 	DeactivateSkeletalMesh();	// 타겟 인식 전 콜리전 비활성화
 	ActivateCapsuleComp();		// 캡슐 컴포넌트는 활성화
-	
-	// Health 위젯이 설정되어 있으면 생성하여 화면에 추가
-	// 플레이어를 인식하면 UI가 뜨도록 변경해야함 (추후 수정)
-	if (MonsterHealthWidgetClass)
-	{
-		MonsterHealthWidget = CreateWidget<UGnuMonsterHealthBase>(GetWorld(), MonsterHealthWidgetClass);
-		MonsterHealthWidget->AddToViewport();
-	}
 
 	if (BodyCollision)
 	{
@@ -113,13 +105,6 @@ void AGnuMonster::BeginPlay()
 	if (TailCollision)
 	{
 		TailCollision->OnComponentBeginOverlap.AddDynamic(this, &AGnuMonster::OnTailOverlapBegin);
-	}
-
-	UCharacterMovementComponent* MovementComp = GetCharacterMovement();
-	if (MovementComp)
-	{
-		// 예를 들어, 이동 속도나 다른 값들을 출력해서 확인
-		/*GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("Max Walk Speed: %f"), MovementComp->MaxWalkSpeed));*/
 	}
 
 	// 서버에서 데미지 관리
@@ -146,21 +131,11 @@ void AGnuMonster::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	
 	if (HasAuthority())
 	{
 		SetGroundSpeed();
 		SetDirection();
 	}
-
-	/*if (HasAuthority())
-	{
-		UE_LOG(LogTemp, Log, TEXT("GroundSpeed(Server): %f"), GroundSpeed);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("GroundSpeed(Client): %f"), GroundSpeed);
-	}*/
 
 	// FirebreathActor가 활성화 되면 위치 업데이트
 	if (FirebreathActor)
@@ -184,6 +159,46 @@ void AGnuMonster::Tick(float DeltaTime)
 	}
 }
 
+void AGnuMonster::SetGroundSpeed()
+{
+	GroundSpeed = GetVelocity().Size();	// 몬스터 이속 업데이트
+}
+
+void AGnuMonster::SetHealthWidget_Implementation()
+{
+	// Health 위젯이 설정되어 있으면 생성하여 화면에 추가
+	// 플레이어를 인식하면 UI가 뜨도록 변경해야함 (추후 수정)
+	if (MonsterHealthWidgetClass)
+	{
+		MonsterHealthWidget = CreateWidget<UGnuMonsterHealthBase>(GetWorld(), MonsterHealthWidgetClass);
+		MonsterHealthWidget->AddToViewport();
+	}
+}
+
+void AGnuMonster::SetDirection()
+{
+	// 방향 업데이트
+	if (AGnuMonsterAIController* AIController = Cast<AGnuMonsterAIController>(GetController()))
+	{
+		if (AIController->TargetActor != nullptr)
+		{
+			FVector MonsterForward = GetActorForwardVector();
+			FVector ToTarget = (AIController->TargetActor->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+
+			// 몬스터의 정면 방향과 타겟 방향 간의 각도 차이
+			FVector CrossProduct = FVector::CrossProduct(MonsterForward, ToTarget);
+			float DotProduct = FVector::DotProduct(MonsterForward, ToTarget);
+			Direction = FMath::RadiansToDegrees(FMath::Atan2(CrossProduct.Z, DotProduct));
+		}
+		else
+		{
+			Direction = 0.f; // 타겟이 없으면 방향 초기화
+		}
+	}
+}
+
+
+//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ Damage 관련 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
 // HP 업데이트 함수(멀티 처리)
 void AGnuMonster::OnRep_Health()
 {
@@ -196,12 +211,6 @@ void AGnuMonster::OnRep_Health()
 // 데미지를 받게 되었을 때
 void AGnuMonster::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
 {
-	/*if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Red, FString::Printf(TEXT("Current Health : %f"), CurrentHealth));
-		GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Red, FString::Printf(TEXT("Max Health : %f"), MaxHealth));
-	}*/
-
 	CurrentHealth = FMath::Clamp(CurrentHealth - Damage, 0.f, MaxHealth);
 
 	// 머티리얼의 이미시브 색상 변경
@@ -226,11 +235,11 @@ void AGnuMonster::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamag
 	{
 		MonsterHealthWidget->UpdateBossHP(CurrentHealth, MaxHealth); 			
 	}
-	/*if (GEngine)	
-	{
-		GEngine->AddOnScreenDebugMessage(1, 3.f, FColor::Blue, FString::Printf(TEXT("HasAuthority")));
 
-	}*/
+	if (AGnuMonsterAIController* AIController = Cast<AGnuMonsterAIController>(GetController()))
+	{
+		AIController->UpdateMonsterHealth();
+	}
 
 	// 몬스터 죽음 처리
 	if (CurrentHealth <= 0)
@@ -247,7 +256,6 @@ void AGnuMonster::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamag
 	}
 }
 
-
 void AGnuMonster::Multicast_SetEmissiveColor_Implementation(const FLinearColor& NewColor)
 {
 	if (DynamicMaterialInst_1st && DynamicMaterialInst_2nd)
@@ -256,7 +264,6 @@ void AGnuMonster::Multicast_SetEmissiveColor_Implementation(const FLinearColor& 
 		DynamicMaterialInst_2nd->SetVectorParameterValue(FName("EmissiveColor"), NewColor);
 	}
 }
-
 
 void AGnuMonster::KnockbackPlayer(ACharacter* PlayerCharacter)
 {
@@ -344,8 +351,11 @@ void AGnuMonster::EnterPhaseTwo()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Entering Phase Two!"));
 }
+//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ Damage 관련 끝 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
 
-//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ Attack 관련 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+
+//ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ Attack 관련 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ //
 // 원거리 공격 부분 5개
 void AGnuMonster::SpawnFireball()
 {
@@ -378,8 +388,8 @@ void AGnuMonster::SpawnFiretornado()
 	if (FiretornadoClass)
 	{
 		// 컨트롤러 회전값 사용하여 방향 계산
-		FRotator MonsterRotation = GetController()->GetControlRotation(); // 몬스터의 컨트롤러 회전값
-		FVector ForwardVector = MonsterRotation.Vector();                 // 몬스터의 정면 방향
+		FRotator MonsterRotation = GetActorRotation();					// 몬스터의 컨트롤러 회전값
+		FVector ForwardVector = MonsterRotation.Vector();				// 몬스터의 정면 방향
 		FVector RightVector = FVector::CrossProduct(ForwardVector, FVector::UpVector); // 몬스터의 오른쪽 방향
 
 		// 기본 위치: 몬스터 정면 500 유닛 거리
@@ -391,12 +401,9 @@ void AGnuMonster::SpawnFiretornado()
 		FVector SpawnLocation2 = BaseSpawnLocation + RightVector * 500; // 오른쪽
 		FVector SpawnLocation3 = BaseSpawnLocation - RightVector * 500; // 왼쪽
 
-
 		FRotator SpawnRotation1 = MonsterRotation;
-		
 		FRotator SpawnRotation2 = MonsterRotation;
 		SpawnRotation2.Yaw -= 30;
-
 		FRotator SpawnRotation3 = MonsterRotation;
 		SpawnRotation3.Yaw += 30;
 
@@ -406,23 +413,21 @@ void AGnuMonster::SpawnFiretornado()
 		SpawnParams.SpawnCollisionHandlingOverride =							// 생성된 액터가 스폰될 때 충돌 처리 방식 설정 
 			ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;	// 충돌이 발생할 경우, 가능한 위치로 조정하여 액터를 생성
 
-
-
-		AGnuFiretornadoActor* Firetornado = GetWorld()->SpawnActor<AGnuFiretornadoActor>(FiretornadoClass, SpawnLocation1, SpawnRotation1, SpawnParams);
-		AGnuFiretornadoActor* Firetornado2 = GetWorld()->SpawnActor<AGnuFiretornadoActor>(FiretornadoClass, SpawnLocation2, SpawnRotation2, SpawnParams);
-		AGnuFiretornadoActor* Firetornado3 = GetWorld()->SpawnActor<AGnuFiretornadoActor>(FiretornadoClass, SpawnLocation3, SpawnRotation3, SpawnParams);
-
-		if (Firetornado && Firetornado2 && Firetornado3)
+		
+		if (HasAuthority())
 		{
-			Firetornado->LaunchProjectile(this);
-			/*GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Orange, TEXT("Start Firetornado LaunchProjectile"));*/
+			AGnuFiretornadoActor* Firetornado1 = GetWorld()->SpawnActor<AGnuFiretornadoActor>(FiretornadoClass, SpawnLocation1, SpawnRotation1, SpawnParams);
+			AGnuFiretornadoActor* Firetornado2 = GetWorld()->SpawnActor<AGnuFiretornadoActor>(FiretornadoClass, SpawnLocation2, SpawnRotation2, SpawnParams);
+			AGnuFiretornadoActor* Firetornado3 = GetWorld()->SpawnActor<AGnuFiretornadoActor>(FiretornadoClass, SpawnLocation3, SpawnRotation3, SpawnParams);
 
-			Firetornado2->LaunchProjectile(this);
-			/*GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Orange, TEXT("Start Firetornado2 LaunchProjectile"));*/
-
-			Firetornado3->LaunchProjectile(this);
-			/*GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Orange, TEXT("Start Firetornado3 LaunchProjectile"));*/
+			if (Firetornado1 && Firetornado2 && Firetornado3)
+			{
+				Firetornado1->LaunchProjectile(this);
+				Firetornado2->LaunchProjectile(this);
+				Firetornado3->LaunchProjectile(this);
+			}
 		}
+		
 	}
 }
 
@@ -458,7 +463,7 @@ void AGnuMonster::SpawnGroundAttack()
 		FVector GroundLoaction = GetMesh()->GetSocketLocation(TEXT("GroundSocket"));
 		GroundLoaction.Z = 0.f;
 
-		FVector SpawnLocation = GroundLoaction + GetActorForwardVector() * 100;  // 몬스터 앞에 생성
+		FVector SpawnLocation = GroundLoaction + GetActorForwardVector() * 600;  // 몬스터 앞에 생성
 		FRotator SpawnRotation = GetActorRotation();
 
 		FActorSpawnParameters SpawnParams;
@@ -466,7 +471,6 @@ void AGnuMonster::SpawnGroundAttack()
 		SpawnParams.Instigator = Cast<APawn>(this);       // Instigator(데미지를 유발한 주체)를 현재 몬스터로 설정
 		SpawnParams.SpawnCollisionHandlingOverride =							// 생성된 액터가 스폰될 때 충돌 처리 방식 설정 
 			ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;	// 충돌이 발생할 경우, 가능한 위치로 조정하여 액터를 생성
-
 
 		// 그라운드 액터를 스폰
 		AGnuGroundActor* Ground = GetWorld()->SpawnActor<AGnuGroundActor>(GroundClass, SpawnLocation, SpawnRotation, SpawnParams);
@@ -530,19 +534,69 @@ void AGnuMonster::SpawnGroundSpikeAttack()
 // 체력 반피 이하일때 HP 회복 10% / 패턴 발동
 void AGnuMonster::StartCraterAttack()
 {
-	if (CraterActorClass)
-	{
-		GetWorldTimerManager().SetTimer(CraterTimerHandle1, this, &AGnuMonster::SpawnCrater, 2.f, true);
-		GetWorldTimerManager().SetTimer(CraterTimerHandle2, this, &AGnuMonster::SpawnCrater, 2.f, true);
-		GetWorldTimerManager().SetTimer(CraterTimerHandle3, this, &AGnuMonster::SpawnCrater, 2.f, true);
-	}
+	// 타이머 초기화
+	ScheduleNextCrater(CraterTimerHandle1);
+	ScheduleNextCrater(CraterTimerHandle2);
+	ScheduleNextCrater(CraterTimerHandle3);
+	ScheduleNextCrater(CraterTimerHandle4);
+	ScheduleNextCrater(CraterTimerHandle5);
 
 	DeactivateCapsuleComp();
 }
 
 void AGnuMonster::EndCraterAttack()
 {
-	StopSpawning();
+	GetWorldTimerManager().ClearTimer(CraterTimerHandle1);
+	GetWorldTimerManager().ClearTimer(CraterTimerHandle2);
+	GetWorldTimerManager().ClearTimer(CraterTimerHandle3);
+	GetWorldTimerManager().ClearTimer(CraterTimerHandle4);
+	GetWorldTimerManager().ClearTimer(CraterTimerHandle5);
+
+	ActivateCapsuleComp();
+}
+
+void AGnuMonster::ScheduleNextCrater(FTimerHandle& TimerHandle)
+{
+	// 1.5 ~ 2.5 범위의 랜덤 간격 생성
+	float RandomInterval = FMath::RandRange(0.5f, 1.5f);
+
+	// 랜덤 간격으로 타이머 설정 (각각 독립적으로 작동)
+	GetWorldTimerManager().SetTimer(TimerHandle, this, &AGnuMonster::SpawnCraterAndReschedule, RandomInterval, false);
+}
+
+void AGnuMonster::SpawnCraterAndReschedule()
+{
+	// Crater 스폰
+	if (!bIsDead)
+	{
+		SpawnCrater();
+	}
+	else
+	{
+		EndCraterAttack();
+	}
+	
+	// 호출된 타이머 핸들을 통해 다시 스케줄링
+	if (CraterTimerHandle1.IsValid())
+	{
+		ScheduleNextCrater(CraterTimerHandle1);
+	}
+	else if (CraterTimerHandle2.IsValid())
+	{
+		ScheduleNextCrater(CraterTimerHandle2);
+	}
+	else if (CraterTimerHandle3.IsValid())
+	{
+		ScheduleNextCrater(CraterTimerHandle3);
+	}
+	else if (CraterTimerHandle4.IsValid())
+	{
+		ScheduleNextCrater(CraterTimerHandle3);
+	}
+	else if (CraterTimerHandle5.IsValid())
+	{
+		ScheduleNextCrater(CraterTimerHandle3);
+	}
 }
 
 void AGnuMonster::SpawnCrater()
@@ -569,7 +623,6 @@ void AGnuMonster::SpawnCrater()
 	SpawnParams.SpawnCollisionHandlingOverride =							// 생성된 액터가 스폰될 때 충돌 처리 방식 설정 
 		ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;	// 충돌이 발생할 경우, 가능한 위치로 조정하여 액터를 생성
 
-
 	FVector SpawnLocation = Origin + RandomOffset;
 
 	// 소환 (Niagara Comp / Attack Collision)
@@ -579,15 +632,6 @@ void AGnuMonster::SpawnCrater()
 	{
 		SpawnCraterCollision->LaunchProjectile(this); // 발사 실행
 	}
-}
-
-void AGnuMonster::StopSpawning()
-{
-	GetWorldTimerManager().ClearTimer(CraterTimerHandle1);
-	GetWorldTimerManager().ClearTimer(CraterTimerHandle2);
-	GetWorldTimerManager().ClearTimer(CraterTimerHandle3);
-
-	ActivateCapsuleComp();
 }
 
 // 근거리 공격 부분 (3개)
@@ -799,33 +843,6 @@ void AGnuMonster::DeactivateCapsuleComp()
 	if (UCapsuleComponent* CapsuleComp = GetCapsuleComponent())
 	{
 		CapsuleComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	}
-}
-
-void AGnuMonster::SetGroundSpeed()
-{
-	GroundSpeed = GetVelocity().Size();	// 몬스터 이속 업데이트
-}
-
-void AGnuMonster::SetDirection()
-{
-	// 방향 업데이트
-	if (AGnuMonsterAIController* AIController = Cast<AGnuMonsterAIController>(GetController()))
-	{
-		if (AIController->TargetActor != nullptr)
-		{
-			FVector MonsterForward = GetActorForwardVector();
-			FVector ToTarget = (AIController->TargetActor->GetActorLocation() - GetActorLocation()).GetSafeNormal();
-
-			// 몬스터의 정면 방향과 타겟 방향 간의 각도 차이
-			FVector CrossProduct = FVector::CrossProduct(MonsterForward, ToTarget);
-			float DotProduct = FVector::DotProduct(MonsterForward, ToTarget);
-			Direction = FMath::RadiansToDegrees(FMath::Atan2(CrossProduct.Z, DotProduct));
-		}
-		else
-		{
-			Direction = 0.f; // 타겟이 없으면 방향 초기화
-		}
 	}
 }
 
