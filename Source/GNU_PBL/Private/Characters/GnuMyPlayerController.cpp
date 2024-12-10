@@ -87,14 +87,16 @@ void AGnuMyPlayerController::Tick(float DeltaTime)
 	SetHUDTime();
 	CheckTimeSync(DeltaTime);
 
-	if (bIsTimeOver())
+	if (CountdownInt <= 0)
 	{
 		AGnuMyCharacter* GnuCharacter = Cast<AGnuMyCharacter>(GetPawn());
 		if (GnuCharacter)
 		{
 			GnuCharacter->CreateDefeatResultWidget();
 		}
+
 	}
+
 
 }
 
@@ -404,7 +406,7 @@ void AGnuMyPlayerController::SetupInputComponent()
 	// 추가사항
 	EnhancedInputComponent->BindAction(QuitAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::ShowReturnToMainMenu);
 	EnhancedInputComponent->BindAction(EquipAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::EquipButtonPressed);
-	EnhancedInputComponent->BindAction(Crouch, ETriggerEvent::Started, this, &AGnuMyPlayerController::CrouchButtonPressed);
+
 	EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::FireButtonPressed);
 	EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &AGnuMyPlayerController::FireButtonReleased);
 	EnhancedInputComponent->BindAction(WeaponReloadAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::ReloadButtonPressed);
@@ -636,24 +638,6 @@ void AGnuMyPlayerController::ToggleZoomIn(const FInputActionValue& InputActionVa
 	}
 }
 
-// 기존
-//void AGnuMyPlayerController::WeaponChange(const FInputActionValue& InputActionValue)
-//{
-//	if (APawn* ControlledPawn = GetPawn<APawn>())
-//	{
-//		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
-//		if (MyCharacter)
-//		{
-//			UGnuMyAnimInstance* AnimInstance = Cast<UGnuMyAnimInstance>(MyCharacter->GetMesh()->GetAnimInstance());
-//			if (AnimInstance != nullptr)
-//			{
-//				// SetTurnRate �Լ� ȣ�� (���� Yaw ���� ����)
-//				AnimInstance->ServerSetAnimState_Implementation();
-//			}
-//		}
-//	}
-//}
-
 void AGnuMyPlayerController::Jump(const FInputActionValue& InputActionValue)
 {
 	if (APawn* ControlledPawn = GetPawn<APawn>())
@@ -686,37 +670,6 @@ void AGnuMyPlayerController::EquipButtonPressed()
 		if (MyCharacter)
 		{
 			MyCharacter->EquipButtonPressed();
-		}
-	}
-}
-
-void AGnuMyPlayerController::CrouchButtonPressed()
-{
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, FString::Printf(TEXT("CrouchButtonPressed")));
-	}
-	if (APawn* ControlledPawn = GetPawn<APawn>())
-	{
-		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
-		if (MyCharacter)
-		{
-			if (MyCharacter->bIsCrouched)
-			{
-				if (GEngine)
-				{
-					GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("uncrouch")));
-				}
-				MyCharacter->UnCrouch();
-			}
-			else
-			{
-				if (GEngine)
-				{
-					GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("crouch")));
-				}
-				MyCharacter->Crouch();
-			}
 		}
 	}
 }

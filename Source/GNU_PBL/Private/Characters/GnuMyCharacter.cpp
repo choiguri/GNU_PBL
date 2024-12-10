@@ -211,13 +211,8 @@ void AGnuMyCharacter::BeginPlay()
 		OnTakeAnyDamage.AddDynamic(this, &AGnuMyCharacter::ReceiveDamage);
 
 	}
-	/*if (GNUPlayerController)
-	{
-		UpdateOthersHealth();
-	}*/
-	
-	/*UpdateOthersHealth();
-	UpdateOthersName();*/
+
+
 	FTimerHandle TimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AGnuMyCharacter::ServerUpdateOthersHealth, 5.0f, false);
 	FTimerHandle SecTimerHandle;
@@ -710,8 +705,6 @@ void AGnuMyCharacter::ServerSpawnArrow_Implementation()
 			/*FVector SpawnLocation = Combat->EquippedWeapon->GetMesh()->GetSocketLocation("MuzzleFlashSocket");
 			FRotator SpawnRotation = Combat->EquippedWeapon->GetMesh()->GetSocketRotation("MuzzleFlashSocket");
 			FTransform SpawnTransform(SpawnRotation, SpawnLocation);*/
-
-			
 
 		}
 	}

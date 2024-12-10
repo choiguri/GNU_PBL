@@ -126,23 +126,10 @@ private:
 	TObjectPtr<UInputAction> EquipAction;
 
 	UPROPERTY(EditAnywhere, Category = "input")
-	TObjectPtr<UInputAction> Crouch;
-
-	UPROPERTY(EditAnywhere, Category = "input")
 	TObjectPtr<UInputAction> FireAction;
 
 	UPROPERTY(EditAnywhere, Category = "input")
 	TObjectPtr<UInputAction> WeaponReloadAction;
-
-	// Weapon input
-	UPROPERTY(EditAnywhere, Category = "input")
-	TObjectPtr<UInputAction> AimingAction;
-	UPROPERTY(EditAnywhere, Category = "input")
-	TObjectPtr<UInputAction> ShotAction;
-	UPROPERTY(EditAnywhere, Category = "input")
-	TObjectPtr<UInputAction> ReloadAction;
-	UPROPERTY(EditAnywhere, Category = "input")
-	TObjectPtr<UInputAction> InteractAction; // 상호작용 인풋
 	
 	UPROPERTY(EditAnywhere, Category = "input")
 	TObjectPtr<UInputAction> ArrowSkillAction;
@@ -172,7 +159,6 @@ private:
 
 	// GnuWeapon
 	void EquipButtonPressed();
-	void CrouchButtonPressed();
 	void FireButtonPressed();
 	void FireButtonReleased();
 	void ReloadButtonPressed();

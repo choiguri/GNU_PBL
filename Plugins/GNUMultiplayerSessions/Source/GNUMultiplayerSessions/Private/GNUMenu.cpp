@@ -146,8 +146,7 @@ void UGNUMenu::OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionR
 
 		FString ServerName = Result.Session.OwningUserName;
 		int32 CurrentPlayer = NumPublicConnections - Result.Session.NumOpenPublicConnections;
-		FString PlayerNum = FString::FromInt(CurrentPlayer) + " / " + FString::FromInt(NumPublicConnections);
-
+		FString PlayerNum = FString::Printf(TEXT("%d / %d"), CurrentPlayer, NumPublicConnections);
 
 		if (FoundListClass)
 		{
