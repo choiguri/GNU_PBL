@@ -20,6 +20,10 @@
 #include "Components/WidgetComponent.h"
 #include "GameModes/GNUGameMode.h"
 
+// 24.12.08 스킬, 총을 쏠 때 EquipWeapon상태인지 검사할때 쓰려고 추가
+#include "Weapons/GnuWeapon.h"
+#include "Weapons/GnuProjectileWeapon.h"
+#include "Weapons/GnuCombatComponent.h"
 
 AGnuMyPlayerController::AGnuMyPlayerController()
 {
@@ -87,14 +91,16 @@ void AGnuMyPlayerController::Tick(float DeltaTime)
 	SetHUDTime();
 	CheckTimeSync(DeltaTime);
 
-	if (bIsTimeOver())
+	if (CountdownInt <= 0)
 	{
 		AGnuMyCharacter* GnuCharacter = Cast<AGnuMyCharacter>(GetPawn());
 		if (GnuCharacter)
 		{
 			GnuCharacter->CreateDefeatResultWidget();
 		}
+
 	}
+
 
 }
 
@@ -143,17 +149,17 @@ void AGnuMyPlayerController::SetHUDStamina(float Stamina, float MaxStamina)
 	}
 }
 
-void AGnuMyPlayerController::SetHUDArrowSkillCoolTime(float CoolTime, float RemainingTime)
+void AGnuMyPlayerController::SetHUDRazerSkillCoolTime(float CoolTime, float RemainingTime)
 {
 	GNUHUD = GNUHUD == nullptr ? Cast<AGNUHUD>(GetHUD()) : GNUHUD;
 
 	bool bHUDValid = GNUHUD &&
 		GNUHUD->CharacterOverlay &&
-		GNUHUD->CharacterOverlay->ArrowSkillCooldownBar;
+		GNUHUD->CharacterOverlay->RazerSkillCooldownBar;
 
 	if (bHUDValid)
 	{
-		GNUHUD->CharacterOverlay->ArrowSkillCooldownBar->SetPercent(RemainingTime / CoolTime); // 전체 1초의 쿨타임 비율로 설정
+		GNUHUD->CharacterOverlay->RazerSkillCooldownBar->SetPercent(RemainingTime / CoolTime);
 	}
 }
 
@@ -167,7 +173,7 @@ void AGnuMyPlayerController::SetHUDHealSkillCoolTime(float CoolTime, float Remai
 
 	if (bHUDValid)
 	{
-		GNUHUD->CharacterOverlay->HealSkillCooldownBar->SetPercent(RemainingTime / CoolTime); // 전체 1초의 쿨타임 비율로 설정
+		GNUHUD->CharacterOverlay->HealSkillCooldownBar->SetPercent(RemainingTime / CoolTime);
 	}
 }
 
@@ -181,7 +187,7 @@ void AGnuMyPlayerController::SetHUDGneradeSkillCoolTime(float CoolTime, float Re
 
 	if (bHUDValid)
 	{
-		GNUHUD->CharacterOverlay->GneradeSkillCooldownBar->SetPercent(RemainingTime / CoolTime); // 전체 1초의 쿨타임 비율로 설정
+		GNUHUD->CharacterOverlay->GneradeSkillCooldownBar->SetPercent(RemainingTime / CoolTime);
 	}
 }
 
@@ -195,7 +201,7 @@ void AGnuMyPlayerController::SetHUDDodgeCoolTime(float CoolTime, float Remaining
 
 	if (bHUDValid)
 	{
-		GNUHUD->CharacterOverlay->DodgeCooldownBar->SetPercent(RemainingTime / CoolTime); // 전체 1초의 쿨타임 비율로 설정
+		GNUHUD->CharacterOverlay->DodgeCooldownBar->SetPercent(RemainingTime / CoolTime);
 	}
 }
 
@@ -217,7 +223,7 @@ void AGnuMyPlayerController::SetHUDCombatTime(float CombatTime)
 		GNUHUD->CharacterOverlay->CombatTimeText->SetText(FText::FromString(TimeText));
 	}
 
-	/*AGnuMyCharacter* StaminaCharacter = Cast<AGnuMyCharacter>(GetPawn());*/
+	//AGnuMyCharacter* StaminaCharacter = Cast<AGnuMyCharacter>(GetPawn());
 
 	//if (StaminaCharacter)
 	//{
@@ -397,14 +403,16 @@ void AGnuMyPlayerController::SetupInputComponent()
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::Jump);
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AGnuMyPlayerController::StopJumping);
 
-	EnhancedInputComponent->BindAction(ArrowSkillAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::ArrowSkill);
+	EnhancedInputComponent->BindAction(RazerSkillAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::RazerSkillPressed);
+	EnhancedInputComponent->BindAction(RazerSkillAction, ETriggerEvent::Completed, this, &AGnuMyPlayerController::RazerSkillReleased);
+	EnhancedInputComponent->BindAction(GrenadeSkillAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::GrenadeSkillPressed);
+	EnhancedInputComponent->BindAction(GrenadeSkillAction, ETriggerEvent::Completed, this, &AGnuMyPlayerController::GrenadeSkillReleased);
 	EnhancedInputComponent->BindAction(HealSkillAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::HealSkill);
-	EnhancedInputComponent->BindAction(GrenadeSkillAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::GrenadeSkill);
 
 	// 추가사항
 	EnhancedInputComponent->BindAction(QuitAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::ShowReturnToMainMenu);
 	EnhancedInputComponent->BindAction(EquipAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::EquipButtonPressed);
-	EnhancedInputComponent->BindAction(Crouch, ETriggerEvent::Started, this, &AGnuMyPlayerController::CrouchButtonPressed);
+
 	EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::FireButtonPressed);
 	EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &AGnuMyPlayerController::FireButtonReleased);
 	EnhancedInputComponent->BindAction(WeaponReloadAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::ReloadButtonPressed);
@@ -636,24 +644,6 @@ void AGnuMyPlayerController::ToggleZoomIn(const FInputActionValue& InputActionVa
 	}
 }
 
-// 기존
-//void AGnuMyPlayerController::WeaponChange(const FInputActionValue& InputActionValue)
-//{
-//	if (APawn* ControlledPawn = GetPawn<APawn>())
-//	{
-//		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
-//		if (MyCharacter)
-//		{
-//			UGnuMyAnimInstance* AnimInstance = Cast<UGnuMyAnimInstance>(MyCharacter->GetMesh()->GetAnimInstance());
-//			if (AnimInstance != nullptr)
-//			{
-//				// SetTurnRate �Լ� ȣ�� (���� Yaw ���� ����)
-//				AnimInstance->ServerSetAnimState_Implementation();
-//			}
-//		}
-//	}
-//}
-
 void AGnuMyPlayerController::Jump(const FInputActionValue& InputActionValue)
 {
 	if (APawn* ControlledPawn = GetPawn<APawn>())
@@ -661,6 +651,8 @@ void AGnuMyPlayerController::Jump(const FInputActionValue& InputActionValue)
 		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
 		if (MyCharacter)
 		{
+			if (MyCharacter->isDodge) return;
+
 			MyCharacter->Jump(); // 캐릭터의 Jump 메서드 호출
 		}
 	}
@@ -690,37 +682,6 @@ void AGnuMyPlayerController::EquipButtonPressed()
 	}
 }
 
-void AGnuMyPlayerController::CrouchButtonPressed()
-{
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, FString::Printf(TEXT("CrouchButtonPressed")));
-	}
-	if (APawn* ControlledPawn = GetPawn<APawn>())
-	{
-		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
-		if (MyCharacter)
-		{
-			if (MyCharacter->bIsCrouched)
-			{
-				if (GEngine)
-				{
-					GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("uncrouch")));
-				}
-				MyCharacter->UnCrouch();
-			}
-			else
-			{
-				if (GEngine)
-				{
-					GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("crouch")));
-				}
-				MyCharacter->Crouch();
-			}
-		}
-	}
-}
-
 void AGnuMyPlayerController::FireButtonPressed()
 {
 	if (APawn* ControlledPawn = GetPawn<APawn>())
@@ -728,7 +689,13 @@ void AGnuMyPlayerController::FireButtonPressed()
 		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
 		if (MyCharacter)
 		{
-			MyCharacter->FireButtonPressed();
+			AGnuWeapon* EquipoWeapon = MyCharacter->GetEquippedWeapon();
+			if (EquipoWeapon)
+			{
+				AGnuProjectileWeapon* ProjectileWeapon = Cast<AGnuProjectileWeapon>(EquipoWeapon);
+				ProjectileWeapon->SetProjectileType(EProjectileType::EPT_Bullet);
+				MyCharacter->FireButtonPressed();
+			}
 		}
 	}
 
@@ -766,14 +733,62 @@ bool AGnuMyPlayerController::bIsTimeOver()
 }
 
 
-void AGnuMyPlayerController::ArrowSkill(const FInputActionValue& InputActionValue)
+void AGnuMyPlayerController::RazerSkillPressed(const FInputActionValue& InputActionValue)
 {
 	if (APawn* ControlledPawn = GetPawn<APawn>())
 	{
 		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
 		if (MyCharacter)
 		{
-			MyCharacter->SpawnArrow();
+			AGnuWeapon* EquipoWeapon = MyCharacter->GetEquippedWeapon();
+			if (EquipoWeapon)
+			{
+				AGnuProjectileWeapon* ProjectileWeapon = Cast<AGnuProjectileWeapon>(EquipoWeapon);
+				ProjectileWeapon->SetProjectileType(EProjectileType::EPT_Razer);
+				MyCharacter->RazerSkillPressed();
+			}
+		}
+	}
+}
+
+void AGnuMyPlayerController::RazerSkillReleased(const FInputActionValue& InputActionValue)
+{
+	if (APawn* ControlledPawn = GetPawn<APawn>())
+	{
+		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
+		if (MyCharacter)
+		{
+			MyCharacter->RazerSkillReleased();
+		}
+	}
+}
+
+void AGnuMyPlayerController::GrenadeSkillPressed(const FInputActionValue& InputActionValue)
+{
+	if (APawn* ControlledPawn = GetPawn<APawn>())
+	{
+		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
+		if (MyCharacter)
+		{
+			AGnuWeapon* EquipoWeapon = MyCharacter->GetEquippedWeapon();
+			if (EquipoWeapon)
+			{
+				AGnuProjectileWeapon* ProjectileWeapon = Cast<AGnuProjectileWeapon>(EquipoWeapon);
+				ProjectileWeapon->SetProjectileType(EProjectileType::EPT_Grenade);
+				MyCharacter->GrenadeSkillPressed();
+			}
+		}
+	}
+}
+
+void AGnuMyPlayerController::GrenadeSkillReleased(const FInputActionValue& InputActionValue)
+{
+	if (APawn* ControlledPawn = GetPawn<APawn>())
+	{
+		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
+		if (MyCharacter)
+		{
+			MyCharacter->GrenadeSkillReleased();
 		}
 	}
 }
@@ -787,21 +802,5 @@ void AGnuMyPlayerController::HealSkill(const FInputActionValue& InputActionValue
 		{
 			MyCharacter->SpawnHeal(); // 캐릭터의 StopJumping 메서드 호출
 		}
-	}
-}
-
-void AGnuMyPlayerController::GrenadeSkill(const FInputActionValue& InputActionValue)
-{
-	if (APawn* ControlledPawn = GetPawn<APawn>())
-	{
-		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
-		if (MyCharacter)
-		{
-			MyCharacter->SpawnGrenade(); // 캐릭터의 StopJumping 메서드 호출
-		}
-	}
-	else
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("No Binding GrenadeSkil(Controller Cpp)")));
 	}
 }

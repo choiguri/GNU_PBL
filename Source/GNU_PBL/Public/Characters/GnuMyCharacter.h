@@ -114,44 +114,24 @@ public:
 	DECLARE_DELEGATE_OneParam(FDele_Player_Aimrate, float);
 	FDele_Player_Aimrate func_Player_Aimrate;
 
-	// ------------------------------------- Arrow Skill ----------------------------------------
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Skill")
-	TSubclassOf<class AGnuProjectileActor> ArrowClass;
-	void SpawnArrow();
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerSpawnArrow();
-	FTimerHandle ArrowCoolDownTimer;
-	bool isArrowCoolDown;
-	float ArrowSkillCoolTime;
-	float ArrowCooldownRemainingTime;
-	void StartArrowCooldown();
-	void EndArrowCooldown();
-	void UpdateArrowCooldownUI();
+	// ------------------------------------- Razer Skill ----------------------------------------
+	void RazerSkillPressed();
+	void RazerSkillReleased();
+	FTimerHandle RazerCoolDownTimer;
+	bool isRazerCoolDown;
+	float RazerSkillCoolTime;
+	float RazerCooldownRemainingTime;
+	void StartRazerCooldown();
+	void EndRazerCooldown();
+	void UpdateRazerCooldownUI();
 
 	// -----------------------------------------------------------------------------------------
 	
 
-	// ------------------------------------- Heal Skill ----------------------------------------
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Skill")
-	TSubclassOf<class AGnuHealActor> HealClass;
-	void SpawnHeal();
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerSpawnHeal();
-	FTimerHandle HealCoolDownTimer;
-	bool isHealCoolDown;
-	float HealSkillCoolTime;
-	float HealCooldownRemainingTime;
-	void StartHealCooldown();
-	void EndHealCooldown();
-	void UpdateHealCooldownUI();
-	// -----------------------------------------------------------------------------------------
 
 	// ------------------------------------- Grenade Skill ----------------------------------------
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Skill")
-	TSubclassOf<class AGnuGrenadeActor> GrenadeClass;
-	void SpawnGrenade();
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerSpawnGrenade();
+	void GrenadeSkillPressed();
+	void GrenadeSkillReleased();
 	FTimerHandle GneradeCoolDownTimer;
 	bool isGrenadeCoolDown;
 	float GneradeSkillCoolTime;
@@ -159,6 +139,37 @@ public:
 	void StartGrenadeCooldown();
 	void EndGrenadeCooldown();
 	void UpdateGneradeCooldownUI();
+	// -----------------------------------------------------------------------------------------
+
+	// ------------------------------------- Heal Skill ----------------------------------------
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	TSubclassOf<class AGnuHealActor> HealClass;
+
+	FTimerHandle HealCoolDownTimer;
+
+	bool isHealCoolDown;
+	UPROPERTY(ReplicatedUsing = OnRep_HealSkillCoolTime)
+	float HealSkillCoolTime;
+	UPROPERTY(ReplicatedUsing = OnRep_HealCooldownRemainingTime)
+	float HealCooldownRemainingTime;
+
+	UFUNCTION()
+	void OnRep_HealSkillCoolTime();
+	UFUNCTION()
+	void OnRep_HealCooldownRemainingTime();
+
+	void SpawnHeal();
+
+	UFUNCTION(Server, Reliable)
+	void Server_SpawnHeal();
+	UFUNCTION()
+	void StartHealCooldown();
+	UFUNCTION()
+	void EndHealCooldown();
+	UFUNCTION()
+	void UpdateHealCooldownUI();
+
+
 	// -----------------------------------------------------------------------------------------
 
 	void SetCamera();
@@ -246,6 +257,8 @@ private:
 	FString LocalPlayerName = TEXT("Unknown Player");
 
 	void ConsumeStamina(float MinusStamina);
+
+	FTimerHandle StaminaRecoveryTimer;
 
 public:
 	UPROPERTY()

@@ -25,28 +25,42 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float Damage = 10.f;
 
-private:
 	UPROPERTY(EditAnywhere)
 	class UBoxComponent* CollisionBox;
+
+private:
 
 	UPROPERTY(VisibleAnywhere)
 	class UProjectileMovementComponent* ProjectileMovementComponent;
 
 
 	UPROPERTY(EditAnywhere)
-	class UParticleSystem* Tracer;
+	class UParticleSystem* TracerParticle;
 
 	UPROPERTY()
-	class UParticleSystemComponent* TracerComponent;
+	class UParticleSystemComponent* TracerParticleComponent;
 
 	UPROPERTY(EditAnywhere)
-	UParticleSystem* ImpactParticles;
+	UParticleSystem* ImpactParticle;
 
 	// 사운드
 	UPROPERTY(EditAnywhere)
 	class USoundCue* ImpactSound;
 
 
+
+	// 스킬 이펙트는 NiagaraSystem이라 기존에 있던 UParticleSystem말고 UNiagaraSystem 새로 멤버변수 만듦
+	UPROPERTY(EditAnywhere)
+	class UNiagaraComponent* TracerNiagaraComponent;
+
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* MuzzleNiagara;
+
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* ImpactNiagara;
+
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* TracerNiagara;
 	
 public:	
 

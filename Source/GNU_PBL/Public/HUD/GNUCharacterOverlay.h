@@ -57,7 +57,7 @@ public:
 
 
 	UPROPERTY(meta = (BindWidget))
-	UProgressBar* ArrowSkillCooldownBar;
+	UProgressBar* RazerSkillCooldownBar;
 
 	UPROPERTY(meta = (BindWidget))
 	UProgressBar* HealSkillCooldownBar;

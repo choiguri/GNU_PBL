@@ -10,7 +10,9 @@
 #include "Sound/SoundCue.h"
 #include "Characters/GnuMyCharacter.h"
 #include "GNU_PBL/GNU_PBL.h"
-
+#include "NiagaraComponent.h"
+#include "NiagaraSystem.h"
+#include "NiagaraFunctionLibrary.h"
 
 AGnuProjectile::AGnuProjectile()
 {
@@ -42,16 +44,34 @@ void AGnuProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	if (Tracer)
+	if (TracerParticle)
 	{
-		TracerComponent = UGameplayStatics::SpawnEmitterAttached(
-			Tracer,
+		TracerParticleComponent = UGameplayStatics::SpawnEmitterAttached(
+			TracerParticle,
 			CollisionBox,
 			FName(),
 			GetActorLocation(), //getactor locatoin
 			GetActorRotation(),
 			EAttachLocation::KeepWorldPosition
 		);
+	}
+
+	if (TracerNiagara)
+	{
+		TracerNiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
+			TracerNiagara,
+			CollisionBox,
+			FName(),
+			GetActorLocation(),
+			GetActorRotation(),
+			EAttachLocation::KeepWorldPosition,
+			true
+		);
+	}
+
+	if (MuzzleNiagara)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), MuzzleNiagara, GetActorLocation(), GetActorRotation());
 	}
 
 	if (HasAuthority())
@@ -76,9 +96,13 @@ void AGnuProjectile::Destroyed()
 {
 	Super::Destroyed();
 
-	if (ImpactParticles)
+	if (ImpactParticle)
 	{
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, GetActorTransform());
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticle, GetActorTransform());
+	}
+	if (ImpactNiagara)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ImpactNiagara, GetActorLocation(), GetActorRotation());
 	}
 	if (ImpactSound)
 	{

@@ -30,7 +30,7 @@ public:
 
 	void SetHUDStamina(float Stamina, float MaxStamina);
 
-	void SetHUDArrowSkillCoolTime(float CoolTime, float RemainingTime);
+	void SetHUDRazerSkillCoolTime(float CoolTime, float RemainingTime);
 
 	void SetHUDHealSkillCoolTime(float CoolTime, float RemainingTime);
 	
@@ -126,26 +126,13 @@ private:
 	TObjectPtr<UInputAction> EquipAction;
 
 	UPROPERTY(EditAnywhere, Category = "input")
-	TObjectPtr<UInputAction> Crouch;
-
-	UPROPERTY(EditAnywhere, Category = "input")
 	TObjectPtr<UInputAction> FireAction;
 
 	UPROPERTY(EditAnywhere, Category = "input")
 	TObjectPtr<UInputAction> WeaponReloadAction;
-
-	// Weapon input
-	UPROPERTY(EditAnywhere, Category = "input")
-	TObjectPtr<UInputAction> AimingAction;
-	UPROPERTY(EditAnywhere, Category = "input")
-	TObjectPtr<UInputAction> ShotAction;
-	UPROPERTY(EditAnywhere, Category = "input")
-	TObjectPtr<UInputAction> ReloadAction;
-	UPROPERTY(EditAnywhere, Category = "input")
-	TObjectPtr<UInputAction> InteractAction; // 상호작용 인풋
 	
 	UPROPERTY(EditAnywhere, Category = "input")
-	TObjectPtr<UInputAction> ArrowSkillAction;
+	TObjectPtr<UInputAction> RazerSkillAction;
 
 	UPROPERTY(EditAnywhere, Category = "input")
 	TObjectPtr<UInputAction> HealSkillAction;
@@ -166,13 +153,14 @@ private:
 	void ToggleZoomIn(const struct FInputActionValue& InputActionValue); // 카메라 줌인
 	void Jump(const struct FInputActionValue& InputActionValue); // 점프
 	void StopJumping(const struct FInputActionValue& InputActionValue); // 점프 끝
-	void ArrowSkill(const struct FInputActionValue& InputActionValue);
+	void RazerSkillPressed(const struct FInputActionValue& InputActionValue);
+	void RazerSkillReleased(const struct FInputActionValue& InputActionValue);
+	void GrenadeSkillPressed(const struct FInputActionValue& InputActionValue);
+	void GrenadeSkillReleased(const struct FInputActionValue& InputActionValue);
 	void HealSkill(const struct FInputActionValue& InputActionValue);
-	void GrenadeSkill(const struct FInputActionValue& InputActionValue);
 
 	// GnuWeapon
 	void EquipButtonPressed();
-	void CrouchButtonPressed();
 	void FireButtonPressed();
 	void FireButtonReleased();
 	void ReloadButtonPressed();

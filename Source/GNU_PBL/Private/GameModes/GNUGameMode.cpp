@@ -38,17 +38,8 @@ void AGNUGameMode::PlayerEliminated(AGnuMyCharacter* ElimmedCharacter, AGnuMyPla
 
 void AGNUGameMode::RequestRespawn(ACharacter* ElimedCharacter, AController* ElimedController)
 {
-	if (ElimedCharacter)
-	{
-		// 캐릭터와 컨트롤러 분리, 컨트롤러에 대한 소유권 호출
-		ElimedCharacter->Reset();
-
-		ElimedCharacter->Destroy();
-	}
-
 	// 플레이어가 지는 조건 = 모든 플레이어들의 Death 합 >= 18 ( 5데카 기준 3인이면 18 4인이면 24) && 드래곤 피 > 0 일 때
-	// 플레이어가 이기는 조건 = 드래곤 피 <= 0 일 때 
-	// 드래곤 피를 어떻게 들고 오느냐가 문제일듯
+
 	if (bOverDeathCount())
 	{
 		AGnuMyPlayerController* PlayerController = Cast<AGnuMyPlayerController>(GetWorld()->GetFirstPlayerController());
@@ -61,8 +52,16 @@ void AGNUGameMode::RequestRespawn(ACharacter* ElimedCharacter, AController* Elim
 				return;
 			}
 		}
-
 	}
+
+	if (ElimedCharacter)
+	{
+		// 캐릭터와 컨트롤러 분리, 컨트롤러에 대한 소유권 호출
+		ElimedCharacter->Reset();
+
+		ElimedCharacter->Destroy();
+	}
+
 
 	if (ElimedController)
 	{
