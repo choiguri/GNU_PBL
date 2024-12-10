@@ -675,43 +675,7 @@ void AGnuMyCharacter::RazerSkillReleased()
 	{
 		if (Combat)
 		{
-<<<<<<< HEAD
 			Combat->FireButtonPressed(false);
-=======
-			FVector SkillHitTarget = Combat->GetHitTarget();
-			const USkeletalMeshSocket* MuzzleFlashSocket = GetEquippedWeapon()->GetWeaponMesh()->GetSocketByName(FName("MuzzleFlashSocket"));
-
-			if (MuzzleFlashSocket)
-			{
-				FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(GetEquippedWeapon()->GetWeaponMesh());
-
-				FVector ToTarget = SkillHitTarget - SocketTransform.GetLocation();
-				FRotator TargetRotation = ToTarget.Rotation();
-
-				FActorSpawnParameters SpawnParams;
-				SpawnParams.Owner = GetOwner();
-				SpawnParams.Instigator = this;
-
-				UWorld* World = GetWorld();
-				if (World)
-				{
-					AGnuProjectileActor* Arrow = World->SpawnActor<AGnuProjectileActor>(ArrowClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
-					if (Arrow)
-					{
-						StartArrowCooldown();
-						Arrow->SetOwner(this);
-						Arrow->LaunchProjectile(this);
-						ConsumeStamina(10.f);
-						UpdateHUDStamina();
-					}
-				}
-			}
-
-			/*FVector SpawnLocation = Combat->EquippedWeapon->GetMesh()->GetSocketLocation("MuzzleFlashSocket");
-			FRotator SpawnRotation = Combat->EquippedWeapon->GetMesh()->GetSocketRotation("MuzzleFlashSocket");
-			FTransform SpawnTransform(SpawnRotation, SpawnLocation);*/
-
->>>>>>> bbbb1c8ee0b47e663dbcb1a7595e89fda2f5a4cd
 		}
 	}
 }
