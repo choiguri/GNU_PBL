@@ -151,25 +151,30 @@ void UGNUMenu::OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionR
 		if (FoundListClass)
 		{
 			FoundList = CreateWidget<UGNUFoundList>(GetWorld(), FoundListClass);
-		}
-		FoundList->SetDisplayText(FoundList->ServerNameText, ServerName);
-		FoundList->SetDisplayText(FoundList->PlayerText, PlayerNum);
 
-		FoundList->OnJoinButtonClickedFunc = [this, Result]()
+			if (FoundList)
 			{
-				if (MultiplayerSessionsSubsystem)
+				FoundList->SetDisplayText(FoundList->ServerNameText, ServerName);
+				FoundList->SetDisplayText(FoundList->PlayerText, PlayerNum);
+
+				FoundList->OnJoinButtonClickedFunc = [this, Result]()
+					{
+						if (MultiplayerSessionsSubsystem)
+						{
+							MultiplayerSessionsSubsystem->JoinSession(Result);
+						}
+					};
+
+				FoundList->JoinButton->OnClicked.AddDynamic(FoundList, &UGNUFoundList::OnJoinButtonClicked);
+
+				if (FoundGameList)
 				{
-					MultiplayerSessionsSubsystem->JoinSession(Result);
+					FoundGameList->ClearChildren();
+					FoundGameList->SetVisibility(ESlateVisibility::Visible);
+					FoundGameList->AddChild(FoundList);
 				}
-			};
 
-		FoundList->JoinButton->OnClicked.AddDynamic(FoundList, &UGNUFoundList::OnJoinButtonClicked);
-
-		if (FoundGameList)
-		{
-			FoundGameList->ClearChildren();
-			FoundGameList->SetVisibility(ESlateVisibility::Visible);
-			FoundGameList->AddChild(FoundList);
+			}
 		}
 		
 	}

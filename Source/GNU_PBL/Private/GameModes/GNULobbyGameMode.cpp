@@ -30,7 +30,7 @@ void AGNULobbyGameMode::PostLogin(APlayerController* NewPlayer)
 	}
 
 	// 플레이어가 n명일 때 GameMap으로 이동 
-	if (NumberOfPlayers == 3) // 나중에 수정 필요
+	if (NumberOfPlayers == 4) // 나중에 수정 필요
 	{
 		bUseSeamlessTravel = true;
 		UWorld* World = GetWorld();
