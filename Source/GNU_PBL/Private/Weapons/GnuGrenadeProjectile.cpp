@@ -32,6 +32,7 @@ void AGnuGrenadeProjectile::BeginPlay()
         );
     }
 
+    /*GetWorld()->SpawnActor(BP_Grenade);*/
 	FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this,&AGnuGrenadeProjectile::Boom);
 
 	GetWorld()->GetTimerManager().SetTimer(GrenadeTimer, TimerDelegate, 1.0f, false);
@@ -45,38 +46,77 @@ void AGnuGrenadeProjectile::Boom()
         ChargeNiagaraComponent->DestroyComponent();
     }
     
-    APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
-    APlayerCameraManager* CameraManager = PlayerController->PlayerCameraManager;
+   /* APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);*/
+    /*APlayerCameraManager* CameraManager = PlayerController->PlayerCameraManager;*/
 
     ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
     if (OwnerCharacter)
     {
-        // 발사 위치 및 회전값 계산
-        USkeletalMeshComponent* SkeletalMeshComponent = OwnerCharacter->GetMesh();
-        FVector CharacterSpawnLocation = SkeletalMeshComponent->GetSocketLocation(FName("WeaponSocket"));
-        FVector ProjectileOffset = FVector(170.0f, 0.0f, 0.0f); // 발사 오프셋
-        FRotator CameraRotation = CameraManager->GetCameraRotation();
-        FVector RotatedDirection = CameraRotation.RotateVector(ProjectileOffset);
-        FVector UpdateSpawnLocation = CharacterSpawnLocation + RotatedDirection;
-        FRotator AdjustRotation = CameraRotation;
+        APlayerController* OwnerController = Cast<APlayerController>(OwnerCharacter->GetController());
+        if (OwnerController)
+        {
+             APlayerCameraManager* CameraManager = OwnerController->PlayerCameraManager;
+             // 발사 위치 및 회전값 계산
+             USkeletalMeshComponent* SkeletalMeshComponent = OwnerCharacter->GetMesh();
+             FVector CharacterSpawnLocation = SkeletalMeshComponent->GetSocketLocation(FName("WeaponSocket"));
+             FVector ProjectileOffset = FVector(170.0f, 0.0f, 0.0f); // 발사 오프셋
+
+             if (CameraManager)
+             {
+                FRotator CameraRotation = CameraManager->GetCameraRotation();
+                FVector RotatedDirection = CameraRotation.RotateVector(ProjectileOffset);
+                FVector UpdateSpawnLocation = CharacterSpawnLocation + RotatedDirection;
+                FRotator AdjustRotation = CameraRotation;
+
+               SpawnGrenade(UpdateSpawnLocation, AdjustRotation, OwnerCharacter);
+
+             }
+
+        }
 
         // 서버에 발사 요청
-        if (HasAuthority())
-        {
-            // 서버에서 발사체 스폰
-            Multicast_SpawnGrenade(UpdateSpawnLocation, AdjustRotation);
-        }
-        else
-        {
-            // 클라이언트에서 서버로 발사 요청
-            Server_SpawnGrenade(UpdateSpawnLocation, AdjustRotation);
-        }
+        //if (HasAuthority())
+        //{
+        //    // 서버에서 발사체 스폰
+        //    Multicast_SpawnGrenade(UpdateSpawnLocation, AdjustRotation);
+        //}
+        //else
+        //{
+        //    // 클라이언트에서 서버로 발사 요청
+        //    Server_SpawnGrenade(UpdateSpawnLocation, AdjustRotation);
+        //}
+        
     }
 }
 
-void AGnuGrenadeProjectile::Server_SpawnGrenade_Implementation(FVector Location, FRotator Rotation)
+void AGnuGrenadeProjectile::SpawnGrenade(FVector Location, FRotator Rotation, ACharacter* OwnerCharacter)
 {
-    Multicast_SpawnGrenade(Location, Rotation);
+    FTransform Transform = UKismetMathLibrary::MakeTransform(Location, Rotation);
+    FActorSpawnParameters SpawnParams;
+    SpawnParams.Owner = OwnerCharacter;
+    SpawnParams.Instigator = OwnerCharacter;
+    AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(BP_Grenade, Transform, SpawnParams);
+}
+
+
+void AGnuGrenadeProjectile::Server_SpawnGrenade_Implementation(FVector Location, FRotator Rotation, ACharacter* OwnerCharacter)
+{
+    /*Multicast_SpawnGrenade(Location, Rotation);*/
+    if (HasAuthority())
+    {
+        FTransform Transform = UKismetMathLibrary::MakeTransform(Location, Rotation);
+        FActorSpawnParameters SpawnParams;
+        SpawnParams.Owner = OwnerCharacter;
+        AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(BP_Grenade, Transform, SpawnParams);
+    }
+    else
+    {
+        /*Client_SpawnGrenade(Location, Rotation);*/
+        FTransform Transform = UKismetMathLibrary::MakeTransform(Location, Rotation);
+        FActorSpawnParameters SpawnParams;
+        SpawnParams.Owner = OwnerCharacter;
+        AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(BP_Grenade, Transform, SpawnParams);
+    }
 }
 
 void AGnuGrenadeProjectile::Multicast_SpawnGrenade_Implementation(FVector Location, FRotator Rotation)
@@ -90,12 +130,17 @@ void AGnuGrenadeProjectile::Multicast_SpawnGrenade_Implementation(FVector Locati
     }
 }
 
-void AGnuGrenadeProjectile::Client_SpawnGrenade_Implementation(FVector Location, FRotator Rotation)
+void AGnuGrenadeProjectile::Client_SpawnGrenade_Implementation(FVector Location, FRotator Rotation, ACharacter* OwnerCharacter)
 {
-    if (HasAuthority()) 
+    /*if (HasAuthority()) 
     {
         Server_SpawnGrenade(Location, Rotation);
-    }
+    }*/
+    FTransform Transform = UKismetMathLibrary::MakeTransform(Location, Rotation);
+    FActorSpawnParameters SpawnParams;
+    SpawnParams.Owner = OwnerCharacter;
+    SpawnParams.Instigator = OwnerCharacter;
+    AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(BP_Grenade, Transform, SpawnParams);
 }
 
 //void AGnuGrenadeProjectile::Boom()

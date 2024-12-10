@@ -21,14 +21,17 @@ private:
 
 	// Server function to handle grenade spawn
 	UFUNCTION(Server, Reliable)
-	void Server_SpawnGrenade(FVector Location, FRotator Rotation);
+	void Server_SpawnGrenade(FVector Location, FRotator Rotation, ACharacter* OwnerCharacter);
 
 	// MultiCast function to sync grenade spawn across all clients
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_SpawnGrenade(FVector Location, FRotator Rotation);
 
 	UFUNCTION(Client, Reliable) 
-	void Client_SpawnGrenade(FVector Location, FRotator Rotation);
+	void Client_SpawnGrenade(FVector Location, FRotator Rotation, ACharacter* OwnerCharacter);
+
+
+	void SpawnGrenade(FVector Location, FRotator Rotation, ACharacter* OwnerCharacter);
 
 protected:
 	virtual void BeginPlay() override;

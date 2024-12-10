@@ -14,7 +14,7 @@ void AGnuProjectileWeapon::Fire(const FVector& HitTarget)
 		Super::Fire(HitTarget);
 	}
 
-	if (!HasAuthority()) return;
+	/*if (!HasAuthority()) return;*/
 
 	APawn* InstigatorPawn = Cast<APawn>(GetOwner());
 
