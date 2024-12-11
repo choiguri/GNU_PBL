@@ -393,7 +393,8 @@ void AGnuMyPlayerController::SetupInputComponent()
 	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent);
 	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::Move);
 	EnhancedInputComponent->BindAction(RotationAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::Rotation);
-	EnhancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::Dodge);
+	EnhancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::Dodge);
+	EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AGnuMyPlayerController::DodgeStop);
 	EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &AGnuMyPlayerController::Sprint);
 	EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AGnuMyPlayerController::SprintStop);
 	EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &AGnuMyPlayerController::ToggleCrouch);
@@ -558,6 +559,20 @@ void AGnuMyPlayerController::Dodge(const FInputActionValue& InputActionValue)
 		{
 			// DodgeSystem 호출
 			MyCharacter->ServerMontageOnDodge(CurrentMoveDirection.Y, CurrentMoveDirection.X);
+
+		}
+	}
+}
+
+void AGnuMyPlayerController::DodgeStop(const FInputActionValue& InputActionValue)
+{
+	if (APawn* ControlledPawn = GetPawn<APawn>())
+	{
+		AGnuMyCharacter* MyCharacter = Cast<AGnuMyCharacter>(ControlledPawn);
+		if (MyCharacter)
+		{
+			// DodgeSystem 호출
+			
 
 		}
 	}

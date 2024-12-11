@@ -146,6 +146,7 @@ private:
 	void Move(const struct FInputActionValue& InputActionValue); // 이동
 	void Rotation(const struct FInputActionValue& InputActionValue); // 회전
 	void Dodge(const struct FInputActionValue& InputActionValue); // 구르기
+	void DodgeStop(const struct FInputActionValue& InputActionValue); // 구르기
 	void Sprint(const struct FInputActionValue& InputActionValue); // 달리기
 	void SprintStop(const struct FInputActionValue& InputActionValue); // 달리기 끝
 	void ToggleCrouch(const struct FInputActionValue& InputActionValue); // 앉기
