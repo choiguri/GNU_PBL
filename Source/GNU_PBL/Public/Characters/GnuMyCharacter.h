@@ -148,25 +148,15 @@ public:
 	FTimerHandle HealCoolDownTimer;
 
 	bool isHealCoolDown;
-	UPROPERTY(ReplicatedUsing = OnRep_HealSkillCoolTime)
 	float HealSkillCoolTime;
-	UPROPERTY(ReplicatedUsing = OnRep_HealCooldownRemainingTime)
 	float HealCooldownRemainingTime;
-
-	UFUNCTION()
-	void OnRep_HealSkillCoolTime();
-	UFUNCTION()
-	void OnRep_HealCooldownRemainingTime();
 
 	void SpawnHeal();
 
-	UFUNCTION(Server, Reliable)
-	void Server_SpawnHeal();
-	UFUNCTION()
+	//UFUNCTION(Server, Reliable)
+	//void Server_SpawnHeal();
 	void StartHealCooldown();
-	UFUNCTION()
 	void EndHealCooldown();
-	UFUNCTION()
 	void UpdateHealCooldownUI();
 
 

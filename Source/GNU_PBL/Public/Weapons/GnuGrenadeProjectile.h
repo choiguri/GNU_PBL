@@ -19,16 +19,16 @@ private:
 	void Boom();
 
 
-	// Server function to handle grenade spawn
-	UFUNCTION(Server, Reliable)
-	void Server_SpawnGrenade(FVector Location, FRotator Rotation, ACharacter* OwnerCharacter);
+	//// Server function to handle grenade spawn
+	//UFUNCTION(Server, Reliable)
+	//void Server_SpawnGrenade(FVector Location, FRotator Rotation, ACharacter* OwnerCharacter);
 
-	// MultiCast function to sync grenade spawn across all clients
-	UFUNCTION(NetMulticast, Reliable)
-	void Multicast_SpawnGrenade(FVector Location, FRotator Rotation);
+	//// MultiCast function to sync grenade spawn across all clients
+	//UFUNCTION(NetMulticast, Reliable)
+	//void Multicast_SpawnGrenade(FVector Location, FRotator Rotation);
 
-	UFUNCTION(Client, Reliable) 
-	void Client_SpawnGrenade(FVector Location, FRotator Rotation, ACharacter* OwnerCharacter);
+	//UFUNCTION(Client, Reliable) 
+	//void Client_SpawnGrenade(FVector Location, FRotator Rotation, ACharacter* OwnerCharacter);
 
 
 	void SpawnGrenade(FVector Location, FRotator Rotation, ACharacter* OwnerCharacter);

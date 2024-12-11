@@ -217,7 +217,7 @@ void AGnuMyCharacter::BeginPlay()
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AGnuMyCharacter::ServerUpdateOthersHealth, 5.0f, false);
 	FTimerHandle SecTimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(SecTimerHandle, this, &AGnuMyCharacter::UpdateOthersName, 5.0f, false);
-	GetWorld()->GetTimerManager().SetTimer(StaminaRecoveryTimer, this, &AGnuMyCharacter::AutoRecoverStamina, 1.0f, true);
+	GetWorld()->GetTimerManager().SetTimer(StaminaRecoveryTimer, this, &AGnuMyCharacter::AutoRecoverStamina, 0.2f, true);
 }
 
 void AGnuMyCharacter::Tick(float DeltaTime)
@@ -563,40 +563,66 @@ void AGnuMyCharacter::EndDodgeCooldown()
 
 //--------------------------- Heal Skill --------------------------------
 
+//void AGnuMyCharacter::SpawnHeal()
+//{
+//	if (IsPlayingReactMontage()) return;
+//
+//	if (HealClass && GetEquippedWeapon() && Stamina > 10)
+//	{
+//		// 쿨다운 확인
+//		if (!isHealCoolDown)
+//		{
+//			if (HasAuthority())
+//			{
+//				Server_SpawnHeal(); // 서버에서 직접 실행
+//			}
+//			else
+//			{
+//				Server_SpawnHeal(); // 클라이언트에서 서버로 요청
+//			}
+//		}
+//	}
+//}
+//
+//void AGnuMyCharacter::Server_SpawnHeal_Implementation()
+//{
+//	if (HealClass && GetEquippedWeapon())
+//	{
+//		if (!isHealCoolDown)
+//		{
+//			FVector SpawnLocation = GetActorLocation() + FVector(0, 0, 500.0f);
+//			FRotator SpawnRotation = GetActorRotation();
+//		
+//			FTransform SpawnTransform(SpawnRotation, SpawnLocation);
+//		
+//			AGnuHealActor* Heal = GetWorld()->SpawnActor<AGnuHealActor>(HealClass, SpawnTransform);
+//		
+//			if (Heal)
+//			{
+//				StartHealCooldown();
+//				Heal->SetOwner(this); // 이거 안해주면 GnuHealActor에서 onwer가 누군지 몰라서 오류가 난다
+//				ConsumeStamina(10.0f);
+//				UpdateHUDStamina();
+//			}
+//		}
+//	}
+//}
+
 void AGnuMyCharacter::SpawnHeal()
 {
 	if (IsPlayingReactMontage()) return;
 
 	if (HealClass && GetEquippedWeapon() && Stamina > 10)
 	{
-		// 쿨다운 확인
-		if (!isHealCoolDown)
-		{
-			if (HasAuthority())
-			{
-				Server_SpawnHeal(); // 서버에서 직접 실행
-			}
-			else
-			{
-				Server_SpawnHeal(); // 클라이언트에서 서버로 요청
-			}
-		}
-	}
-}
-
-void AGnuMyCharacter::Server_SpawnHeal_Implementation()
-{
-	if (HealClass && GetEquippedWeapon())
-	{
 		if (!isHealCoolDown)
 		{
 			FVector SpawnLocation = GetActorLocation() + FVector(0, 0, 500.0f);
 			FRotator SpawnRotation = GetActorRotation();
-		
+			
 			FTransform SpawnTransform(SpawnRotation, SpawnLocation);
-		
+			
 			AGnuHealActor* Heal = GetWorld()->SpawnActor<AGnuHealActor>(HealClass, SpawnTransform);
-		
+			
 			if (Heal)
 			{
 				StartHealCooldown();
@@ -636,15 +662,6 @@ void AGnuMyCharacter::EndHealCooldown()
 	isHealCoolDown = false; // 쿨타임 해제
 }
 
-void AGnuMyCharacter::OnRep_HealCooldownRemainingTime()
-{
-	UpdateHealCooldownUI();
-}
-
-void AGnuMyCharacter::OnRep_HealSkillCoolTime()
-{
-
-}
 
 // -------------------------------------------------------------------------
 
@@ -791,8 +808,6 @@ void AGnuMyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME(AGnuMyCharacter, Health);
 	DOREPLIFETIME(AGnuMyCharacter, Stamina);
 	DOREPLIFETIME(AGnuMyCharacter, HealClass);
-	DOREPLIFETIME(AGnuMyCharacter, HealSkillCoolTime);
-	DOREPLIFETIME(AGnuMyCharacter, HealCooldownRemainingTime);
 
 	DOREPLIFETIME(AGnuMyCharacter, OthersHealth);
 	// GnuWeapon
