@@ -127,7 +127,7 @@ AGnuMyCharacter::AGnuMyCharacter()
 	RazerCooldownRemainingTime = 0.0f;
 	HealSkillCoolTime = 15.0f;
 	HealCooldownRemainingTime = 0.0f;
-	GneradeSkillCoolTime = 15.0f;
+	GneradeSkillCoolTime = 1.0f;
 	GneradeCooldownRemainingTime = 0.0f;
 	DodgeCoolTime = 4.0f;
 	DodgeCooldownRemainingTime = 0.0f;
@@ -739,7 +739,7 @@ void AGnuMyCharacter::GrenadeSkillPressed()
 			if (Combat)
 			{
 				Combat->FireButtonPressed(true);
-				ConsumeStamina(80.0f);
+				ConsumeStamina(1.0f);
 				UpdateHUDStamina();
 				StartGrenadeCooldown();
 			}

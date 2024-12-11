@@ -112,7 +112,7 @@ void AGNUGameMode::UpdateTotalDeath()
 
 bool AGNUGameMode::bOverDeathCount()
 {
-	return TotalDeath >= 18;
+	return TotalDeath >= 24;
 }
 
 int32 AGNUGameMode::GetTotalDeath()
