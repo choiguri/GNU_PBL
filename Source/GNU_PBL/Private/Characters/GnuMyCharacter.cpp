@@ -123,13 +123,13 @@ AGnuMyCharacter::AGnuMyCharacter()
 	SpawnCollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
 	// skill cooltime
-	RazerSkillCoolTime = 3.0f;
+	RazerSkillCoolTime = 5.0f;
 	RazerCooldownRemainingTime = 0.0f;
-	HealSkillCoolTime = 3.0f;
+	HealSkillCoolTime = 15.0f;
 	HealCooldownRemainingTime = 0.0f;
-	GneradeSkillCoolTime = 3.0f;
+	GneradeSkillCoolTime = 15.0f;
 	GneradeCooldownRemainingTime = 0.0f;
-	DodgeCoolTime = 3.0f;
+	DodgeCoolTime = 4.0f;
 	DodgeCooldownRemainingTime = 0.0f;
 	isHealCoolDown = false;
 	isRazerCoolDown = false;
@@ -217,7 +217,7 @@ void AGnuMyCharacter::BeginPlay()
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AGnuMyCharacter::ServerUpdateOthersHealth, 5.0f, false);
 	FTimerHandle SecTimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(SecTimerHandle, this, &AGnuMyCharacter::UpdateOthersName, 5.0f, false);
-	GetWorld()->GetTimerManager().SetTimer(StaminaRecoveryTimer, this, &AGnuMyCharacter::AutoRecoverStamina, 0.2f, true);
+	GetWorld()->GetTimerManager().SetTimer(StaminaRecoveryTimer, this, &AGnuMyCharacter::AutoRecoverStamina, 0.1f, true);
 }
 
 void AGnuMyCharacter::Tick(float DeltaTime)
@@ -444,7 +444,7 @@ void AGnuMyCharacter::ServerMontageOnDodge_Implementation(float Forward, float R
 		}
 
 		LaunchCharacter(AddVector, true, true);
-		ConsumeStamina(10.f);
+		ConsumeStamina(40.f);
 		UpdateHUDStamina();
 		// 멀티캐스트 호출
 		MultiCastMontage_Dodge(Forward, Right);
@@ -678,7 +678,7 @@ void AGnuMyCharacter::RazerSkillPressed()
 			if (Combat)
 			{
 				Combat->FireButtonPressed(true);
-				ConsumeStamina(10.0f);
+				ConsumeStamina(20.0f);
 				UpdateHUDStamina();
 				StartRazerCooldown();
 			}
@@ -739,7 +739,7 @@ void AGnuMyCharacter::GrenadeSkillPressed()
 			if (Combat)
 			{
 				Combat->FireButtonPressed(true);
-				ConsumeStamina(20.0f);
+				ConsumeStamina(80.0f);
 				UpdateHUDStamina();
 				StartGrenadeCooldown();
 			}
@@ -1056,8 +1056,6 @@ void AGnuMyCharacter::AutoRecoverStamina()
 	if (Stamina < 100)
 	{
 		Stamina = FMath::Clamp(Stamina + 1, 0, MaxStamina);
-		if (!HasAuthority())
-			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Black, FString::Printf(TEXT("%f"), Stamina));
 		UpdateHUDStamina();
 	}
 }

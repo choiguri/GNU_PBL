@@ -22,7 +22,7 @@ AGnuHealActor::AGnuHealActor()
 
     NiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraSystem"));
     NiagaraComponent->SetupAttachment(BoxComponent);
-    Damage = -3.0f;
+    Damage = -2.0f;
     bReplicates = true; // 액터 복제 가능 설정
 }
 
@@ -32,7 +32,7 @@ void AGnuHealActor::BeginPlay()
     Super::BeginPlay();
 
     // 힐 시작
-    GetWorld()->GetTimerManager().SetTimer(DestroyTimer, this, &AGnuHealActor::DestroyActor, 3.0f, false);
+    GetWorld()->GetTimerManager().SetTimer(DestroyTimer, this, &AGnuHealActor::DestroyActor, 5.0f, false);
     GetWorld()->GetTimerManager().SetTimer(HealTimer, this, &AGnuHealActor::Heal, 0.5f, true);
 }
 
