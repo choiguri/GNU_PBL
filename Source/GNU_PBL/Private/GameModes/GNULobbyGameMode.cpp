@@ -36,7 +36,7 @@ void AGNULobbyGameMode::PostLogin(APlayerController* NewPlayer)
 		UWorld* World = GetWorld();
 		if (World)
 		{
-			World->ServerTravel(FString("/Game/GNU/Maps/DesignGameMap?listen"));
+			World->ServerTravel(FString("/Game/GNU/Maps/CustomDesignGameMap?listen"));
 		}
 	}
 }
