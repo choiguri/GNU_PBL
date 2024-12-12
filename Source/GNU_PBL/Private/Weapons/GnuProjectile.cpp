@@ -43,6 +43,11 @@ AGnuProjectile::AGnuProjectile()
 void AGnuProjectile::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (ShotSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, ShotSound, GetActorLocation(), 0.25f);
+	}
 	
 	if (TracerParticle)
 	{
@@ -106,7 +111,7 @@ void AGnuProjectile::Destroyed()
 	}
 	if (ImpactSound)
 	{
-		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
+		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation(), 0.1f);
 	}
 }
 

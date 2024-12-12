@@ -45,6 +45,9 @@ private:
 
 	// »ç¿îµå
 	UPROPERTY(EditAnywhere)
+	class USoundCue* ShotSound;
+
+	UPROPERTY(EditAnywhere)
 	class USoundCue* ImpactSound;
 
 
