@@ -78,7 +78,7 @@ AGnuMonster::AGnuMonster()
 	bAlwaysRelevant = true; // 항상 네트워크에서 중요
 
 	// hp 구현
-	MaxHealth = 1000.f;
+	MaxHealth = 40000.f;
 	CurrentHealth = MaxHealth;
 
 	// 넉백 힘 초기화
@@ -246,13 +246,6 @@ void AGnuMonster::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamag
 	{
 		Die();
 		bIsDead = true;
-		
-		// 죽자마자 바로 결과 화면이 나오기 때문에 타이머를 이용해도 괜찮을듯
-		AGNUGameMode* GNUGameMode = GetWorld()->GetAuthGameMode<AGNUGameMode>();
-		if (GNUGameMode)
-		{
-			GNUGameMode->MonsterEliminated();
-		}
 	}
 }
 
@@ -318,6 +311,14 @@ void AGnuMonster::Die()
 	// 몬스터 죽었을 때 캡슐 컴포넌트 충돌 비활성화
 	DeactivateCapsuleComp();
 
+	GetWorld()->GetTimerManager().SetTimer(
+		ResultWidgetHandle,						// 타이머 핸들
+		this,									// 호출 객체
+		&AGnuMonster::DelayedResultWidget,		// 호출할 함수
+		5.0f,									// 지연 시간 (초)
+		false									// 반복 여부 (false : 한 번만 실행)
+	);
+
 	
 	UGnuMonsterAnimInstance* AnimInstance = Cast<UGnuMonsterAnimInstance>(this->GetMesh()->GetAnimInstance());
 	if (AnimInstance)
@@ -334,7 +335,7 @@ void AGnuMonster::Die()
 				DestroyTimerHandle,						// 타이머 핸들
 				this,									// 호출 객체
 				&AGnuMonster::DelayedDestroy,			// 호출할 함수
-				12.0f,									// 지연 시간 (초)
+				10.0f,									// 지연 시간 (초)
 				false									// 반복 여부 (false : 한 번만 실행)
 			);
 		}
@@ -345,6 +346,16 @@ void AGnuMonster::Die()
 void AGnuMonster::DelayedDestroy()
 {
 	Destroy();
+}
+
+void AGnuMonster::DelayedResultWidget()
+{
+	// 죽자마자 바로 결과 화면이 나오기 때문에 타이머를 이용해도 괜찮을듯
+	AGNUGameMode* GNUGameMode = GetWorld()->GetAuthGameMode<AGNUGameMode>();
+	if (GNUGameMode)
+	{
+		GNUGameMode->MonsterEliminated();
+	}
 }
 
 void AGnuMonster::EnterPhaseTwo()
@@ -463,7 +474,7 @@ void AGnuMonster::SpawnGroundAttack()
 		FVector GroundLoaction = GetMesh()->GetSocketLocation(TEXT("GroundSocket"));
 		GroundLoaction.Z = 0.f;
 
-		FVector SpawnLocation = GroundLoaction + GetActorForwardVector() * 600;  // 몬스터 앞에 생성
+		FVector SpawnLocation = GroundLoaction + GetActorForwardVector() * 500;  // 몬스터 앞에 생성
 		FRotator SpawnRotation = GetActorRotation();
 
 		FActorSpawnParameters SpawnParams;

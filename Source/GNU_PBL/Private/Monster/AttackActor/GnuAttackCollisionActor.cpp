@@ -63,10 +63,10 @@ void AGnuAttackCollisionActor::Tick(float DeltaTime)
 
 void AGnuAttackCollisionActor::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor && (OtherActor != this))
+	/*if (OtherActor && (OtherActor != this))
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, TEXT("Overlap with: ") + OtherActor->GetName());
-	}
+	}*/
 }
 
 void AGnuAttackCollisionActor::EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
@@ -77,7 +77,7 @@ void AGnuAttackCollisionActor::EndOverlap(UPrimitiveComponent* OverlappedCompone
 		Character->SetOverlapItem(this);
 		if (GEngine)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("EndOverlap Attacking.."));
+			/*GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("EndOverlap Attacking.."));*/
 			// 공격이 맞았는지 여부 출력
 		}
 	}

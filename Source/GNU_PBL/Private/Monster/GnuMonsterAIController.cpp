@@ -82,21 +82,30 @@ void AGnuMonsterAIController::OnTargetDetected(AActor* Actor, FAIStimulus const 
     }
     else
     {
-        UpdateTarget();
-    }
-
-
-    if (Actor && Actor->IsA<ACharacter>())
-    {
-        ACharacter* DetectedCharacter = Cast<ACharacter>(Actor);
-        if (DetectedCharacter && DetectedCharacter->IsA(AGnuMyCharacter::StaticClass()))
+        if (TargetActor == nullptr)
         {
-            SetNewTarget(DetectedCharacter);
+            UpdateTarget();
+        }
+        else
+        {
+            return;
         }
     }
-    else
+
+    if (TargetActor == nullptr)
     {
-        /*GEngine->AddOnScreenDebugMessage(1, 4, FColor::Red, TEXT("IsA<ACharacter> Failed!"));*/
+        if (Actor && Actor->IsA<ACharacter>())
+        {
+            ACharacter* DetectedCharacter = Cast<ACharacter>(Actor);
+            if (DetectedCharacter && DetectedCharacter->IsA(AGnuMyCharacter::StaticClass()))
+            {
+                SetNewTarget(DetectedCharacter);
+            }
+        }
+        else
+        {
+            /*GEngine->AddOnScreenDebugMessage(1, 4, FColor::Red, TEXT("IsA<ACharacter> Failed!"));*/
+        }
     }
 }
 
@@ -176,6 +185,7 @@ void AGnuMonsterAIController::UpdateMonsterHealth()
     if (GnuMonster)
     {
         GetBlackboardComponent()->SetValueAsFloat(TEXT("CurrentHealth"), GnuMonster->CurrentHealth);
+        GetBlackboardComponent()->SetValueAsFloat(TEXT("MaxHealth"), GnuMonster->MaxHealth);
     }
 }
 

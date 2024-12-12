@@ -63,7 +63,7 @@ void AGnuFireballActor::BeginPlay()
     }
 
     // 일정 시간 이후 firball actor 삭제 위한 타이머 설정
-    GetWorld()->GetTimerManager().SetTimer(DestructionTimerHandle, this, &AGnuFireballActor::DestroyFireball, 5.0f, false);
+    GetWorld()->GetTimerManager().SetTimer(DestructionTimerHandle, this, &AGnuFireballActor::DestroyFireball, 3.0f, false);
 }
 
 void AGnuFireballActor::LaunchProjectile(AActor* IgnoredActor)

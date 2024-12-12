@@ -63,6 +63,7 @@ public:
 	// HP 상황에 따라 상태 함수들
 	void Die(); // 사망 함수
 	void DelayedDestroy(); // 타이머가 만료되면 호출될 함수
+	void DelayedResultWidget();
 	void EnterPhaseTwo(); // 페이즈 2 (할지 안할지 모름)
 
 
@@ -86,13 +87,11 @@ public:
 
 	// 상태들
 	bool bIsDead = false;			// 죽음 상태 확인
-	bool bIsPhaseTwo = false;		// 페이즈 2 여부 확인
+	bool bIsPhaseTwo = false;		// 페이즈 2 여부 확인 사용x
 	bool bCanRetry = true;			// 재시도 여부
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	FTimerHandle DestroyTimerHandle;
 
 	UFUNCTION()
 	void InitializeCollisionComponent(UBoxComponent*& CollisionComponent, const FName& ComponentName);
@@ -152,14 +151,16 @@ private:
 	float AttackCooldown = 1.0f;
 
 	// 타임 핸들러
-	FTimerHandle SpawnTimerHandle;
+	FTimerHandle DestroyTimerHandle;		// 몬스터 나중에 없앨 타이머
+	FTimerHandle ResultWidgetHandle;		// 결과창 나중에 실행할 타이머
+	FTimerHandle RetryCooldownTimerHandle;	// Tick 에서 타겟 변경 재시도 쿨다운 타이머
+
+	FTimerHandle SpawnTimerHandle;			// Crater 스폰 타이머
 	FTimerHandle CraterTimerHandle1;
 	FTimerHandle CraterTimerHandle2;
 	FTimerHandle CraterTimerHandle3;
 	FTimerHandle CraterTimerHandle4;
 	FTimerHandle CraterTimerHandle5;
-
-	FTimerHandle RetryCooldownTimerHandle;	// Tick 에서 타겟 변경 재시도 쿨다운 타이머
 public:
 	// 블루프린트 위젯 넣는 곳
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")

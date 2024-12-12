@@ -67,7 +67,7 @@ void UGnuMonsterAnimInstance::PlayMontage(UAnimMontage* MontageToPlay)
     // 현재 몽타주가 재생 중인지 확인
     if (Montage_IsPlaying(MontageToPlay))
     {
-        GEngine->AddOnScreenDebugMessage(1, 4, FColor::Red, TEXT("Playing Montage!!"));
+        /*GEngine->AddOnScreenDebugMessage(1, 4, FColor::Red, TEXT("Playing Montage!!"));*/
         return;
     }
 
@@ -91,7 +91,7 @@ void UGnuMonsterAnimInstance::OnMontageEnded(UAnimMontage* Montage, bool bInterr
     bIsMontageEnded = true;
 
     // 종료 로그 출력
-    GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Blue, bInterrupted ? TEXT("Montage Interrupted!") : TEXT("Montage Ended Successfully!"));
+    /*GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Blue, bInterrupted ? TEXT("Montage Interrupted!") : TEXT("Montage Ended Successfully!"));*/
 }
 
 void UGnuMonsterAnimInstance::PlayDieMontage()

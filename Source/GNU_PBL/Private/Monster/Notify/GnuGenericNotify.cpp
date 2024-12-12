@@ -41,7 +41,7 @@ void UGnuGenericNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBa
                 else if (AnimInstance->Montage_IsPlaying(AnimInstance->DragonDieMontage))
                 {
                     AnimInstance->Montage_Pause(AnimInstance->DragonDieMontage);
-                    GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, TEXT("Die Montage Pause"));
+                    /*GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, TEXT("Die Montage Pause"));*/
                 }
                 else if (AnimInstance->Montage_IsPlaying(AnimInstance->IntroShoutingMontage))
                 {
@@ -50,11 +50,6 @@ void UGnuGenericNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBa
                     if (Character)
                     {
                         Character->PlayCameraShake(); // Notify 시 카메라 쉐이크 실행
-                        GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, TEXT("Play Camera Shake"));
-                    }
-                    else
-                    {
-                    GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Character not found"));
                     }
                 }
                 else if (AnimInstance->Montage_IsPlaying(AnimInstance->BodyAttackMontage))
