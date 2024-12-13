@@ -1063,6 +1063,8 @@ void AGnuMyCharacter::AutoRecoverStamina()
 
 void AGnuMyCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
 {
+	if (isDodge) return;
+
 	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
 	if (Damage > 0)
 	{

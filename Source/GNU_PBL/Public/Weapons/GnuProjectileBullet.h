@@ -16,4 +16,5 @@ class GNU_PBL_API AGnuProjectileBullet : public AGnuProjectile
 	
 protected:
 	virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit) override;
+	void GrenadeOnHit(AController* ownerController, UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 };

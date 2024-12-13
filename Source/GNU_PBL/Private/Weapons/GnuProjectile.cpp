@@ -3,6 +3,7 @@
 
 #include "Weapons/GnuProjectile.h"
 #include "Components/BoxComponent.h"
+#include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
@@ -49,6 +50,12 @@ void AGnuProjectile::BeginPlay()
 		UGameplayStatics::PlaySoundAtLocation(this, ShotSound, GetActorLocation(), 0.25f);
 	}
 	
+	if (waveShotSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, waveShotSound, GetActorLocation(), 0.25f);
+	}
+
+
 	if (TracerParticle)
 	{
 		TracerParticleComponent = UGameplayStatics::SpawnEmitterAttached(
@@ -77,6 +84,34 @@ void AGnuProjectile::BeginPlay()
 	if (MuzzleNiagara)
 	{
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), MuzzleNiagara, GetActorLocation(), GetActorRotation());
+	}
+
+	if (GrenadeBeforeNiagara)
+	{
+		ChargeNiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
+			GrenadeBeforeNiagara,
+			CollisionBox,
+			FName(),
+			GetActorLocation(),
+			GetActorRotation(),
+			EAttachLocation::KeepWorldPosition,
+			true
+		);
+		GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Black, FString("Spawn!!"));
+
+	/*	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+		USkeletalMeshComponent* SkeletalMeshComponent = OwnerCharacter->GetMesh();
+
+		ChargeNiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
+			ChargeNiagara,
+			SkeletalMeshComponent,
+			FName("WeaponSocket"),
+			FVector(0.0f, 80.0f, 10.0f),
+			FRotator::ZeroRotator,
+			EAttachLocation::SnapToTarget,
+			false,
+			true
+		);*/
 	}
 
 	if (HasAuthority())

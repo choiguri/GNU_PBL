@@ -31,6 +31,11 @@ void AGnuHealActor::BeginPlay()
 {
     Super::BeginPlay();
 
+    if (waveHealSound)
+    {
+        UGameplayStatics::PlaySoundAtLocation(this, waveHealSound, GetActorLocation(), 1.5f);
+    }
+
     // Èú ½ÃÀÛ
     GetWorld()->GetTimerManager().SetTimer(DestroyTimer, this, &AGnuHealActor::DestroyActor, 5.0f, false);
     GetWorld()->GetTimerManager().SetTimer(HealTimer, this, &AGnuHealActor::Heal, 0.5f, true);

@@ -28,6 +28,18 @@ protected:
 	UPROPERTY(EditAnywhere)
 	class UBoxComponent* CollisionBox;
 
+	UPROPERTY(EditAnywhere)
+	class UNiagaraComponent* ChargeNiagaraComponent;
+
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* GrenadeBeforeNiagara;
+
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* GrenadeCastNiagara;
+
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* GrenadeNiagara;
+
 private:
 
 	UPROPERTY(VisibleAnywhere)
@@ -50,7 +62,8 @@ private:
 	UPROPERTY(EditAnywhere)
 	class USoundCue* ImpactSound;
 
-
+	UPROPERTY(EditAnywhere)
+	class USoundWave* waveShotSound;
 
 	// 스킬 이펙트는 NiagaraSystem이라 기존에 있던 UParticleSystem말고 UNiagaraSystem 새로 멤버변수 만듦
 	UPROPERTY(EditAnywhere)

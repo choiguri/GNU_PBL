@@ -24,6 +24,11 @@ public:
 
 	void SetProjectileType(EProjectileType SetType);
 
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grenade")
+	//TSubclassOf<AActor> BP_Grenade;
+
+	void Boom();
+
 private:
 	UPROPERTY(EditAnyWhere)
 	TSubclassOf<class AGnuProjectile> ProjectileClass;
@@ -33,6 +38,7 @@ private:
 
 	UPROPERTY(EditAnyWhere)
 	TSubclassOf<class AGnuProjectile> GrenadeSkillClass;
+
 
 	UPROPERTY(EditAnyWhere)
 	TSubclassOf<class AGnuProjectile> SeletedClass;

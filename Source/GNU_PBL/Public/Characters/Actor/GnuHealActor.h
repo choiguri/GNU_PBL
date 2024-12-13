@@ -22,6 +22,9 @@ private:
     FVector PreviousLocation;
     float Damage;
 
+    UPROPERTY(EditAnywhere)
+    class USoundWave* waveHealSound;
+
     void DestroyActor();
 
 protected:
