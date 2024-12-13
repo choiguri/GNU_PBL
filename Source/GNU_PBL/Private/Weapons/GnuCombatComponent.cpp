@@ -47,9 +47,6 @@ void UGnuCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	}
 }
 
-
-
-
 // LineTrace
 void UGnuCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 {

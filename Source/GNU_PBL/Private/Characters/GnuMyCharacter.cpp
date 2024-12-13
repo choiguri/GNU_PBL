@@ -429,6 +429,7 @@ void AGnuMyCharacter::ServerMontageOnDodge_Implementation(float Forward, float R
 
 	FVector AddVector = FVector::ZeroVector;
 	SetDodgeMontage(Forward, Right, &AddVector);
+
 	// 몽타주가 유효한 경우 재생
 	if (DodgeMontage)
 	{
@@ -443,16 +444,10 @@ void AGnuMyCharacter::ServerMontageOnDodge_Implementation(float Forward, float R
 			AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, DodgeMontage);
 		}
 		ConsumeStamina(40.f);
-		UpdateHUDStamina();
 		LaunchCharacter(AddVector, true, true);
 		// 멀티캐스트 호출
 		MultiCastMontage_Dodge(Forward, Right);
 	}
-}
-
-bool AGnuMyCharacter::ServerMontageOnDodge_Validate(float Forward, float Right)
-{
-	return true;
 }
 
 void AGnuMyCharacter::MultiCastMontage_Dodge_Implementation(float Forward, float Right) // 모든 클라이언트에서 동일한 구르기 애니메이션을 재생하도록 하는 멀티캐스트 함수. 클라이언트와 서버 간의 동기화를 위해 사용
@@ -535,19 +530,25 @@ void AGnuMyCharacter::OnDodgeMontageEnded(UAnimMontage* Montage, bool bInterrupt
 
 void AGnuMyCharacter::StartDodgeCooldown()
 {
-	isDodgeCoolDown = true;
-	DodgeCooldownRemainingTime = DodgeCoolTime;
-	GetWorld()->GetTimerManager().SetTimer(DodgeCoolDownTimer, this, &AGnuMyCharacter::UpdateDodgeCooldown, 0.1f, true);
+	if (HasAuthority()) // 서버에서만 실행
+	{
+		isDodgeCoolDown = true;
+		DodgeCooldownRemainingTime = DodgeCoolTime;
+		GetWorld()->GetTimerManager().SetTimer(DodgeCoolDownTimer, this, &AGnuMyCharacter::UpdateDodgeCooldown, 0.1f, true);
+		OnRep_DodgeCoolDown(); // 클라이언트 동기화
+	}
 }
+
 
 void AGnuMyCharacter::UpdateDodgeCooldown()
 {
-	if (isDodgeCoolDown)
+	if (HasAuthority() && isDodgeCoolDown)
 	{
-		// 남은 시간 감소
 		DodgeCooldownRemainingTime -= 0.1f;
-		GNUPlayerController->SetHUDDodgeCoolTime(DodgeCoolTime, DodgeCooldownRemainingTime);
-		// 쿨타임이 끝나면 타이머 해제
+
+		// 동기화 호출
+		OnRep_DodgeCoolDown();
+
 		if (DodgeCooldownRemainingTime <= 0)
 		{
 			EndDodgeCooldown();
@@ -555,101 +556,124 @@ void AGnuMyCharacter::UpdateDodgeCooldown()
 	}
 }
 
+void AGnuMyCharacter::OnRep_DodgeCoolDown()
+{
+	if (IsLocallyControlled())
+	{
+		GNUPlayerController->SetHUDDodgeCoolTime(DodgeCoolTime, DodgeCooldownRemainingTime);
+	}
+}
+
+void AGnuMyCharacter::OnRep_DodgeCooldownRemainingTime()
+{
+	if (IsLocallyControlled())
+	{
+		GNUPlayerController = GNUPlayerController == nullptr ? Cast<AGnuMyPlayerController>(Controller) : GNUPlayerController;
+		if (GNUPlayerController)
+		{
+			GNUPlayerController->SetHUDDodgeCoolTime(DodgeCoolTime, DodgeCooldownRemainingTime);
+		}
+	}
+}
+
 void AGnuMyCharacter::EndDodgeCooldown()
 {
-	isDodgeCoolDown = false; // 쿨타임 해제
+	if (HasAuthority()) // 서버에서만 실행
+	{
+		isDodgeCoolDown = false;
+		GetWorld()->GetTimerManager().ClearTimer(DodgeCoolDownTimer);
+
+		// 클라이언트에 동기화
+		OnRep_DodgeCoolDown();
+    }
 }
 // -------------------------------------------------------------------------
 
 //--------------------------- Heal Skill --------------------------------
-
-//void AGnuMyCharacter::SpawnHeal()
-//{
-//	if (IsPlayingReactMontage()) return;
-//
-//	if (HealClass && GetEquippedWeapon() && Stamina > 10)
-//	{
-//		// 쿨다운 확인
-//		if (!isHealCoolDown)
-//		{
-//			if (HasAuthority())
-//			{
-//				Server_SpawnHeal(); // 서버에서 직접 실행
-//			}
-//			else
-//			{
-//				Server_SpawnHeal(); // 클라이언트에서 서버로 요청
-//			}
-//		}
-//	}
-//}
-//
-//void AGnuMyCharacter::Server_SpawnHeal_Implementation()
-//{
-//	if (HealClass && GetEquippedWeapon())
-//	{
-//		if (!isHealCoolDown)
-//		{
-//			FVector SpawnLocation = GetActorLocation() + FVector(0, 0, 500.0f);
-//			FRotator SpawnRotation = GetActorRotation();
-//		
-//			FTransform SpawnTransform(SpawnRotation, SpawnLocation);
-//		
-//			AGnuHealActor* Heal = GetWorld()->SpawnActor<AGnuHealActor>(HealClass, SpawnTransform);
-//		
-//			if (Heal)
-//			{
-//				StartHealCooldown();
-//				Heal->SetOwner(this); // 이거 안해주면 GnuHealActor에서 onwer가 누군지 몰라서 오류가 난다
-//				ConsumeStamina(10.0f);
-//				UpdateHUDStamina();
-//			}
-//		}
-//	}
-//}
-
 void AGnuMyCharacter::SpawnHeal()
 {
-	if (IsPlayingReactMontage()) return;
+	if (IsPlayingReactMontage() || isHealCoolDown) return;
 
+	if (HasAuthority())
+	{
+		Server_SpawnHeal();
+	}
+	else
+	{
+		Server_SpawnHeal();
+	}
+}
+
+void AGnuMyCharacter::Server_SpawnHeal_Implementation()
+{
 	if (HealClass && GetEquippedWeapon() && Stamina > 10)
 	{
-		if (!isHealCoolDown)
+		FVector SpawnLocation = GetActorLocation() + FVector(0, 0, 500.0f);
+		FRotator SpawnRotation = GetActorRotation();
+		FTransform SpawnTransform(SpawnRotation, SpawnLocation);
+
+		AGnuHealActor* Heal = GetWorld()->SpawnActor<AGnuHealActor>(HealClass, SpawnTransform);
+
+		if (Heal)
 		{
-			FVector SpawnLocation = GetActorLocation() + FVector(0, 0, 500.0f);
-			FRotator SpawnRotation = GetActorRotation();
-			
-			FTransform SpawnTransform(SpawnRotation, SpawnLocation);
-			
-			AGnuHealActor* Heal = GetWorld()->SpawnActor<AGnuHealActor>(HealClass, SpawnTransform);
-			
-			if (Heal)
-			{
-				StartHealCooldown();
-				Heal->SetOwner(this); // 이거 안해주면 GnuHealActor에서 onwer가 누군지 몰라서 오류가 난다
-				ConsumeStamina(10.0f);
-				UpdateHUDStamina();
-			}
+			StartHealCooldown();
+			Heal->SetOwner(this);
+			ConsumeStamina(10.0f);
+
+			// 멀티캐스트로 모든 클라이언트에 시각적 효과 전달
+			Multicast_SpawnHealEffect();
+		}
+	}
+}
+
+void AGnuMyCharacter::Multicast_SpawnHealEffect_Implementation()
+{
+	// 클라이언트에서 실행되는 시각적 효과 (예: 파티클, 사운드 등)
+	UpdateHUDStamina();
+}
+void AGnuMyCharacter::OnRep_HealCooldown()
+{
+	if (IsLocallyControlled())
+	{
+		GNUPlayerController->SetHUDHealSkillCoolTime(HealSkillCoolTime, HealCooldownRemainingTime);
+	}
+	// 클라이언트에서 HUD 업데이트 가능 (필요시 구현)
+}
+
+void AGnuMyCharacter::OnRep_HealCooldownRemainingTime()
+{
+	if (IsLocallyControlled())
+	{
+		GNUPlayerController = GNUPlayerController == nullptr ? Cast<AGnuMyPlayerController>(Controller) : GNUPlayerController;
+		if (GNUPlayerController)
+		{
+			GNUPlayerController->SetHUDHealSkillCoolTime(HealSkillCoolTime, HealCooldownRemainingTime);
 		}
 	}
 }
 
 void AGnuMyCharacter::StartHealCooldown()
 {
-	isHealCoolDown = true;
-	HealCooldownRemainingTime = HealSkillCoolTime;
-	// 타이머 설정
-	GetWorld()->GetTimerManager().SetTimer(HealCoolDownTimer, this, &AGnuMyCharacter::UpdateHealCooldownUI, 0.1f, true);
+	if (HasAuthority()) // 서버에서만 실행
+	{
+		isHealCoolDown = true;
+		HealCooldownRemainingTime = HealSkillCoolTime;
+
+		// 타이머 설정
+		GetWorld()->GetTimerManager().SetTimer(HealCoolDownTimer, this, &AGnuMyCharacter::UpdateHealCooldownUI, 0.1f, true);
+		OnRep_HealCooldown(); // 클라이언트 동기화
+	}
 }
 
 void AGnuMyCharacter::UpdateHealCooldownUI()
 {
-	if (isHealCoolDown)
+	if (HasAuthority() && isHealCoolDown)
 	{
-		// 남은 시간 감소
 		HealCooldownRemainingTime -= 0.1f;
-		GNUPlayerController->SetHUDHealSkillCoolTime(HealSkillCoolTime, HealCooldownRemainingTime);
-		// 쿨타임이 끝나면 타이머 해제
+
+		// 동기화 호출
+		OnRep_HealCooldown();
+
 		if (HealCooldownRemainingTime <= 0)
 		{
 			EndHealCooldown();
@@ -659,29 +683,32 @@ void AGnuMyCharacter::UpdateHealCooldownUI()
 
 void AGnuMyCharacter::EndHealCooldown()
 {
-	isHealCoolDown = false; // 쿨타임 해제
+	if (HasAuthority()) // 서버에서만 실행
+	{
+		isHealCoolDown = false;
+		GetWorld()->GetTimerManager().ClearTimer(HealCoolDownTimer);
+
+		// 클라이언트에 동기화
+		OnRep_HealCooldown();
+	}
 }
-
-
 // -------------------------------------------------------------------------
 
 //--------------------------- Razer Skill --------------------------------
+
 void AGnuMyCharacter::RazerSkillPressed()
 {
-	if (IsPlayingReactMontage()) return;
+	if (IsPlayingReactMontage() || isRazerCoolDown) return;
 
-	if (GetEquippedWeapon() && Stamina > 20)
+	if (GetEquippedWeapon() && Stamina >= 10.0f)
 	{
-		// 쿨다운 확인
-		if (!isRazerCoolDown)
+
+		// 실제 스킬 처리
+		if (Combat)
 		{
-			if (Combat)
-			{
-				Combat->FireButtonPressed(true);
-				ConsumeStamina(20.0f);
-				UpdateHUDStamina();
-				StartRazerCooldown();
-			}
+			Combat->FireButtonPressed(true);
+			Server_ConsumeStamina(10.0f); // 서버에서 스태미너 소비
+			StartRazerCooldown();
 		}
 	}
 }
@@ -729,20 +756,16 @@ void AGnuMyCharacter::EndRazerCooldown()
 //--------------------------- Grenade Skill --------------------------------
 void AGnuMyCharacter::GrenadeSkillPressed()
 {
-	if (IsPlayingReactMontage()) return;
+	if (IsPlayingReactMontage() || isGrenadeCoolDown || Stamina < 20) return;
 
-	if (GetEquippedWeapon() && Stamina > 20)
+	if (GetEquippedWeapon() && Stamina >= 20.0f)
 	{
-		// 쿨다운 확인
-		if (!isGrenadeCoolDown)
+		// 실제 스킬 처리
+		if (Combat)
 		{
-			if (Combat)
-			{
-				Combat->FireButtonPressed(true);
-				ConsumeStamina(20.0f);
-				UpdateHUDStamina();
-				StartGrenadeCooldown();
-			}
+			Combat->FireButtonPressed(true);
+			Server_ConsumeStamina(20.0f); // 서버에서 스태미너 소비
+			StartGrenadeCooldown();
 		}
 	}
 }
@@ -807,7 +830,12 @@ void AGnuMyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME(AGnuMyCharacter, isCrouch);
 	DOREPLIFETIME(AGnuMyCharacter, Health);
 	DOREPLIFETIME(AGnuMyCharacter, Stamina);
-	DOREPLIFETIME(AGnuMyCharacter, HealClass);
+	DOREPLIFETIME(AGnuMyCharacter, MaxStamina);
+
+	DOREPLIFETIME(AGnuMyCharacter, isHealCoolDown);
+	DOREPLIFETIME(AGnuMyCharacter, HealCooldownRemainingTime);
+	DOREPLIFETIME(AGnuMyCharacter, isDodgeCoolDown);
+	DOREPLIFETIME(AGnuMyCharacter, DodgeCooldownRemainingTime);
 
 	DOREPLIFETIME(AGnuMyCharacter, OthersHealth);
 	// GnuWeapon
@@ -1142,10 +1170,27 @@ void AGnuMyCharacter::OnRep_Stamina()
 	UpdateHUDStamina();
 }
 
+
+void AGnuMyCharacter::Server_ConsumeStamina_Implementation(float StaminaCost)
+{
+	if (Stamina >= StaminaCost)
+	{
+		ConsumeStamina(StaminaCost);
+	}
+}
+
 void AGnuMyCharacter::ConsumeStamina(float MinusStamina)
 {
-	Stamina = FMath::Clamp(Stamina - MinusStamina, 0, MaxStamina);
-	GEngine->AddOnScreenDebugMessage(-1, 4, FColor::Black, FString::Printf(TEXT("%f, %f"), Stamina, MinusStamina));
+	if (HasAuthority()) // 서버에서만 실행
+	{
+		Stamina = FMath::Clamp(Stamina - MinusStamina, 0.0f, MaxStamina);
+
+		// 클라이언트에 값 동기화
+		OnRep_Stamina();
+	}
+
+	//Stamina = FMath::Clamp(Stamina - MinusStamina, 0, MaxStamina);
+	//GEngine->AddOnScreenDebugMessage(-1, 4, FColor::Black, FString::Printf(TEXT("%f, %f"), Stamina, MinusStamina));
 }
 
 

@@ -62,8 +62,6 @@ private:
 
 	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
 	AGnuWeapon* EquippedWeapon;
-	
-	
 
 	float CrosshairVelocityFactor;
 	float CrosshairInAirFactor;

@@ -71,19 +71,32 @@ public:
 	//------------------------------------------- Roll 몽타주 기능 ---------------------------------
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
 	bool isDodge; // 구르는지 여부
-	UFUNCTION(Server, Reliable, WithValidation)
+	UFUNCTION(Server, Reliable)
 	void ServerMontageOnDodge(float Forward, float Right); // 서버에서 구르기 몽타주를 실행하는 함수 (컨트롤러에서 호출)
 	UFUNCTION(NetMulticast, Reliable)
 	void MultiCastMontage_Dodge(float Forward, float Right); // 구르기 몽타주 멀티캐스트 (서버가 호출되면 자동으로 호출)
+
+
 	void SetDodgeMontage(float Forward, float Right, FVector* addVector);
 	void OnDodgeMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+
 	FTimerHandle DodgeCoolDownTimer;
-	bool isDodgeCoolDown;
 	float DodgeCoolTime;
-	float DodgeCooldownRemainingTime;
 	void StartDodgeCooldown();
 	void EndDodgeCooldown();
 	void UpdateDodgeCooldown();
+
+	UPROPERTY(ReplicatedUsing = OnRep_DodgeCoolDown)
+	bool isDodgeCoolDown;
+
+	UPROPERTY(ReplicatedUsing = OnRep_DodgeCooldownRemainingTime)
+	float DodgeCooldownRemainingTime;
+
+	UFUNCTION()
+	void OnRep_DodgeCoolDown();
+
+	UFUNCTION()
+	void OnRep_DodgeCooldownRemainingTime();
 	//---------------------------------------------------------------------------
 
 
@@ -126,8 +139,6 @@ public:
 	void UpdateRazerCooldownUI();
 
 	// -----------------------------------------------------------------------------------------
-	
-
 
 	// ------------------------------------- Grenade Skill ----------------------------------------
 	void GrenadeSkillPressed();
@@ -142,22 +153,34 @@ public:
 	// -----------------------------------------------------------------------------------------
 
 	// ------------------------------------- Heal Skill ----------------------------------------
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
 	TSubclassOf<class AGnuHealActor> HealClass;
 
 	FTimerHandle HealCoolDownTimer;
 
+	UPROPERTY(ReplicatedUsing = OnRep_HealCooldown)
 	bool isHealCoolDown;
 	float HealSkillCoolTime;
+	UPROPERTY(ReplicatedUsing = OnRep_HealCooldownRemainingTime)
 	float HealCooldownRemainingTime;
 
-	void SpawnHeal();
+	UFUNCTION()
+	void OnRep_HealCooldown();
 
-	//UFUNCTION(Server, Reliable)
-	//void Server_SpawnHeal();
+	UFUNCTION()
+	void OnRep_HealCooldownRemainingTime();
+
+	void SpawnHeal();
 	void StartHealCooldown();
 	void EndHealCooldown();
 	void UpdateHealCooldownUI();
+
+
+	UFUNCTION(Server, Reliable)
+	void Server_SpawnHeal();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_SpawnHealEffect();
 
 
 	// -----------------------------------------------------------------------------------------
@@ -231,7 +254,7 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_Health, VisibleAnywhere, Category = "Player Stats")
 	float Health = 100.f;
 
-	UPROPERTY(EditAnywhere, Category = "Player Stats")
+	UPROPERTY(Replicated, EditAnywhere, Category = "Player Stats")
 	float MaxStamina = 100.f;
 
 	UPROPERTY(ReplicatedUsing = OnRep_Stamina, VisibleAnywhere, Category = "Player Stats")
@@ -247,6 +270,9 @@ private:
 	FString LocalPlayerName = TEXT("Unknown Player");
 
 	void ConsumeStamina(float MinusStamina);
+
+	UFUNCTION(Server, Reliable)
+	void Server_ConsumeStamina(float StaminaCost);
 
 	FTimerHandle StaminaRecoveryTimer;
 
