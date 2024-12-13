@@ -127,7 +127,7 @@ AGnuMyCharacter::AGnuMyCharacter()
 	RazerCooldownRemainingTime = 0.0f;
 	HealSkillCoolTime = 15.0f;
 	HealCooldownRemainingTime = 0.0f;
-	GneradeSkillCoolTime = 1.0f;
+	GneradeSkillCoolTime = 9.0f;
 	GneradeCooldownRemainingTime = 0.0f;
 	DodgeCoolTime = 4.0f;
 	DodgeCooldownRemainingTime = 0.0f;
@@ -217,7 +217,7 @@ void AGnuMyCharacter::BeginPlay()
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AGnuMyCharacter::ServerUpdateOthersHealth, 5.0f, false);
 	FTimerHandle SecTimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(SecTimerHandle, this, &AGnuMyCharacter::UpdateOthersName, 5.0f, false);
-	GetWorld()->GetTimerManager().SetTimer(StaminaRecoveryTimer, this, &AGnuMyCharacter::AutoRecoverStamina, 0.1f, true);
+	//GetWorld()->GetTimerManager().SetTimer(StaminaRecoveryTimer, this, &AGnuMyCharacter::AutoRecoverStamina, 0.1f, true);
 }
 
 void AGnuMyCharacter::Tick(float DeltaTime)
@@ -419,7 +419,7 @@ void AGnuMyCharacter::ServerMontageOnDodge_Implementation(float Forward, float R
 	if (GetCharacterMovement()->IsFalling()) return;
 	if (IsPlayingReactMontage()) return;
 
-	if (isDodge || isDodgeCoolDown)
+	if (isDodge || isDodgeCoolDown || Stamina < 40)
 	{
 		// 구르기 중에 다시 호출하면 중지
 		return;
@@ -442,10 +442,9 @@ void AGnuMyCharacter::ServerMontageOnDodge_Implementation(float Forward, float R
 			MontageEndedDelegate.BindUObject(this, &AGnuMyCharacter::OnDodgeMontageEnded);
 			AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, DodgeMontage);
 		}
-
-		LaunchCharacter(AddVector, true, true);
 		ConsumeStamina(40.f);
 		UpdateHUDStamina();
+		LaunchCharacter(AddVector, true, true);
 		// 멀티캐스트 호출
 		MultiCastMontage_Dodge(Forward, Right);
 	}
@@ -459,7 +458,7 @@ bool AGnuMyCharacter::ServerMontageOnDodge_Validate(float Forward, float Right)
 void AGnuMyCharacter::MultiCastMontage_Dodge_Implementation(float Forward, float Right) // 모든 클라이언트에서 동일한 구르기 애니메이션을 재생하도록 하는 멀티캐스트 함수. 클라이언트와 서버 간의 동기화를 위해 사용
 {
 	if (IsPlayingReactMontage()) return;
-	if (isDodge || isDodgeCoolDown || Stamina < 10)
+	if (isDodge || isDodgeCoolDown || Stamina < 40)
 	{
 		return;
 	}
@@ -480,7 +479,8 @@ void AGnuMyCharacter::MultiCastMontage_Dodge_Implementation(float Forward, float
 			MontageEndedDelegate.BindUObject(this, &AGnuMyCharacter::OnDodgeMontageEnded);
 			AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, DodgeMontage);
 		}
-
+		ConsumeStamina(40.f);
+		UpdateHUDStamina();
 		// 캐릭터를 대쉬 방향으로 이동
 		LaunchCharacter(AddVector, true, true);
 
@@ -670,7 +670,7 @@ void AGnuMyCharacter::RazerSkillPressed()
 {
 	if (IsPlayingReactMontage()) return;
 
-	if (GetEquippedWeapon() && Stamina > 10)
+	if (GetEquippedWeapon() && Stamina > 20)
 	{
 		// 쿨다운 확인
 		if (!isRazerCoolDown)
@@ -731,7 +731,7 @@ void AGnuMyCharacter::GrenadeSkillPressed()
 {
 	if (IsPlayingReactMontage()) return;
 
-	if (GetEquippedWeapon() && Stamina > 10)
+	if (GetEquippedWeapon() && Stamina > 20)
 	{
 		// 쿨다운 확인
 		if (!isGrenadeCoolDown)
@@ -739,7 +739,7 @@ void AGnuMyCharacter::GrenadeSkillPressed()
 			if (Combat)
 			{
 				Combat->FireButtonPressed(true);
-				ConsumeStamina(1.0f);
+				ConsumeStamina(20.0f);
 				UpdateHUDStamina();
 				StartGrenadeCooldown();
 			}
@@ -1102,6 +1102,7 @@ void AGnuMyCharacter::UpdateHUDStamina()
 	if (GNUPlayerController)
 	{
 		GNUPlayerController->SetHUDStamina(Stamina, MaxStamina);
+		GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Black, FString::Printf(TEXT("Stamina : %f"), Stamina));
 	}
 }
 
@@ -1144,7 +1145,7 @@ void AGnuMyCharacter::OnRep_Stamina()
 void AGnuMyCharacter::ConsumeStamina(float MinusStamina)
 {
 	Stamina = FMath::Clamp(Stamina - MinusStamina, 0, MaxStamina);
-	UE_LOG(LogTemp, Log, TEXT("%f, %f"), Stamina, MinusStamina);
+	GEngine->AddOnScreenDebugMessage(-1, 4, FColor::Black, FString::Printf(TEXT("%f, %f"), Stamina, MinusStamina));
 }
 
 
