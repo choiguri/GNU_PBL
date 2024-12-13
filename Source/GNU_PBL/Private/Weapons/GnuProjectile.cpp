@@ -14,6 +14,7 @@
 #include "NiagaraComponent.h"
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
+#include "Monster/GnuMonster.h"
 
 AGnuProjectile::AGnuProjectile()
 {
@@ -36,8 +37,6 @@ AGnuProjectile::AGnuProjectile()
 	// 방향이 속도 따라감
 	// 블루프린트에서 속도 설정하면 됨 Set Velocity In Blueprint
 	ProjectileMovementComponent->bRotationFollowsVelocity = true;
-
-
 }
 
 
@@ -55,6 +54,10 @@ void AGnuProjectile::BeginPlay()
 		UGameplayStatics::PlaySoundAtLocation(this, waveShotSound, GetActorLocation(), 0.25f);
 	}
 
+	if (GrenadeProjectileSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, GrenadeProjectileSound, GetActorLocation(), 1.0f);
+	}
 
 	if (TracerParticle)
 	{
@@ -86,10 +89,10 @@ void AGnuProjectile::BeginPlay()
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), MuzzleNiagara, GetActorLocation(), GetActorRotation());
 	}
 
-	if (GrenadeBeforeNiagara)
+	if (GrenadepRojectileNiagara)
 	{
 		ChargeNiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
-			GrenadeBeforeNiagara,
+			GrenadepRojectileNiagara,
 			CollisionBox,
 			FName(),
 			GetActorLocation(),
@@ -97,21 +100,6 @@ void AGnuProjectile::BeginPlay()
 			EAttachLocation::KeepWorldPosition,
 			true
 		);
-		GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Black, FString("Spawn!!"));
-
-	/*	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
-		USkeletalMeshComponent* SkeletalMeshComponent = OwnerCharacter->GetMesh();
-
-		ChargeNiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
-			ChargeNiagara,
-			SkeletalMeshComponent,
-			FName("WeaponSocket"),
-			FVector(0.0f, 80.0f, 10.0f),
-			FRotator::ZeroRotator,
-			EAttachLocation::SnapToTarget,
-			false,
-			true
-		);*/
 	}
 
 	if (HasAuthority())
@@ -149,4 +137,3 @@ void AGnuProjectile::Destroyed()
 		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation(), 0.1f);
 	}
 }
-

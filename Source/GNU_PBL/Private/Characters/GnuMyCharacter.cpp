@@ -127,7 +127,8 @@ AGnuMyCharacter::AGnuMyCharacter()
 	RazerCooldownRemainingTime = 0.0f;
 	HealSkillCoolTime = 15.0f;
 	HealCooldownRemainingTime = 0.0f;
-	GneradeSkillCoolTime = 9.0f;
+	//GneradeSkillCoolTime = 9.0f;
+	GneradeSkillCoolTime = 2.0f;
 	GneradeCooldownRemainingTime = 0.0f;
 	DodgeCoolTime = 4.0f;
 	DodgeCooldownRemainingTime = 0.0f;
@@ -217,7 +218,7 @@ void AGnuMyCharacter::BeginPlay()
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AGnuMyCharacter::ServerUpdateOthersHealth, 5.0f, false);
 	FTimerHandle SecTimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(SecTimerHandle, this, &AGnuMyCharacter::UpdateOthersName, 5.0f, false);
-	//GetWorld()->GetTimerManager().SetTimer(StaminaRecoveryTimer, this, &AGnuMyCharacter::AutoRecoverStamina, 0.1f, true);
+	GetWorld()->GetTimerManager().SetTimer(StaminaRecoveryTimer, this, &AGnuMyCharacter::AutoRecoverStamina, 0.1f, true);
 }
 
 void AGnuMyCharacter::Tick(float DeltaTime)
@@ -698,11 +699,10 @@ void AGnuMyCharacter::EndHealCooldown()
 
 void AGnuMyCharacter::RazerSkillPressed()
 {
-	if (IsPlayingReactMontage() || isRazerCoolDown) return;
+	if (IsPlayingReactMontage() || isRazerCoolDown || GetEquippedWeapon()->bisReload) return;
 
 	if (GetEquippedWeapon() && Stamina >= 10.0f)
 	{
-
 		// 실제 스킬 처리
 		if (Combat)
 		{
@@ -756,7 +756,7 @@ void AGnuMyCharacter::EndRazerCooldown()
 //--------------------------- Grenade Skill --------------------------------
 void AGnuMyCharacter::GrenadeSkillPressed()
 {
-	if (IsPlayingReactMontage() || isGrenadeCoolDown || Stamina < 20) return;
+	if (IsPlayingReactMontage() || isGrenadeCoolDown || Stamina < 20 || GetEquippedWeapon()->bisReload) return;
 
 	if (GetEquippedWeapon() && Stamina >= 20.0f)
 	{
@@ -1130,7 +1130,6 @@ void AGnuMyCharacter::UpdateHUDStamina()
 	if (GNUPlayerController)
 	{
 		GNUPlayerController->SetHUDStamina(Stamina, MaxStamina);
-		GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Black, FString::Printf(TEXT("Stamina : %f"), Stamina));
 	}
 }
 
@@ -1166,7 +1165,6 @@ void AGnuMyCharacter::OnRep_Health(float LastHealth)
 
 void AGnuMyCharacter::OnRep_Stamina()
 {
-	UE_LOG(LogTemp, Log, TEXT("OnRep_Stamina"));
 	UpdateHUDStamina();
 }
 
@@ -1188,9 +1186,6 @@ void AGnuMyCharacter::ConsumeStamina(float MinusStamina)
 		// 클라이언트에 값 동기화
 		OnRep_Stamina();
 	}
-
-	//Stamina = FMath::Clamp(Stamina - MinusStamina, 0, MaxStamina);
-	//GEngine->AddOnScreenDebugMessage(-1, 4, FColor::Black, FString::Printf(TEXT("%f, %f"), Stamina, MinusStamina));
 }
 
 

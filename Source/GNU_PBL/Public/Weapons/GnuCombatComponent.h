@@ -28,6 +28,7 @@ public:
 
 	bool bReloadButtonPressed;
 
+
 	FORCEINLINE FVector GetHitTarget() { return HitTarget; }
 
 protected:

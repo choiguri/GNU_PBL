@@ -24,9 +24,6 @@ public:
 
 	void SetProjectileType(EProjectileType SetType);
 
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grenade")
-	//TSubclassOf<AActor> BP_Grenade;
-
 	void Boom();
 
 private:

@@ -21,12 +21,6 @@ void AGnuProjectileWeapon::Fire(const FVector& HitTarget)
 
 	if (!HasAuthority()) return;
 
-	if (ProjectileType == EProjectileType::EPT_Grenade)
-	{
-		Boom();
-		return;
-	}
-
 	APawn* InstigatorPawn = Cast<APawn>(GetOwner());
 
 	const USkeletalMeshSocket* MuzzleFlashSocket = GetWeaponMesh()->GetSocketByName(FName("MuzzleFlashSocket"));
@@ -69,47 +63,48 @@ void AGnuProjectileWeapon::Boom()
 	//}
 
 
-	//ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
-	//if (OwnerCharacter)
-	//{
-	//	APlayerController* PlayerController = Cast<APlayerController>(OwnerCharacter->GetController());
-	//	if (PlayerController)
-	//	{
-	//		APlayerCameraManager* CameraManager = PlayerController->PlayerCameraManager;
+	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+	if (OwnerCharacter)
+	{
+		APlayerController* PlayerController = Cast<APlayerController>(OwnerCharacter->GetController());
+		if (PlayerController)
+		{
+			APlayerCameraManager* CameraManager = PlayerController->PlayerCameraManager;
 
-	//		// 캐릭터의 SkeletalMeshComponent를 가져오기
-	//		USkeletalMeshComponent* SkeletalMeshComponent = OwnerCharacter->GetMesh();
+			// 캐릭터의 SkeletalMeshComponent를 가져오기
+			USkeletalMeshComponent* SkeletalMeshComponent = OwnerCharacter->GetMesh();
 
-	//		// 캐릭터의 현재 위치에서 발사
-	//		FVector CharacterSpawnLocation = SkeletalMeshComponent->GetSocketLocation(FName("WeaponSocket")); // "WeaponSocket"을 원하는 소켓으로 변경
+			// 캐릭터의 현재 위치에서 발사
+			FVector CharacterSpawnLocation = SkeletalMeshComponent->GetSocketLocation(FName("WeaponSocket")); // "WeaponSocket"을 원하는 소켓으로 변경
 
-	//		FVector ProjectileOffset = FVector(10.0f, 0.0f, 0.0f);  // 발사 위치 오프셋
+			FVector ProjectileOffset = FVector(10.0f, 0.0f, 0.0f);  // 발사 위치 오프셋
 
-	//		// 카메라의 회전값을 얻어옴
-	//		FRotator CameraRotation = CameraManager->GetCameraRotation();
+			// 카메라의 회전값을 얻어옴
+			FRotator CameraRotation = CameraManager->GetCameraRotation();
 
-	//		// 카메라의 회전값을 바탕으로 발사체 방향 계산
-	//		FVector RotatedDirection = CameraRotation.RotateVector(ProjectileOffset);
+			// 카메라의 회전값을 바탕으로 발사체 방향 계산
+			FVector RotatedDirection = CameraRotation.RotateVector(ProjectileOffset);
 
-	//		// 발사 위치 업데이트 (움직이는 캐릭터의 위치에 맞춰)
-	//		FVector UpdateSpawnLocation = CharacterSpawnLocation + RotatedDirection;
+			// 발사 위치 업데이트 (움직이는 캐릭터의 위치에 맞춰)
+			FVector UpdateSpawnLocation = CharacterSpawnLocation + RotatedDirection;
 
-	//		// 카메라의 회전값을 SpawnRotation에 반영
-	//		FRotator AdjustRotation = CameraRotation;  // 카메라가 바라보는 방향으로 설정
+			// 카메라의 회전값을 SpawnRotation에 반영
+			FRotator AdjustRotation = CameraRotation;  // 카메라가 바라보는 방향으로 설정
 
-	//		// 발사체를 해당 위치에서 발사
-	//		FTransform Transform = UKismetMathLibrary::MakeTransform(UpdateSpawnLocation, AdjustRotation);
+			// 발사체를 해당 위치에서 발사
+			FTransform Transform = UKismetMathLibrary::MakeTransform(UpdateSpawnLocation, AdjustRotation);
 
-	//		// 액터 스폰 파라미터 설정
-	//		FActorSpawnParameters SpawnParams;
-	//		SpawnParams.Owner = this; // Owner 설정 (필요시 설정)
+			// 액터 스폰 파라미터 설정
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.Owner = this; // Owner 설정 (필요시 설정)
 
-	//		// 발사체 액터 스폰
-	//		GetWorld()->SpawnActor<AGnuProjectile>(SeletedClass, Transform, SpawnParams);
-	//		GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Black, FString("Spawn"));
-	//	}
+			// 발사체 액터 스폰
+			GetWorld()->SpawnActor<AGnuProjectile>(SeletedClass, Transform, SpawnParams);
+			
+		}
 
-	//}
+	}
+	GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Black, FString("Spawn"));
 }
 
 

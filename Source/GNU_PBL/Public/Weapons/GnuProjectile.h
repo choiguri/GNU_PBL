@@ -35,10 +35,25 @@ protected:
 	class UNiagaraSystem* GrenadeBeforeNiagara;
 
 	UPROPERTY(EditAnywhere)
+	class UNiagaraComponent* GrenadeCastNiagaraComponent;
+
+	UPROPERTY(EditAnywhere)
 	class UNiagaraSystem* GrenadeCastNiagara;
 
 	UPROPERTY(EditAnywhere)
-	class UNiagaraSystem* GrenadeNiagara;
+	class UNiagaraSystem* GrenadepRojectileNiagara;
+
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* GrenadeBoomNiagara;
+
+	UPROPERTY(EditAnywhere)
+	class USoundWave* GrenadeBoomSound;
+
+	UPROPERTY(EditAnywhere)
+	class USoundWave* GrenadeCastSound;
+
+	UPROPERTY(EditAnywhere)
+	class USoundWave* GrenadeProjectileSound;
 
 private:
 

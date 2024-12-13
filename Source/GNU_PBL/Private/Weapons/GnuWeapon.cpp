@@ -37,6 +37,8 @@ AGnuWeapon::AGnuWeapon()
 	PickupWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("PickupWidget"));
 	PickupWidget->SetupAttachment(WeaponMesh);
 	/*PickupWidget->SetupAttachment(RootComponent);*/
+
+	bisReload = false;
 }
 
 void AGnuWeapon::BeginPlay()
@@ -226,11 +228,13 @@ void AGnuWeapon::Reload()
 	{
 		WeaponMesh->PlayAnimation(ReloadAnimation, false);
 	}
+	bisReload = true;
 }
 
 void AGnuWeapon::ReloadFinished()
 {
 	Ammo = MaxAmmo;
+	bisReload = false;
 	UpdateAmmo();
 }
 

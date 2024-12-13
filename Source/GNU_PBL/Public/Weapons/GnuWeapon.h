@@ -59,6 +59,7 @@ public:
 
 	float Delay = .15f;
 
+	bool bisReload;
 
 protected:
 
