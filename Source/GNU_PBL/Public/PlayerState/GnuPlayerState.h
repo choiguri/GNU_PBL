@@ -27,7 +27,7 @@ public:
 
 	void UpdateDeathCountToHUD();
 
-	int32 MaxRespawn = 5;
+	int32 MaxRespawn = 3;
 
 private:
 	UPROPERTY()

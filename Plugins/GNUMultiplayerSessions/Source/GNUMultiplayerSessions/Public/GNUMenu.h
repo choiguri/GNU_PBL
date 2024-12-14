@@ -19,7 +19,7 @@ class GNUMULTIPLAYERSESSIONS_API UGNUMenu : public UUserWidget
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void MenuSetup(int32 NumberOfPublicConnections = 4, FString TypeOfMatch = FString(TEXT("FreeForAll")), FString LobbyPath = FString(TEXT("/Game/GNU/Maps/Lobby")));
+	void MenuSetup(int32 NumberOfPublicConnections = 4, FString TypeOfMatch = FString(TEXT("FreeForAlls")), FString LobbyPath = FString(TEXT("/Game/GNU/Maps/Lobby")));
 
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 	TSubclassOf<class UUserWidget> FoundListClass;
@@ -85,6 +85,6 @@ private:
 	class UGNUMultiplayerSessionsSubsystem* MultiplayerSessionsSubsystem;
 
 	int32 NumPublicConnections{4};
-	FString MatchType{TEXT("FreeForAll")};
+	FString MatchType{TEXT("FreeForAlls")};
 	FString PathToLobby{TEXT("")};
 };

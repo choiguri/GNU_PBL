@@ -25,8 +25,6 @@ void AGnuProjectileBullet::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActo
 			{
 				Multicast_DestroyChargeNiagaraComponent();
 				CastGrenade(OwnerController, HitComp, OtherActor, OtherComp, NormalImpulse, Hit);
-				GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Black, FString::Printf(TEXT("%s"), *OtherActor->GetName()));
-				GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Blue, FString::Printf(TEXT("%s"), *OtherComp->GetName()));
 				
 			}
 			else

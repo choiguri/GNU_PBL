@@ -617,7 +617,7 @@ void AGnuMyCharacter::Server_SpawnHeal_Implementation()
 		{
 			StartHealCooldown();
 			Heal->SetOwner(this);
-			ConsumeStamina(10.0f);
+			ConsumeStamina(30.0f);
 
 			// 멀티캐스트로 모든 클라이언트에 시각적 효과 전달
 			Multicast_SpawnHealEffect();
@@ -705,7 +705,7 @@ void AGnuMyCharacter::RazerSkillPressed()
 		if (Combat)
 		{
 			Combat->FireButtonPressed(true);
-			Server_ConsumeStamina(10.0f); // 서버에서 스태미너 소비
+			Server_ConsumeStamina(15.0f); // 서버에서 스태미너 소비
 			StartRazerCooldown();
 		}
 	}
@@ -762,7 +762,7 @@ void AGnuMyCharacter::GrenadeSkillPressed()
 		if (Combat)
 		{
 			Combat->FireButtonPressed(true);
-			Server_ConsumeStamina(20.0f); // 서버에서 스태미너 소비
+			Server_ConsumeStamina(40.0f); // 서버에서 스태미너 소비
 			StartGrenadeCooldown();
 		}
 	}
@@ -1204,7 +1204,6 @@ void AGnuMyCharacter::ServerUpdateOthersHealth_Implementation()
 	{
 		OthersHealth = GnuGameMode->GetPlayersHealth();
 		
-		/*ClientUpdateOthersHealth(OthersHealth);*/
 	}
 	UpdateOthersHealth();
 }

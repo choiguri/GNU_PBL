@@ -289,7 +289,7 @@ void AGnuMonster::StartRetryCooldown()
 
 void AGnuMonster::Die()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Black, TEXT("Boss has died!"));
+	/*GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Black, TEXT("Boss has died!"));*/
 
 	// FirebreathActor 제거
 	if (FirebreathActor)
@@ -335,7 +335,7 @@ void AGnuMonster::Die()
 				DestroyTimerHandle,						// 타이머 핸들
 				this,									// 호출 객체
 				&AGnuMonster::DelayedDestroy,			// 호출할 함수
-				10.0f,									// 지연 시간 (초)
+				15.0f,									// 지연 시간 (초)
 				false									// 반복 여부 (false : 한 번만 실행)
 			);
 		}

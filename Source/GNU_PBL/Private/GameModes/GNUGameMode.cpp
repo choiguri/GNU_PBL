@@ -99,10 +99,10 @@ void AGNUGameMode::UpdateTotalDeath()
 			if (GnuPlayerState)
 			{
 				TotalDeath += GnuPlayerState->Death;
-				if (GEngine)
+				/*if (GEngine)
 				{
 					GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, FString::Printf(TEXT("%d"), TotalDeath));
-				}
+				}*/
 			}
 		}
 	}
@@ -112,7 +112,7 @@ void AGNUGameMode::UpdateTotalDeath()
 
 bool AGNUGameMode::bOverDeathCount()
 {
-	return TotalDeath >= 24;
+	return TotalDeath >= 16;
 }
 
 int32 AGNUGameMode::GetTotalDeath()
