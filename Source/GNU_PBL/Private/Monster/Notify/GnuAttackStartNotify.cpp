@@ -18,22 +18,18 @@ void UGnuAttackStartNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequen
             if (AnimInstance->Montage_IsPlaying(AnimInstance->ClawAttackMontage))
             {
                 Monster->ActivateClawCollision(); // 손톱 공격 콜리전 활성화
-                GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, TEXT("Claw Collision Activate"));
             }
             else if (AnimInstance->Montage_IsPlaying(AnimInstance->TailAttackMontage))
             {
                 Monster->ActivateTailCollision(); // 꼬리 공격 콜리전 활성화
-                GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, TEXT("Tail Collision Activate"));
             }
             else if (AnimInstance->Montage_IsPlaying(AnimInstance->BodyAttackMontage))
             {
                 Monster->ActivateBodyCollision(); // 몸통 공격 콜리전 활성화
-                GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, TEXT("Body Collision Activate"));
             }
             else if (AnimInstance->Montage_IsPlaying(AnimInstance->FlyingDodgeMontage))
             {
                 Monster->StartCraterAttack(); // 분화구 스폰 시작
-                GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, TEXT("Start Spawn Crater"));
             }
             else if (AnimInstance->Montage_IsPlaying(AnimInstance->FirebreathAttackMontage))
             {

@@ -98,7 +98,6 @@ AGnuMyCharacter::AGnuMyCharacter()
 	SetReplicateMovement(true);
 	
 
-
 	OverlapItem = nullptr;	// 공격이 맞았는지 확인
 
 	// 추가 사항
@@ -127,8 +126,7 @@ AGnuMyCharacter::AGnuMyCharacter()
 	RazerCooldownRemainingTime = 0.0f;
 	HealSkillCoolTime = 15.0f;
 	HealCooldownRemainingTime = 0.0f;
-	//GneradeSkillCoolTime = 9.0f;
-	GneradeSkillCoolTime = 2.0f;
+	GneradeSkillCoolTime = 15.0f;
 	GneradeCooldownRemainingTime = 0.0f;
 	DodgeCoolTime = 4.0f;
 	DodgeCooldownRemainingTime = 0.0f;
@@ -1083,7 +1081,7 @@ void AGnuMyCharacter::AutoRecoverStamina()
 {
 	if (Stamina < 100)
 	{
-		Stamina = FMath::Clamp(Stamina + 1, 0, MaxStamina);
+		Stamina = FMath::Clamp(Stamina + 0.5f, 0, MaxStamina);
 		UpdateHUDStamina();
 	}
 }
