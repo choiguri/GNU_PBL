@@ -78,7 +78,7 @@ AGnuMonster::AGnuMonster()
 	bAlwaysRelevant = true; // 항상 네트워크에서 중요
 
 	// hp 구현
-	MaxHealth = 40000.f;
+	MaxHealth = 100.f;
 	CurrentHealth = MaxHealth;
 
 	// 넉백 힘 초기화

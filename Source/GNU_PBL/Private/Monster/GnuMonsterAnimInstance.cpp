@@ -94,7 +94,7 @@ void UGnuMonsterAnimInstance::OnMontageEnded(UAnimMontage* Montage, bool bInterr
     /*GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Blue, bInterrupted ? TEXT("Montage Interrupted!") : TEXT("Montage Ended Successfully!"));*/
 }
 
-void UGnuMonsterAnimInstance::PlayDieMontage()
+void UGnuMonsterAnimInstance::PlayDieMontage_Implementation()
 {
     if (MonsterOwner)
     {

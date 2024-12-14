@@ -116,6 +116,6 @@ public:
 
     // 공격 몽타주 실행 함수
     // 죽었을 때 몽타주 처리
-    UFUNCTION(BlueprintCallable)
+    UFUNCTION(NetMulticast, Reliable)
     void PlayDieMontage();
 };
