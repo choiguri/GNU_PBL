@@ -23,6 +23,7 @@
 
 ### 📺 Project Preview
 [![Project Battle Line 시연 영상](https://img.youtube.com/vi/-3ciZHhTgDc/0.jpg)](https://www.youtube.com/watch?v=-3ciZHhTgDc)
+<br>
 *이미지를 클릭하면 유튜브 영상으로 이동합니다.*
 
 ---
