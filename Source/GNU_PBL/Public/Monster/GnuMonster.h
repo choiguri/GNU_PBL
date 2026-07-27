@@ -9,13 +9,11 @@
 #include "Monster/Widget/GnuMonsterHealthBase.h"
 #include "GnuMonster.generated.h"
 
-
 class UGnuMonsterHealthBase;
 class UBoxComponent;
 class USphereComponent;
 class UAnimMontage;
 class AGnuMyCharacter;
-
 
 UCLASS()
 class GNU_PBL_API AGnuMonster : public ACharacter
@@ -89,6 +87,9 @@ public:
 	bool bIsDead = false;			// 죽음 상태 확인
 	bool bIsPhaseTwo = false;		// 페이즈 2 여부 확인 사용x
 	bool bCanRetry = true;			// 재시도 여부
+
+
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

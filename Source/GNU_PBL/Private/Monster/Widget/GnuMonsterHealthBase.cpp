@@ -18,12 +18,12 @@ void UGnuMonsterHealthBase::NativeConstruct()
 {
     Super::NativeConstruct();
 
-    // ProgressBar ���� �ʱ�ȭ
+    // ProgressBar 값을 초기화
     if (ProgressBar_Health)
     {
-        ProgressBar_Health->SetPercent(1.0f);  // ó���� Max ���·� ����
+        ProgressBar_Health->SetPercent(1.0f);  // 처음에 Max 상태로 설정
     }
 
-    // ������ ȭ�鿡 ���̰� Ȱ��ȭ (�ʿ� �� �߰�)
+    // 위젯을 화면에 보이게 활성화 (필요 시 추가)
     SetVisibility(ESlateVisibility::Visible);
 }

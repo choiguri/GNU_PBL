@@ -17,17 +17,17 @@ AGnuMonsterAIController::AGnuMonsterAIController()
 
     if (SightConfig)
     {
-        SightConfig->SightRadius = 5000.f; // °¨Áö ¹İ°æ
-        SightConfig->LoseSightRadius = 6000.f; // °¨Áö »ó½Ç ¹İ°æ
-        SightConfig->PeripheralVisionAngleDegrees = 360.0f; // ½Ã¾ß °¢µµ
-        SightConfig->SetMaxAge(60.0f); // °¨Áö Á¤º¸ ÃÖ´ë ½Ã°£
-        SightConfig->DetectionByAffiliation.bDetectEnemies = true; // Àû °¨Áö
-        SightConfig->DetectionByAffiliation.bDetectNeutrals = true; // Áß¸³ °¨Áö
-        SightConfig->DetectionByAffiliation.bDetectFriendlies = true; // ¾Æ±º °¨Áö
+        SightConfig->SightRadius = 5000.f; // ê°ì§€ ë°˜ê²½
+        SightConfig->LoseSightRadius = 6000.f; // ê°ì§€ ìƒì‹¤ ë°˜ê²½
+        SightConfig->PeripheralVisionAngleDegrees = 360.0f; // ì‹œì•¼ ê°ë„
+        SightConfig->SetMaxAge(60.0f); // ê°ì§€ ì •ë³´ ìµœëŒ€ ì‹œê°„
+        SightConfig->DetectionByAffiliation.bDetectEnemies = true; // ì  ê°ì§€
+        SightConfig->DetectionByAffiliation.bDetectNeutrals = true; // ì¤‘ë¦½ ê°ì§€
+        SightConfig->DetectionByAffiliation.bDetectFriendlies = true; // ì•„êµ° ê°ì§€
 
         AIPerceptionComponent->ConfigureSense(*SightConfig);
         AIPerceptionComponent->SetDominantSense(SightConfig->GetSenseImplementation());
-        // °¨Áö ÀÌº¥Æ® ¿¬°á
+        // ê°ì§€ ì´ë²¤íŠ¸ ì—°ê²°
         AIPerceptionComponent->OnTargetPerceptionUpdated.AddUniqueDynamic(this, &ThisClass::OnTargetDetected);
     }
 
@@ -48,9 +48,10 @@ void AGnuMonsterAIController::BeginPlay()
         }
     }
 
-    TargetUpdateInterval = 15.f;    // Å¸°Ù º¯°æ ÁÖ±â ½Ã°£ ¼³Á¤
-    GetWorld()->GetTimerManager().SetTimer(TargetUpdateTimerHandle, this, &ThisClass::UpdateTarget, TargetUpdateInterval, true);    // Å¸ÀÌ¸Ó ¼³Á¤
+    TargetUpdateInterval = 15.f;    // íƒ€ê²Ÿ ë³€ê²½ ì£¼ê¸° ì‹œê°„ ì„¤ì •
+    GetWorld()->GetTimerManager().SetTimer(TargetUpdateTimerHandle, this, &ThisClass::UpdateTarget, TargetUpdateInterval, true);    // íƒ€ì´ë¨¸ ì„¤ì •
 }
+
 
 void AGnuMonsterAIController::Tick(float DeltaSeconds)
 {
@@ -58,58 +59,35 @@ void AGnuMonsterAIController::Tick(float DeltaSeconds)
 
     if (HasAuthority())
     {
-        UpdateTargetDistance();     // Å¸°Ù°úÀÇ °Å¸® °è»ê
+        UpdateTargetDistance();     // íƒ€ê²Ÿê³¼ì˜ ê±°ë¦¬ ê³„ì‚°
     }
 
-    // TargetActor ¾øÀ» ¶§ °è¼Ó È®ÀÎÇÏ±â
+    // TargetActor ì—†ì„ ë•Œ ê³„ì† í™•ì¸í•˜ê¸°
     ACharacter* CurrentTarget = Cast<ACharacter>(GetBlackboardComponent()->GetValueAsObject(TEXT("TargetActor")));
     if (CurrentTarget == nullptr && bCanRetry)
     {
         UpdateTarget();
-
-       /* GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("No Target Detected. Retrying..."));*/
         StartRetryCooldown();
     }
 }
 
 
-// ÃÊ±â Å¸°Ù °¨Áö ¼³Á¤
+// ì´ˆê¸° íƒ€ê²Ÿ ê°ì§€ ì„¤ì •
 void AGnuMonsterAIController::OnTargetDetected(AActor* Actor, FAIStimulus const Stimulus)
 {
-    if (!Stimulus.WasSuccessfullySensed() || !Actor || !HasAuthority() || !Actor->IsValidLowLevel() || !Actor->IsValidLowLevelFast())
+    if (!Stimulus.WasSuccessfullySensed() || !Actor || !HasAuthority() || !IsValid(Actor))
     {
         return;
     }
-    else
-    {
-        if (TargetActor == nullptr)
-        {
-            UpdateTarget();
-        }
-        else
-        {
-            return;
-        }
-    }
 
-    if (TargetActor == nullptr)
+    if (TargetActor == nullptr && bCanRetry)
     {
-        if (Actor && Actor->IsA<ACharacter>())
-        {
-            ACharacter* DetectedCharacter = Cast<ACharacter>(Actor);
-            if (DetectedCharacter && DetectedCharacter->IsA(AGnuMyCharacter::StaticClass()))
-            {
-                SetNewTarget(DetectedCharacter);
-            }
-        }
-        else
-        {
-            /*GEngine->AddOnScreenDebugMessage(1, 4, FColor::Red, TEXT("IsA<ACharacter> Failed!"));*/
-        }
+        UpdateTarget();
+        StartRetryCooldown();
     }
 }
 
-// ²ÙÁØÈ÷ °¨ÁöÇÒ Å¸°Ù ¾÷µ¥ÀÌÆ® ÇÔ¼ö
+// ê¾¸ì¤€íˆ ê°ì§€í•  íƒ€ê²Ÿ ì—…ë°ì´íŠ¸ í•¨ìˆ˜
 void AGnuMonsterAIController::UpdateTarget()
 {
     if (!HasAuthority() || !AIPerceptionComponent)
@@ -117,19 +95,26 @@ void AGnuMonsterAIController::UpdateTarget()
         return;
     }
 
-    TArray<AActor*> DetectedActors;     // °¨ÁöµÈ ¾×ÅÍ º¸°üÇÒ ¹è¿­
-    AIPerceptionComponent->GetCurrentlyPerceivedActors(UAISense_Sight::StaticClass(), DetectedActors); // ÀÎ½Ä AI·Î °¨ÁöµÈ ¸ğµç ¾×ÅÍ °¡Á®¿À±â
+    // í˜„ì¬ ì‹œì•¼ì— ê°ì§€ëœ ì•¡í„° ëª©ë¡ ê°€ì ¸ì˜¤ê¸°
+    TArray<AActor*> DetectedActors;
+    AIPerceptionComponent->GetCurrentlyPerceivedActors(
+        UAISense_Sight::StaticClass(), DetectedActors);     // ì¸ì‹ AIë¡œ ê°ì§€ëœ ëª¨ë“  ì•¡í„° ê°€ì ¸ì˜¤ê¸°
 
-    ACharacter* NewTarget = nullptr;    // °¡Àå °¡±î¿î ÇÃ·¹ÀÌ¾î ÀúÀåÇÒ º¯¼ö
-    float ClosestDistance = FLT_MAX;        // °¡Àå °¡±î¿î ¾×ÅÍ±îÁöÀÇ °Å¸® ÀúÀåÇÒ º¯¼ö
+    ACharacter* NewTarget = nullptr;
+    float ClosestDistance = FLT_MAX;
+    const FVector MonsterLocation = GetPawn()->GetActorLocation();
 
-    for (AActor* Actor : DetectedActors)    // °¨ÁöµÈ ¾×ÅÍ ÇÏ³ª¾¿ ¼øÈ¸
+    // ê°ì§€ëœ í”Œë ˆì´ì–´ ì¤‘ ê°€ì¥ ê°€ê¹Œìš´ ëŒ€ìƒ íƒìƒ‰
+    for (AActor* Actor : DetectedActors)        // ê°ì§€ëœ ì•¡í„° í•˜ë‚˜ì”© ìˆœíšŒ
     {
-        ACharacter* PlayerCharacter = Cast<ACharacter>(Actor);  // PlayerCharacter°¡ GnuMyCharacterÀÎÁö È®ÀÎ
-        if (PlayerCharacter && PlayerCharacter->IsA(AGnuMyCharacter::StaticClass()))    // GnuMyCharacter·Î ´ëÃ¼
+        AGnuMyCharacter* PlayerCharacter = Cast<AGnuMyCharacter>(Actor);
+        if (PlayerCharacter)
         {
-            float Distance = FVector::Dist(PlayerCharacter->GetActorLocation(), GetPawn()->GetActorLocation());
-            if (Distance < ClosestDistance)     // ´õ °¡±î¿î ÇÃ·¹ÀÌ¾î Ã£±â
+            float Distance = FVector::Dist(
+                PlayerCharacter->GetActorLocation(),
+                MonsterLocation);
+
+            if (Distance < ClosestDistance)     // ë” ê°€ê¹Œìš´ í”Œë ˆì´ì–´ ì°¾ê¸°
             {
                 NewTarget = PlayerCharacter;
                 ClosestDistance = Distance;
@@ -139,22 +124,27 @@ void AGnuMonsterAIController::UpdateTarget()
 
     if (NewTarget)
     {
-        SetNewTarget(NewTarget);            // »õ Å¸°Ù ¼³Á¤
-        ActivateMonsterCollision();         // ¸ó½ºÅÍ Äİ¸®Àü È°¼ºÈ­
-        
+        SetNewTarget(NewTarget);            // ìƒˆ íƒ€ê²Ÿ ì„¤ì •
+
+        if (!bMonsterCollisionActive)
+        {
+            bMonsterCollisionActive = true;
+            ActivateMonsterCollision();
+        }
+
         if (!bActivateHealthBar)
         {
             bActivateHealthBar = true;
-            ActivateMonsterHealthBar();         // ¸ó½ºÅÍ À§Á¬ È°¼ºÈ­
+            ActivateMonsterHealthBar();         // ëª¬ìŠ¤í„° Health ìœ„ì ¯ ìµœì´ˆ í•œë²ˆ í™œì„±í™”
         }
     }
     else
     {
-        ClearTarget(); // ÀÎ½ÄÇÑ Å¸°ÙÀÌ ¾øÀ¸¸é TargacActor Å¬¸®¾î
+        ClearTarget(); // ì¸ì‹í•œ íƒ€ê²Ÿì´ ì—†ìœ¼ë©´ TargacActor í´ë¦¬ì–´
     }
 }
 
-// BehaviorTree Á¾·á ÇÔ¼ö
+// BehaviorTree ì¢…ë£Œ í•¨ìˆ˜
 void AGnuMonsterAIController::StopBehaviorTree()
 {
     if (BrainComponent)
@@ -163,7 +153,7 @@ void AGnuMonsterAIController::StopBehaviorTree()
     }
 }
 
-// TargetActor¿Í °Å¸® °è»ê
+// TargetActorì™€ ê±°ë¦¬ ê³„ì‚°
 void AGnuMonsterAIController::UpdateTargetDistance()
 {
     ACharacter* CurrentTarget = Cast<ACharacter>(GetBlackboardComponent()->GetValueAsObject(TEXT("TargetActor")));
@@ -189,10 +179,10 @@ void AGnuMonsterAIController::UpdateMonsterHealth()
     }
 }
 
-// ºí·¢º¸µå TargetActor ¾÷µ¥ÀÌÆ®
+// ë¸”ë™ë³´ë“œ TargetActor ì—…ë°ì´íŠ¸
 void AGnuMonsterAIController::SetNewTarget(AActor* NewTarget)
 {
-    // Å¸°Ù ¼³Á¤
+    // íƒ€ê²Ÿ ì„¤ì •
     if (HasAuthority())
     {
         TargetActor = NewTarget;
@@ -201,35 +191,36 @@ void AGnuMonsterAIController::SetNewTarget(AActor* NewTarget)
     }
 }
 
-// ÀÎ½ÄÇÑ Å¸°ÙÀÌ »ç¶óÁö¸é ½ÇÇàÇÒ ÇÔ¼ö
+// ì¸ì‹í•œ íƒ€ê²Ÿì´ ì‚¬ë¼ì§€ë©´ ì‹¤í–‰í•  í•¨ìˆ˜
 void AGnuMonsterAIController::ClearTarget()
 {
-    // Å¸°Ù »èÁ¦
+    // íƒ€ê²Ÿ ì‚­ì œ
     TargetActor = nullptr;
     GetBlackboardComponent()->ClearValue(TEXT("TargetActor"));
 
-    // ¸ó½ºÅÍ Äİ¸®Àü ºñÈ°¼ºÈ­
+    // ëª¬ìŠ¤í„° ì½œë¦¬ì „ ë¹„í™œì„±í™”
     AGnuMonster* GnuMonster = Cast<AGnuMonster>(GetPawn());
     if (GnuMonster)
     {
         DeactivateMonsterCollision();
+        bMonsterCollisionActive = false;
     }
 }
 
 void AGnuMonsterAIController::StartRetryCooldown()
 {
-    bCanRetry = false; // Àç½Ãµµ ºÒ°¡ »óÅÂ·Î º¯°æ
+    bCanRetry = false; // ì¬ì‹œë„ ë¶ˆê°€ ìƒíƒœë¡œ ë³€ê²½
 
-    // ÀÏÁ¤ ½Ã°£ÀÌ Áö³­ ÈÄ Àç½Ãµµ °¡´É »óÅÂ·Î º¯°æ
+    // ì¼ì • ì‹œê°„ì´ ì§€ë‚œ í›„ ì¬ì‹œë„ ê°€ëŠ¥ ìƒíƒœë¡œ ë³€ê²½
     GetWorld()->GetTimerManager().SetTimer(
         RetryCooldownTimerHandle,
         [this]() { bCanRetry = true; },
-        1.0f, // Äğ´Ù¿î ½Ã°£ (ÃÊ)
-        false // ¹İº¹ÇÏÁö ¾ÊÀ½
+        1.0f, // ì¿¨ë‹¤ìš´ ì‹œê°„ (ì´ˆ)
+        false // ë°˜ë³µí•˜ì§€ ì•ŠìŒ
     );
 }
 
-// ¸ó½ºÅÍ Äİ¸®Àü È°¼ºÈ­ ÇÔ¼ö
+// ëª¬ìŠ¤í„° ì½œë¦¬ì „ í™œì„±í™” í•¨ìˆ˜
 void AGnuMonsterAIController::ActivateMonsterCollision()
 {
     AGnuMonster* Monster = Cast<AGnuMonster>(GetPawn());
@@ -261,11 +252,14 @@ void AGnuMonsterAIController::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-    // TargetActor ¸®ÇÃ¸®ÄÉÀÌ¼Ç
+    // TargetActor ë¦¬í”Œë¦¬ì¼€ì´ì…˜
     DOREPLIFETIME(AGnuMonsterAIController, TargetActor);
 }
 
 void AGnuMonsterAIController::OnRep_TargetActor()
 {
-    GetBlackboardComponent()->SetValueAsObject(TEXT("TargetActor"), TargetActor);
+    if (UBlackboardComponent* BB = GetBlackboardComponent())
+    {
+        BB->SetValueAsObject(TEXT("TargetActor"), TargetActor);
+    }
 }

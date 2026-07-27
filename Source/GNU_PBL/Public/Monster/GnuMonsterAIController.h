@@ -10,6 +10,7 @@
 
 class UAIPerceptionComponent;
 class UAISenseConfig_Sight;
+class AGnuMonster;
 /**
  * 
  */
@@ -23,7 +24,7 @@ public:
 
 	virtual void Tick(float DeltaSecond) override;
 
-	// BehaviorTree Á¾·á ÇÔ¼ö (¸ó½ºÅÍ Á×¾úÀ» ¶§ È£Ãâ)
+	// BehaviorTree ì¢…ë£Œ í•¨ìˆ˜ (ëª¬ìŠ¤í„° ì£½ì—ˆì„ ë•Œ í˜¸ì¶œ)
 	UFUNCTION()
 	void StopBehaviorTree();
 
@@ -34,26 +35,18 @@ public:
 	void DeactivateMonsterCollision();
 	void ActivateMonsterHealthBar();
 
-	// Behaviortree º¯¼öµé ·¹ÇÃ¸®ÄÉÀÌÆ®
+	// Behaviortree ë³€ìˆ˜ë“¤ ë ˆí”Œë¦¬ì¼€ì´íŠ¸
 	UPROPERTY(ReplicatedUsing = OnRep_TargetActor)
 	AActor* TargetActor;
 
-	
-	bool bActivateHealthBar = false;
 protected:
 	virtual void BeginPlay() override;
-
+	
 	UFUNCTION()
 	void OnRep_TargetActor();
 
-	/*UFUNCTION()
-	void OnRep_TargetLocation();
 
-	UFUNCTION()
-	void OnRep_DistToTarget();*/
-
-
-	// ÀÎ½Ä ½ÃÅ°´Â ÄÄÆ÷³ÍÆ® Ãß°¡
+	// ì¸ì‹ ì‹œí‚¤ëŠ” ì»´í¬ë„ŒíŠ¸ ì¶”ê°€
 	UPROPERTY(VisibleAnywhere, Category = "AI")
 	UAIPerceptionComponent* AIPerceptionComponent;
 
@@ -74,23 +67,29 @@ protected:
 
 	void ClearTarget();
 
-	// Target ÁöÁ¤ÇÏ´Â ÇÔ¼ö ÁöÁ¤ (Array Çü½ÄÀ¸·Î Actorµé ÀÎ½Ä½ÃÅ°±â)
+	// Target ì§€ì •í•˜ëŠ” í•¨ìˆ˜ ì§€ì • (Array í˜•ì‹ìœ¼ë¡œ Actorë“¤ ì¸ì‹ì‹œí‚¤ê¸°)
 	UFUNCTION()
 	void OnTargetDetected(AActor* Actor, FAIStimulus const Stimulus);
 
-	// ¸ÖÆ¼
+	// ë©€í‹°
 	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 private:
-	
-	// Å¸°Ù º¯°æ Å¸ÀÌ¸Ó
+	UPROPERTY()
+	AGnuMonster* CachedMonster = nullptr;
+
+	// íƒ€ê²Ÿ ë³€ê²½ íƒ€ì´ë¨¸
 	FTimerHandle TargetUpdateTimerHandle;
 	float TargetUpdateInterval;
 
-	// Tick ¿¡¼­ Å¸°Ù º¯°æ Àç½Ãµµ Äğ´Ù¿î Å¸ÀÌ¸Ó
+	// Tick ì—ì„œ íƒ€ê²Ÿ ë³€ê²½ ì¬ì‹œë„ ì¿¨ë‹¤ìš´ íƒ€ì´ë¨¸
 	FTimerHandle RetryCooldownTimerHandle;
 	bool bCanRetry = true;
 
-	// Àç½Ãµµ Äğ´Ù¿î ¼³Á¤ ÇÔ¼ö
+	// ìµœì´ˆ í•œë²ˆë§Œ ìœ„ì ¯ ëœ¨ê²Œ ë§Œë“œëŠ” bool í˜•
+	bool bActivateHealthBar = false;
+	bool bMonsterCollisionActive = false;
+
+	// ì¬ì‹œë„ ì¿¨ë‹¤ìš´ ì„¤ì • í•¨ìˆ˜
 	void StartRetryCooldown();
 };

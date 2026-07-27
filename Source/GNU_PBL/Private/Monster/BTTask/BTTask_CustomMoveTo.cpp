@@ -87,7 +87,7 @@ void UBTTask_CustomMoveTo::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* No
 
     // 새로운 TargetLocation 확인
     FVector NewTargetLocation = BlackboardComp->GetValueAsVector(TargetLocationKey.SelectedKeyName);
-    if (!NewTargetLocation.Equals(CurrentTargetLocation, 1.0f)) // 새로운 위치가 다를 경우
+    if (!NewTargetLocation.Equals(CurrentTargetLocation, 50.0f)) // 새로운 위치가 다를 경우
     {
         CurrentTargetLocation = NewTargetLocation;
 

@@ -4,7 +4,7 @@
 #include "Monster/GnuMonster.h"
 #include "Monster/GnuMonsterAnimInstance.h"
 #include "Monster/GnuMonsterAIController.h"
-// º¸½º °ø°İ °ü·Ã
+// ë³´ìŠ¤ ê³µê²© ê´€ë ¨
 #include "Monster/AttackActor/GnuFireballActor.h"
 #include "Monster/AttackActor/GnuFiretornadoActor.h"
 #include "Monster/AttackActor/GnuFirebreathActor.h"
@@ -13,9 +13,9 @@
 #include "Monster/AttackActor/GnuGroundSpikeCollisionActor.h"
 #include "Monster/AttackActor/GnuLavaBurstActor.h"
 #include "Monster/AttackActor/GnuLavaBurstCollisionActor.h"
-// À§Á¬
+// ìœ„ì ¯
 #include "Monster/Widget/GnuMonsterHealthBase.h"
-// ¶óÀÌºê·¯¸® ÇÔ¼ö
+// ë¼ì´ë¸ŒëŸ¬ë¦¬ í•¨ìˆ˜
 #include "Materials/MaterialInstanceDynamic.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Characters/GnuMyCharacter.h"
@@ -25,72 +25,72 @@
 #include "Animation/AnimNotifies/AnimNotify.h"
 #include "Animation/AnimMontage.h"
 #include "Animation/AnimInstance.h"
-#include "TimerManager.h"				// Å¸ÀÌ¸Ó »ç¿ëÀ» À§ÇÑ Çì´õ Ãß°¡
+#include "TimerManager.h"				// íƒ€ì´ë¨¸ ì‚¬ìš©ì„ ìœ„í•œ í—¤ë” ì¶”ê°€
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "KismetAnimationLibrary.h"
 #include <Net/UnrealNetwork.h>
-#include "GNU_PBL/GNU_PBL.h"	// SkeletalMesh Ã¤³Î ¼³Á¤
-// Ä³¸¯ÅÍ
+#include "GNU_PBL/GNU_PBL.h"	// SkeletalMesh ì±„ë„ ì„¤ì •
+// ìºë¦­í„°
 #include "Characters/GnuMyCharacter.h"
-// °ÔÀÓ¸ğµå
+// ê²Œì„ëª¨ë“œ
 #include "GameModes/GNUGameMode.h"
 
 AGnuMonster::AGnuMonster()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	// ÄÁÆ®·Ñ·¯ÀÇ È¸Àü »ç¿ë ¿©ºÎ
+	// ì»¨íŠ¸ë¡¤ëŸ¬ì˜ íšŒì „ ì‚¬ìš© ì—¬ë¶€
 	bUseControllerRotationYaw = false;
 
-	// ±âº» Ä¸½¶ ÄÄÆ÷³ÍÆ®, ±âº» ½ºÄÌ·¹Å» ¸Ş½¬¼öÁ¤ °¡´ÉÇÏµµ·Ï ¼³Á¤
+	// ê¸°ë³¸ ìº¡ìŠ ì»´í¬ë„ŒíŠ¸, ê¸°ë³¸ ìŠ¤ì¼ˆë ˆíƒˆ ë©”ì‰¬ìˆ˜ì • ê°€ëŠ¥í•˜ë„ë¡ ì„¤ì •
 	GetCapsuleComponent()->bEditableWhenInherited = true;
 	GetMesh()->bEditableWhenInherited = true;
 
-	// Äİ¸®Àü ÃÊ±âÈ­
-	//InitializeCollisionComponent(ClawCollision, TEXT("ClawCollision"));	// ¼ÕÅé °ø°İ Äİ¸®Àü
-	//InitializeCollisionComponent(TailCollision, TEXT("TailCollision")); // ²¿¸® °ø°İ Äİ¸®Àü
+	// ì½œë¦¬ì „ ì´ˆê¸°í™”
+	//InitializeCollisionComponent(ClawCollision, TEXT("ClawCollision"));	// ì†í†± ê³µê²© ì½œë¦¬ì „
+	//InitializeCollisionComponent(TailCollision, TEXT("TailCollision")); // ê¼¬ë¦¬ ê³µê²© ì½œë¦¬ì „
 
 	ClawCollision = CreateDefaultSubobject<UBoxComponent>("ClawCollision");
 	ClawCollision->SetupAttachment(GetMesh());
-	ClawCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);	// ±âº»ÀûÀ¸·Î ºñÈ°¼ºÈ­
-	ClawCollision->bEditableWhenInherited = true; // ºí·çÇÁ¸°Æ® °ªÀÌ ¿ì¼±µÇ°Ô ÇÔ
+	ClawCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);	// ê¸°ë³¸ì ìœ¼ë¡œ ë¹„í™œì„±í™”
+	ClawCollision->bEditableWhenInherited = true; // ë¸”ë£¨í”„ë¦°íŠ¸ ê°’ì´ ìš°ì„ ë˜ê²Œ í•¨
 
 	TailCollision = CreateDefaultSubobject<UBoxComponent>("TailCollision");
 	TailCollision->SetupAttachment(GetMesh());
-	TailCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);	// ±âº»ÀûÀ¸·Î ºñÈ°¼ºÈ­
-	TailCollision->bEditableWhenInherited = true; // ºí·çÇÁ¸°Æ® °ªÀÌ ¿ì¼±µÇ°Ô ÇÔ
+	TailCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);	// ê¸°ë³¸ì ìœ¼ë¡œ ë¹„í™œì„±í™”
+	TailCollision->bEditableWhenInherited = true; // ë¸”ë£¨í”„ë¦°íŠ¸ ê°’ì´ ìš°ì„ ë˜ê²Œ í•¨
 
 	BodyCollision = CreateDefaultSubobject<USphereComponent>("BodyCollision");
 	BodyCollision->SetupAttachment(GetMesh());
-	BodyCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);	// ±âº»ÀûÀ¸·Î ºñÈ°¼ºÈ­
-	BodyCollision->bEditableWhenInherited = true; // ºí·çÇÁ¸°Æ® °ªÀÌ ¿ì¼±µÇ°Ô ÇÔ
-	
-	// Ä³¸¯°£ °ø°İÀ» ¸·±â À§ÇÑ »õ·Î¿î Ã¤³Î ¼³Á¤
+	BodyCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);	// ê¸°ë³¸ì ìœ¼ë¡œ ë¹„í™œì„±í™”
+	BodyCollision->bEditableWhenInherited = true; // ë¸”ë£¨í”„ë¦°íŠ¸ ê°’ì´ ìš°ì„ ë˜ê²Œ í•¨
+
+	// ìºë¦­ê°„ ê³µê²©ì„ ë§‰ê¸° ìœ„í•œ ìƒˆë¡œìš´ ì±„ë„ ì„¤ì •
 	GetMesh()->SetCollisionObjectType(ECC_SkeletalMesh);
 
-	// MovementComponent ¸®ÇÃ¸®ÄÉÀÌ¼Ç È°¼ºÈ­
+	// MovementComponent ë¦¬í”Œë¦¬ì¼€ì´ì…˜ í™œì„±í™”
 	GetCharacterMovement()->SetIsReplicated(true);
 	SetReplicateMovement(true);
-	bReplicates = true; // Actor ¸®ÇÃ¸®ÄÉÀÌ¼Ç È°¼ºÈ­
-	bAlwaysRelevant = true; // Ç×»ó ³×Æ®¿öÅ©¿¡¼­ Áß¿ä
+	bReplicates = true; // Actor ë¦¬í”Œë¦¬ì¼€ì´ì…˜ í™œì„±í™”
+	bAlwaysRelevant = true; // í•­ìƒ ë„¤íŠ¸ì›Œí¬ì—ì„œ ì¤‘ìš”
 
-	// hp ±¸Çö
+	// hp êµ¬í˜„
 	MaxHealth = 100.f;
 	CurrentHealth = MaxHealth;
 
-	// ³Ë¹é Èû ÃÊ±âÈ­
+	// ë„‰ë°± í˜ ì´ˆê¸°í™”
 	KnockbackStrength = 0.f;
 }
 
 void AGnuMonster::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	DeactivateSkeletalMesh();	// Å¸°Ù ÀÎ½Ä Àü Äİ¸®Àü ºñÈ°¼ºÈ­
-	ActivateCapsuleComp();		// Ä¸½¶ ÄÄÆ÷³ÍÆ®´Â È°¼ºÈ­
+
+	DeactivateSkeletalMesh();	// íƒ€ê²Ÿ ì¸ì‹ ì „ ì½œë¦¬ì „ ë¹„í™œì„±í™”
+	ActivateCapsuleComp();		// ìº¡ìŠ ì»´í¬ë„ŒíŠ¸ëŠ” í™œì„±í™”
 
 	if (BodyCollision)
 	{
@@ -107,15 +107,15 @@ void AGnuMonster::BeginPlay()
 		TailCollision->OnComponentBeginOverlap.AddDynamic(this, &AGnuMonster::OnTailOverlapBegin);
 	}
 
-	// ¼­¹ö¿¡¼­ µ¥¹ÌÁö °ü¸®
+	// ì„œë²„ì—ì„œ ë°ë¯¸ì§€ ê´€ë¦¬
 	if (HasAuthority())
 	{
 		OnTakeAnyDamage.AddDynamic(this, &AGnuMonster::ReceiveDamage);
 	}
-	
-	// Dynamic Material Instance »ı¼º
-	UMaterialInterface* Material_1st = GetMesh()->GetMaterial(0);  // Ã¹ ¹øÂ° ¸ÓÆ¼¸®¾ó ÀÎµ¦½º »ç¿ë
-	UMaterialInterface* Material_2nd = GetMesh()->GetMaterial(1);  // µÎ ¹øÂ° ¸ÓÆ¼¸®¾ó ÀÎµ¦½º »ç¿ë
+
+	// Dynamic Material Instance ìƒì„±
+	UMaterialInterface* Material_1st = GetMesh()->GetMaterial(0);  // ì²« ë²ˆì§¸ ë¨¸í‹°ë¦¬ì–¼ ì¸ë±ìŠ¤ ì‚¬ìš©
+	UMaterialInterface* Material_2nd = GetMesh()->GetMaterial(1);  // ë‘ ë²ˆì§¸ ë¨¸í‹°ë¦¬ì–¼ ì¸ë±ìŠ¤ ì‚¬ìš©
 	if (Material_1st && Material_2nd)
 	{
 		DynamicMaterialInst_1st = UMaterialInstanceDynamic::Create(Material_1st, this);
@@ -125,7 +125,6 @@ void AGnuMonster::BeginPlay()
 		GetMesh()->SetMaterial(1, DynamicMaterialInst_2nd);
 	}
 }
-
 
 void AGnuMonster::Tick(float DeltaTime)
 {
@@ -137,23 +136,23 @@ void AGnuMonster::Tick(float DeltaTime)
 		SetDirection();
 	}
 
-	// FirebreathActor°¡ È°¼ºÈ­ µÇ¸é À§Ä¡ ¾÷µ¥ÀÌÆ®
+	// FirebreathActorê°€ í™œì„±í™” ë˜ë©´ ìœ„ì¹˜ ì—…ë°ì´íŠ¸
 	if (FirebreathActor)
 	{
 
 		FVector HeadLocation = GetMesh()->GetSocketLocation(TEXT("HeadSocket")) + FVector(0.f, 0.f, -50.f);
-		FVector SpawnLocation = HeadLocation + GetActorForwardVector();  // ¸ó½ºÅÍ ¾Õ¿¡ »ı¼º
+		FVector SpawnLocation = HeadLocation + GetActorForwardVector();  // ëª¬ìŠ¤í„° ì•ì— ìƒì„±
 		FRotator SpawnRotation = GetMesh()->GetSocketRotation(TEXT("HeadSocket"));
 		SpawnRotation.Pitch += 70;
 
-		FirebreathActor->SetActorLocation(SpawnLocation + SpawnRotation.Vector() * 100); // ¸ó½ºÅÍ ¾ÕÂÊÀ¸·Î ÀÌµ¿
-		FirebreathActor->SetActorRotation(SpawnRotation); // ¸ó½ºÅÍ¿Í °°Àº ¹æÇâÀ¸·Î È¸Àü
+		FirebreathActor->SetActorLocation(SpawnLocation + SpawnRotation.Vector() * 100); // ëª¬ìŠ¤í„° ì•ìª½ìœ¼ë¡œ ì´ë™
+		FirebreathActor->SetActorRotation(SpawnRotation); // ëª¬ìŠ¤í„°ì™€ ê°™ì€ ë°©í–¥ìœ¼ë¡œ íšŒì „
 
 		if (bCanRetry)
 		{
 			FirebreathActor->LaunchProjectile(this, &SpawnLocation, &SpawnRotation);
 
-			// Àç½Ãµµ ´ë±â ½Ã°£ ¼³Á¤
+			// ì¬ì‹œë„ ëŒ€ê¸° ì‹œê°„ ì„¤ì •
 			StartRetryCooldown();
 		}
 	}
@@ -161,13 +160,18 @@ void AGnuMonster::Tick(float DeltaTime)
 
 void AGnuMonster::SetGroundSpeed()
 {
-	GroundSpeed = GetVelocity().Size();	// ¸ó½ºÅÍ ÀÌ¼Ó ¾÷µ¥ÀÌÆ®
+	GroundSpeed = GetVelocity().Size();	// ëª¬ìŠ¤í„° ì´ì† ì—…ë°ì´íŠ¸
 }
 
 void AGnuMonster::SetHealthWidget_Implementation()
 {
-	// Health À§Á¬ÀÌ ¼³Á¤µÇ¾î ÀÖÀ¸¸é »ı¼ºÇÏ¿© È­¸é¿¡ Ãß°¡
-	// ÇÃ·¹ÀÌ¾î¸¦ ÀÎ½ÄÇÏ¸é UI°¡ ¶ßµµ·Ï º¯°æÇØ¾ßÇÔ (ÃßÈÄ ¼öÁ¤)
+	// Health ìœ„ì ¯ì´ ì„¤ì •ë˜ì–´ ìˆìœ¼ë©´ ìƒì„±í•˜ì—¬ í™”ë©´ì— ì¶”ê°€
+	// í”Œë ˆì´ì–´ë¥¼ ì¸ì‹í•˜ë©´ UIê°€ ëœ¨ë„ë¡ ë³€ê²½í•´ì•¼í•¨ (ì¶”í›„ ìˆ˜ì •)
+	if (GetNetMode() == NM_DedicatedServer)
+	{
+		return;   // ë°ë””ì¼€ì´í‹°ë“œ ì„œë²„ëŠ” í™”ë©´ì´ ì—†ìœ¼ë‹ˆ UI ìƒì„± ìŠ¤í‚µ
+	}
+
 	if (MonsterHealthWidgetClass)
 	{
 		MonsterHealthWidget = CreateWidget<UGnuMonsterHealthBase>(GetWorld(), MonsterHealthWidgetClass);
@@ -177,7 +181,7 @@ void AGnuMonster::SetHealthWidget_Implementation()
 
 void AGnuMonster::SetDirection()
 {
-	// ¹æÇâ ¾÷µ¥ÀÌÆ®
+	// ë°©í–¥ ì—…ë°ì´íŠ¸
 	if (AGnuMonsterAIController* AIController = Cast<AGnuMonsterAIController>(GetController()))
 	{
 		if (AIController->TargetActor != nullptr)
@@ -185,21 +189,21 @@ void AGnuMonster::SetDirection()
 			FVector MonsterForward = GetActorForwardVector();
 			FVector ToTarget = (AIController->TargetActor->GetActorLocation() - GetActorLocation()).GetSafeNormal();
 
-			// ¸ó½ºÅÍÀÇ Á¤¸é ¹æÇâ°ú Å¸°Ù ¹æÇâ °£ÀÇ °¢µµ Â÷ÀÌ
+			// ëª¬ìŠ¤í„°ì˜ ì •ë©´ ë°©í–¥ê³¼ íƒ€ê²Ÿ ë°©í–¥ ê°„ì˜ ê°ë„ ì°¨ì´
 			FVector CrossProduct = FVector::CrossProduct(MonsterForward, ToTarget);
 			float DotProduct = FVector::DotProduct(MonsterForward, ToTarget);
 			Direction = FMath::RadiansToDegrees(FMath::Atan2(CrossProduct.Z, DotProduct));
 		}
 		else
 		{
-			Direction = 0.f; // Å¸°ÙÀÌ ¾øÀ¸¸é ¹æÇâ ÃÊ±âÈ­
+			Direction = 0.f; // íƒ€ê²Ÿì´ ì—†ìœ¼ë©´ ë°©í–¥ ì´ˆê¸°í™”
 		}
 	}
 }
 
 
-//¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ Damage °ü·Ã ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ //
-// HP ¾÷µ¥ÀÌÆ® ÇÔ¼ö(¸ÖÆ¼ Ã³¸®)
+//ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ Damage ê´€ë ¨ ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ //
+// HP ì—…ë°ì´íŠ¸ í•¨ìˆ˜(ë©€í‹° ì²˜ë¦¬)
 void AGnuMonster::OnRep_Health()
 {
 	if (MonsterHealthWidget)
@@ -208,32 +212,32 @@ void AGnuMonster::OnRep_Health()
 	}
 }
 
-// µ¥¹ÌÁö¸¦ ¹Ş°Ô µÇ¾úÀ» ¶§
+// ë°ë¯¸ì§€ë¥¼ ë°›ê²Œ ë˜ì—ˆì„ ë•Œ
 void AGnuMonster::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
 {
 	CurrentHealth = FMath::Clamp(CurrentHealth - Damage, 0.f, MaxHealth);
 
-	// ¸ÓÆ¼¸®¾óÀÇ ÀÌ¹Ì½Ãºê »ö»ó º¯°æ
+	// ë¨¸í‹°ë¦¬ì–¼ì˜ ì´ë¯¸ì‹œë¸Œ ìƒ‰ìƒ ë³€ê²½
 	if (DynamicMaterialInst_1st && DynamicMaterialInst_2nd)
 	{
-		// ¸ÓÆ¼¸®¾óÀÇ Ã¹¹øÂ° µÎ¹øÂ° ÀÎµ¦½º Ã£¾Æ¼­ EmissiveColor ¶ó´Â ÀÌ¸§À» Ã£À¸¸é ±× °ªÀ» º¯°æ
-		// VectorParamÀ» ÀÌ¿ëÇØ¼­ º¯°æ
+		// ë¨¸í‹°ë¦¬ì–¼ì˜ ì²«ë²ˆì§¸ ë‘ë²ˆì§¸ ì¸ë±ìŠ¤ ì°¾ì•„ì„œ EmissiveColor ë¼ëŠ” ì´ë¦„ì„ ì°¾ìœ¼ë©´ ê·¸ ê°’ì„ ë³€ê²½
+		// VectorParamì„ ì´ìš©í•´ì„œ ë³€ê²½
 		Multicast_SetEmissiveColor(FLinearColor(0.05f, 0.0f, 0.0f));
 
 
-		// Å¸ÀÌ¸Ó·Î ¿ø·¡ »ö»óÀ¸·Î º¹¿ø
+		// íƒ€ì´ë¨¸ë¡œ ì›ë˜ ìƒ‰ìƒìœ¼ë¡œ ë³µì›
 		FTimerHandle TimerHandle_1st;
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle_1st, [this]() {
 			if (DynamicMaterialInst_1st && DynamicMaterialInst_2nd)
 			{
-				Multicast_SetEmissiveColor(FLinearColor(0.0f, 0.0f, 0.0f));  // ±âº»°ª (°ËÁ¤»ö)
+				Multicast_SetEmissiveColor(FLinearColor(0.0f, 0.0f, 0.0f));  // ê¸°ë³¸ê°’ (ê²€ì •ìƒ‰)
 			}
 			}, 0.05f, false);
 	}
 
 	if (MonsterHealthWidget)
 	{
-		MonsterHealthWidget->UpdateBossHP(CurrentHealth, MaxHealth); 			
+		MonsterHealthWidget->UpdateBossHP(CurrentHealth, MaxHealth);
 	}
 
 	if (AGnuMonsterAIController* AIController = Cast<AGnuMonsterAIController>(GetController()))
@@ -241,7 +245,7 @@ void AGnuMonster::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamag
 		AIController->UpdateMonsterHealth();
 	}
 
-	// ¸ó½ºÅÍ Á×À½ Ã³¸®
+	// ëª¬ìŠ¤í„° ì£½ìŒ ì²˜ë¦¬
 	if (CurrentHealth <= 0)
 	{
 		Die();
@@ -261,88 +265,86 @@ void AGnuMonster::Multicast_SetEmissiveColor_Implementation(const FLinearColor& 
 void AGnuMonster::KnockbackPlayer(ACharacter* PlayerCharacter)
 {
 	if (PlayerCharacter)
-    {
-        // ³Ë¹é ¹æÇâ °è»ê
-        FVector KnockbackDirection = (PlayerCharacter->GetActorLocation() - GetActorLocation()).GetSafeNormal(); // ÀûÀ¸·ÎºÎÅÍ ÇÃ·¹ÀÌ¾î ¹æÇâ
+	{
+		// ë„‰ë°± ë°©í–¥ ê³„ì‚°
+		FVector KnockbackDirection = (PlayerCharacter->GetActorLocation() - GetActorLocation()).GetSafeNormal(); // ì ìœ¼ë¡œë¶€í„° í”Œë ˆì´ì–´ ë°©í–¥
 
-        // Ä³¸¯ÅÍ¸¦ µÚ·Î ¹Ğ¾î³»±â
-        PlayerCharacter->LaunchCharacter(KnockbackDirection * KnockbackStrength, true, true);
-    }
-    else
-    {
-        UE_LOG(LogTemp, Warning, TEXT("PlayerCharacter is nullptr"));
-    }
+		// ìºë¦­í„°ë¥¼ ë’¤ë¡œ ë°€ì–´ë‚´ê¸°
+		PlayerCharacter->LaunchCharacter(KnockbackDirection * KnockbackStrength, true, true);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PlayerCharacter is nullptr"));
+	}
 }
 
 void AGnuMonster::StartRetryCooldown()
 {
-	bCanRetry = false; // Àç½Ãµµ ºÒ°¡ »óÅÂ·Î º¯°æ
+	bCanRetry = false; // ì¬ì‹œë„ ë¶ˆê°€ ìƒíƒœë¡œ ë³€ê²½
 
-	// ÀÏÁ¤ ½Ã°£ÀÌ Áö³­ ÈÄ Àç½Ãµµ °¡´É »óÅÂ·Î º¯°æ
+	// ì¼ì • ì‹œê°„ì´ ì§€ë‚œ í›„ ì¬ì‹œë„ ê°€ëŠ¥ ìƒíƒœë¡œ ë³€ê²½
 	GetWorld()->GetTimerManager().SetTimer(
 		RetryCooldownTimerHandle,
-		[this]() { bCanRetry = true;},
-		0.1f, // Äğ´Ù¿î ½Ã°£ (ÃÊ)
-		false // ¹İº¹ÇÏÁö ¾ÊÀ½
+		[this]() { bCanRetry = true; },
+		0.1f, // ì¿¨ë‹¤ìš´ ì‹œê°„ (ì´ˆ)
+		false // ë°˜ë³µí•˜ì§€ ì•ŠìŒ
 	);
 }
 
 void AGnuMonster::Die()
 {
-	/*GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Black, TEXT("Boss has died!"));*/
-
-	// FirebreathActor Á¦°Å
+	// FirebreathActor ì œê±°
 	if (FirebreathActor)
 	{
 		FirebreathActor->Destroy();
-		FirebreathActor = nullptr; // Æ÷ÀÎÅÍ ÃÊ±âÈ­
+		FirebreathActor = nullptr; // í¬ì¸í„° ì´ˆê¸°í™”
 	}
 
-	// AIController¿¡¼­ Behavior Tree ÁßÁö
+	// AIControllerì—ì„œ Behavior Tree ì¤‘ì§€
 	AGnuMonsterAIController* AIController = Cast<AGnuMonsterAIController>(GetController());
 	if (AIController)
 	{
 		AIController->StopBehaviorTree();
 	}
 
-	// ¸ó½ºÅÍ Á×¾úÀ» ¶§ ¸Ş½ÃÀÇ Ãæµ¹ ºñÈ°¼ºÈ­
+	// ëª¬ìŠ¤í„° ì£½ì—ˆì„ ë•Œ ë©”ì‹œì˜ ì¶©ëŒ ë¹„í™œì„±í™”
 	DeactivateSkeletalMesh();
 
-	// ¸ó½ºÅÍ Á×¾úÀ» ¶§ Ä¸½¶ ÄÄÆ÷³ÍÆ® Ãæµ¹ ºñÈ°¼ºÈ­
+	// ëª¬ìŠ¤í„° ì£½ì—ˆì„ ë•Œ ìº¡ìŠ ì»´í¬ë„ŒíŠ¸ ì¶©ëŒ ë¹„í™œì„±í™”
 	DeactivateCapsuleComp();
 
 	GetWorld()->GetTimerManager().SetTimer(
-		ResultWidgetHandle,						// Å¸ÀÌ¸Ó ÇÚµé
-		this,									// È£Ãâ °´Ã¼
-		&AGnuMonster::DelayedResultWidget,		// È£ÃâÇÒ ÇÔ¼ö
-		5.0f,									// Áö¿¬ ½Ã°£ (ÃÊ)
-		false									// ¹İº¹ ¿©ºÎ (false : ÇÑ ¹ø¸¸ ½ÇÇà)
+		ResultWidgetHandle,						// íƒ€ì´ë¨¸ í•¸ë“¤
+		this,									// í˜¸ì¶œ ê°ì²´
+		&AGnuMonster::DelayedResultWidget,		// í˜¸ì¶œí•  í•¨ìˆ˜
+		5.0f,									// ì§€ì—° ì‹œê°„ (ì´ˆ)
+		false									// ë°˜ë³µ ì—¬ë¶€ (false : í•œ ë²ˆë§Œ ì‹¤í–‰)
 	);
 
-	
+
 	UGnuMonsterAnimInstance* AnimInstance = Cast<UGnuMonsterAnimInstance>(this->GetMesh()->GetAnimInstance());
 	if (AnimInstance)
-	{	
-		// Á×À½ »óÅÂ ¼³Á¤
+	{
+		// ì£½ìŒ ìƒíƒœ ì„¤ì •
 		AnimInstance->bIsDead = true;
 		AnimInstance->PlayDieMontage();
 
-		// ¸ùÅ¸ÁÖ°¡ Á¾·áµÇ¾ú´ÂÁö È®ÀÎ ÈÄ Destroy È£Ãâ
+		// ëª½íƒ€ì£¼ê°€ ì¢…ë£Œë˜ì—ˆëŠ”ì§€ í™•ì¸ í›„ Destroy í˜¸ì¶œ
 		if (AnimInstance->bIsDead)
 		{
-			// 12ÃÊ Å¸ÀÌ¸Ó ¼³Á¤
+			// 12ì´ˆ íƒ€ì´ë¨¸ ì„¤ì •
 			GetWorld()->GetTimerManager().SetTimer(
-				DestroyTimerHandle,						// Å¸ÀÌ¸Ó ÇÚµé
-				this,									// È£Ãâ °´Ã¼
-				&AGnuMonster::DelayedDestroy,			// È£ÃâÇÒ ÇÔ¼ö
-				15.0f,									// Áö¿¬ ½Ã°£ (ÃÊ)
-				false									// ¹İº¹ ¿©ºÎ (false : ÇÑ ¹ø¸¸ ½ÇÇà)
+				DestroyTimerHandle,						// íƒ€ì´ë¨¸ í•¸ë“¤
+				this,									// í˜¸ì¶œ ê°ì²´
+				&AGnuMonster::DelayedDestroy,			// í˜¸ì¶œí•  í•¨ìˆ˜
+				15.0f,									// ì§€ì—° ì‹œê°„ (ì´ˆ)
+				false									// ë°˜ë³µ ì—¬ë¶€ (false : í•œ ë²ˆë§Œ ì‹¤í–‰)
 			);
 		}
 	}
 }
 
-// ¸ó½ºÅÍ°¡ Á×¾úÀ» ¶§ µô·¹ÀÌ ÁÖ°í »èÁ¦½ÃÅ°±â
+// ëª¬ìŠ¤í„°ê°€ ì£½ì—ˆì„ ë•Œ ë”œë ˆì´ ì£¼ê³  ì‚­ì œì‹œí‚¤ê¸°
 void AGnuMonster::DelayedDestroy()
 {
 	Destroy();
@@ -350,7 +352,7 @@ void AGnuMonster::DelayedDestroy()
 
 void AGnuMonster::DelayedResultWidget()
 {
-	// Á×ÀÚ¸¶ÀÚ ¹Ù·Î °á°ú È­¸éÀÌ ³ª¿À±â ¶§¹®¿¡ Å¸ÀÌ¸Ó¸¦ ÀÌ¿ëÇØµµ ±¦ÂúÀ»µí
+	// ì£½ìë§ˆì ë°”ë¡œ ê²°ê³¼ í™”ë©´ì´ ë‚˜ì˜¤ê¸° ë•Œë¬¸ì— íƒ€ì´ë¨¸ë¥¼ ì´ìš©í•´ë„ ê´œì°®ì„ë“¯
 	AGNUGameMode* GNUGameMode = GetWorld()->GetAuthGameMode<AGNUGameMode>();
 	if (GNUGameMode)
 	{
@@ -362,32 +364,32 @@ void AGnuMonster::EnterPhaseTwo()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Entering Phase Two!"));
 }
-//¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ Damage °ü·Ã ³¡ ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ //
+//ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ Damage ê´€ë ¨ ë ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ //
 
 
 
-//¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ Attack °ü·Ã ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ //
-// ¿ø°Å¸® °ø°İ ºÎºĞ 5°³
+//ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ Attack ê´€ë ¨ ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ //
+// ì›ê±°ë¦¬ ê³µê²© ë¶€ë¶„ 5ê°œ
 void AGnuMonster::SpawnFireball()
 {
-	if (FireballClass)  // FireballClass´Â BP¿¡¼­ ¼³Á¤ÇÑ ÆÄÀÌ¾îº¼ Å¬·¡½º
+	if (FireballClass)  // FireballClassëŠ” BPì—ì„œ ì„¤ì •í•œ íŒŒì´ì–´ë³¼ í´ë˜ìŠ¤
 	{
 		FVector HeadLoaction = GetMesh()->GetSocketLocation(TEXT("HeadSocket"));
-		FVector SpawnLocation = HeadLoaction + GetActorForwardVector() * 100;  // ¸ó½ºÅÍ ¾Õ¿¡ »ı¼º
+		FVector SpawnLocation = HeadLoaction + GetActorForwardVector() * 100;  // ëª¬ìŠ¤í„° ì•ì— ìƒì„±
 		FRotator SpawnRotation = GetActorRotation();
 
 		FActorSpawnParameters SpawnParams;
-		SpawnParams.Owner = this;                         // FireballÀÇ ¼ÒÀ¯ÀÚ¸¦ ÇöÀç ¸ó½ºÅÍ·Î ¼³Á¤
-		SpawnParams.Instigator = Cast<APawn>(this);       // Instigator(µ¥¹ÌÁö¸¦ À¯¹ßÇÑ ÁÖÃ¼)¸¦ ÇöÀç ¸ó½ºÅÍ·Î ¼³Á¤
-		SpawnParams.SpawnCollisionHandlingOverride =							// »ı¼ºµÈ ¾×ÅÍ°¡ ½ºÆùµÉ ¶§ Ãæµ¹ Ã³¸® ¹æ½Ä ¼³Á¤ 
-			ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;	// Ãæµ¹ÀÌ ¹ß»ıÇÒ °æ¿ì, °¡´ÉÇÑ À§Ä¡·Î Á¶Á¤ÇÏ¿© ¾×ÅÍ¸¦ »ı¼º
+		SpawnParams.Owner = this;                         // Fireballì˜ ì†Œìœ ìë¥¼ í˜„ì¬ ëª¬ìŠ¤í„°ë¡œ ì„¤ì •
+		SpawnParams.Instigator = Cast<APawn>(this);       // Instigator(ë°ë¯¸ì§€ë¥¼ ìœ ë°œí•œ ì£¼ì²´)ë¥¼ í˜„ì¬ ëª¬ìŠ¤í„°ë¡œ ì„¤ì •
+		SpawnParams.SpawnCollisionHandlingOverride =							// ìƒì„±ëœ ì•¡í„°ê°€ ìŠ¤í°ë  ë•Œ ì¶©ëŒ ì²˜ë¦¬ ë°©ì‹ ì„¤ì • 
+			ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;	// ì¶©ëŒì´ ë°œìƒí•  ê²½ìš°, ê°€ëŠ¥í•œ ìœ„ì¹˜ë¡œ ì¡°ì •í•˜ì—¬ ì•¡í„°ë¥¼ ìƒì„±
 
 
-		// ÆÄÀÌ¾îº¼ ¾×ÅÍ¸¦ ½ºÆù
+		// íŒŒì´ì–´ë³¼ ì•¡í„°ë¥¼ ìŠ¤í°
 		AGnuFireballActor* Fireball = GetWorld()->SpawnActor<AGnuFireballActor>(FireballClass, SpawnLocation, SpawnRotation, SpawnParams);
 		if (Fireball)
 		{
-			// ÆÄÀÌ¾îº¼À» ¹ß»çÇÏ´Â ¸Ş¼­µå È£Ãâ
+			// íŒŒì´ì–´ë³¼ì„ ë°œì‚¬í•˜ëŠ” ë©”ì„œë“œ í˜¸ì¶œ
 			Fireball->LaunchProjectile(this);
 			/*GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Orange, TEXT("Start Fireball LaunchProjectile"));*/
 		}
@@ -398,19 +400,19 @@ void AGnuMonster::SpawnFiretornado()
 {
 	if (FiretornadoClass)
 	{
-		// ÄÁÆ®·Ñ·¯ È¸Àü°ª »ç¿ëÇÏ¿© ¹æÇâ °è»ê
-		FRotator MonsterRotation = GetActorRotation();					// ¸ó½ºÅÍÀÇ ÄÁÆ®·Ñ·¯ È¸Àü°ª
-		FVector ForwardVector = MonsterRotation.Vector();				// ¸ó½ºÅÍÀÇ Á¤¸é ¹æÇâ
-		FVector RightVector = FVector::CrossProduct(ForwardVector, FVector::UpVector); // ¸ó½ºÅÍÀÇ ¿À¸¥ÂÊ ¹æÇâ
+		// ì»¨íŠ¸ë¡¤ëŸ¬ íšŒì „ê°’ ì‚¬ìš©í•˜ì—¬ ë°©í–¥ ê³„ì‚°
+		FRotator MonsterRotation = GetActorRotation();					// ëª¬ìŠ¤í„°ì˜ ì»¨íŠ¸ë¡¤ëŸ¬ íšŒì „ê°’
+		FVector ForwardVector = MonsterRotation.Vector();				// ëª¬ìŠ¤í„°ì˜ ì •ë©´ ë°©í–¥
+		FVector RightVector = FVector::CrossProduct(ForwardVector, FVector::UpVector); // ëª¬ìŠ¤í„°ì˜ ì˜¤ë¥¸ìª½ ë°©í–¥
 
-		// ±âº» À§Ä¡: ¸ó½ºÅÍ Á¤¸é 500 À¯´Ö °Å¸®
+		// ê¸°ë³¸ ìœ„ì¹˜: ëª¬ìŠ¤í„° ì •ë©´ 500 ìœ ë‹› ê±°ë¦¬
 		FVector BaseSpawnLocation = GetActorLocation() + ForwardVector * 500.f;
-		BaseSpawnLocation.Z = 0.f; // ¹Ù´Ú ³ôÀÌ °íÁ¤
+		BaseSpawnLocation.Z = 0.f; // ë°”ë‹¥ ë†’ì´ ê³ ì •
 
-		// ÁÂ¿ì À§Ä¡ °è»ê
-		FVector SpawnLocation1 = BaseSpawnLocation;                     // Á¤¸é
-		FVector SpawnLocation2 = BaseSpawnLocation + RightVector * 500; // ¿À¸¥ÂÊ
-		FVector SpawnLocation3 = BaseSpawnLocation - RightVector * 500; // ¿ŞÂÊ
+		// ì¢Œìš° ìœ„ì¹˜ ê³„ì‚°
+		FVector SpawnLocation1 = BaseSpawnLocation;                     // ì •ë©´
+		FVector SpawnLocation2 = BaseSpawnLocation + RightVector * 500; // ì˜¤ë¥¸ìª½
+		FVector SpawnLocation3 = BaseSpawnLocation - RightVector * 500; // ì™¼ìª½
 
 		FRotator SpawnRotation1 = MonsterRotation;
 		FRotator SpawnRotation2 = MonsterRotation;
@@ -419,12 +421,12 @@ void AGnuMonster::SpawnFiretornado()
 		SpawnRotation3.Yaw += 30;
 
 		FActorSpawnParameters SpawnParams;
-		SpawnParams.Owner = this;                         // ¼ÒÀ¯ÀÚ¸¦ ÇöÀç ¸ó½ºÅÍ·Î ¼³Á¤
-		SpawnParams.Instigator = Cast<APawn>(this);       // Instigator(µ¥¹ÌÁö¸¦ À¯¹ßÇÑ ÁÖÃ¼)¸¦ ÇöÀç ¸ó½ºÅÍ·Î ¼³Á¤
-		SpawnParams.SpawnCollisionHandlingOverride =							// »ı¼ºµÈ ¾×ÅÍ°¡ ½ºÆùµÉ ¶§ Ãæµ¹ Ã³¸® ¹æ½Ä ¼³Á¤ 
-			ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;	// Ãæµ¹ÀÌ ¹ß»ıÇÒ °æ¿ì, °¡´ÉÇÑ À§Ä¡·Î Á¶Á¤ÇÏ¿© ¾×ÅÍ¸¦ »ı¼º
+		SpawnParams.Owner = this;                         // ì†Œìœ ìë¥¼ í˜„ì¬ ëª¬ìŠ¤í„°ë¡œ ì„¤ì •
+		SpawnParams.Instigator = Cast<APawn>(this);       // Instigator(ë°ë¯¸ì§€ë¥¼ ìœ ë°œí•œ ì£¼ì²´)ë¥¼ í˜„ì¬ ëª¬ìŠ¤í„°ë¡œ ì„¤ì •
+		SpawnParams.SpawnCollisionHandlingOverride =							// ìƒì„±ëœ ì•¡í„°ê°€ ìŠ¤í°ë  ë•Œ ì¶©ëŒ ì²˜ë¦¬ ë°©ì‹ ì„¤ì • 
+			ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;	// ì¶©ëŒì´ ë°œìƒí•  ê²½ìš°, ê°€ëŠ¥í•œ ìœ„ì¹˜ë¡œ ì¡°ì •í•˜ì—¬ ì•¡í„°ë¥¼ ìƒì„±
 
-		
+
 		if (HasAuthority())
 		{
 			AGnuFiretornadoActor* Firetornado1 = GetWorld()->SpawnActor<AGnuFiretornadoActor>(FiretornadoClass, SpawnLocation1, SpawnRotation1, SpawnParams);
@@ -438,7 +440,7 @@ void AGnuMonster::SpawnFiretornado()
 				Firetornado3->LaunchProjectile(this);
 			}
 		}
-		
+
 	}
 }
 
@@ -447,14 +449,14 @@ void AGnuMonster::SpawnFirebreath()
 	if (FirebreathClass)
 	{
 		FVector HeadLocation = GetMesh()->GetSocketLocation(TEXT("HeadSocket"));
-		FVector SpawnLocation = HeadLocation + GetActorForwardVector() * 50;  // ¸ó½ºÅÍ ¾Õ¿¡ »ı¼º
+		FVector SpawnLocation = HeadLocation + GetActorForwardVector() * 50;  // ëª¬ìŠ¤í„° ì•ì— ìƒì„±
 		FRotator HeadRotation = GetMesh()->GetSocketRotation(TEXT("HeadSocket"));
 
 		FActorSpawnParameters SpawnParams;
-		SpawnParams.Owner = this;                         // ¼ÒÀ¯ÀÚ¸¦ ÇöÀç ¸ó½ºÅÍ·Î ¼³Á¤
-		SpawnParams.Instigator = Cast<APawn>(this);       // Instigator(µ¥¹ÌÁö¸¦ À¯¹ßÇÑ ÁÖÃ¼)¸¦ ÇöÀç ¸ó½ºÅÍ·Î ¼³Á¤
-		SpawnParams.SpawnCollisionHandlingOverride =							// »ı¼ºµÈ ¾×ÅÍ°¡ ½ºÆùµÉ ¶§ Ãæµ¹ Ã³¸® ¹æ½Ä ¼³Á¤ 
-			ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;	// Ãæµ¹ÀÌ ¹ß»ıÇÒ °æ¿ì, °¡´ÉÇÑ À§Ä¡·Î Á¶Á¤ÇÏ¿© ¾×ÅÍ¸¦ »ı¼º
+		SpawnParams.Owner = this;                         // ì†Œìœ ìë¥¼ í˜„ì¬ ëª¬ìŠ¤í„°ë¡œ ì„¤ì •
+		SpawnParams.Instigator = Cast<APawn>(this);       // Instigator(ë°ë¯¸ì§€ë¥¼ ìœ ë°œí•œ ì£¼ì²´)ë¥¼ í˜„ì¬ ëª¬ìŠ¤í„°ë¡œ ì„¤ì •
+		SpawnParams.SpawnCollisionHandlingOverride =							// ìƒì„±ëœ ì•¡í„°ê°€ ìŠ¤í°ë  ë•Œ ì¶©ëŒ ì²˜ë¦¬ ë°©ì‹ ì„¤ì • 
+			ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;	// ì¶©ëŒì´ ë°œìƒí•  ê²½ìš°, ê°€ëŠ¥í•œ ìœ„ì¹˜ë¡œ ì¡°ì •í•˜ì—¬ ì•¡í„°ë¥¼ ìƒì„±
 
 		if (FirebreathActor == nullptr)
 		{
@@ -474,20 +476,20 @@ void AGnuMonster::SpawnGroundAttack()
 		FVector GroundLoaction = GetMesh()->GetSocketLocation(TEXT("GroundSocket"));
 		GroundLoaction.Z = 0.f;
 
-		FVector SpawnLocation = GroundLoaction + GetActorForwardVector() * 500;  // ¸ó½ºÅÍ ¾Õ¿¡ »ı¼º
+		FVector SpawnLocation = GroundLoaction + GetActorForwardVector() * 500;  // ëª¬ìŠ¤í„° ì•ì— ìƒì„±
 		FRotator SpawnRotation = GetActorRotation();
 
 		FActorSpawnParameters SpawnParams;
-		SpawnParams.Owner = this;                         // FireballÀÇ ¼ÒÀ¯ÀÚ¸¦ ÇöÀç ¸ó½ºÅÍ·Î ¼³Á¤
-		SpawnParams.Instigator = Cast<APawn>(this);       // Instigator(µ¥¹ÌÁö¸¦ À¯¹ßÇÑ ÁÖÃ¼)¸¦ ÇöÀç ¸ó½ºÅÍ·Î ¼³Á¤
-		SpawnParams.SpawnCollisionHandlingOverride =							// »ı¼ºµÈ ¾×ÅÍ°¡ ½ºÆùµÉ ¶§ Ãæµ¹ Ã³¸® ¹æ½Ä ¼³Á¤ 
-			ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;	// Ãæµ¹ÀÌ ¹ß»ıÇÒ °æ¿ì, °¡´ÉÇÑ À§Ä¡·Î Á¶Á¤ÇÏ¿© ¾×ÅÍ¸¦ »ı¼º
+		SpawnParams.Owner = this;                         // Fireballì˜ ì†Œìœ ìë¥¼ í˜„ì¬ ëª¬ìŠ¤í„°ë¡œ ì„¤ì •
+		SpawnParams.Instigator = Cast<APawn>(this);       // Instigator(ë°ë¯¸ì§€ë¥¼ ìœ ë°œí•œ ì£¼ì²´)ë¥¼ í˜„ì¬ ëª¬ìŠ¤í„°ë¡œ ì„¤ì •
+		SpawnParams.SpawnCollisionHandlingOverride =							// ìƒì„±ëœ ì•¡í„°ê°€ ìŠ¤í°ë  ë•Œ ì¶©ëŒ ì²˜ë¦¬ ë°©ì‹ ì„¤ì • 
+			ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;	// ì¶©ëŒì´ ë°œìƒí•  ê²½ìš°, ê°€ëŠ¥í•œ ìœ„ì¹˜ë¡œ ì¡°ì •í•˜ì—¬ ì•¡í„°ë¥¼ ìƒì„±
 
-		// ±×¶ó¿îµå ¾×ÅÍ¸¦ ½ºÆù
+		// ê·¸ë¼ìš´ë“œ ì•¡í„°ë¥¼ ìŠ¤í°
 		AGnuGroundActor* Ground = GetWorld()->SpawnActor<AGnuGroundActor>(GroundClass, SpawnLocation, SpawnRotation, SpawnParams);
 		if (Ground)
 		{
-			// Ground Collision Box Component¸¦ ¹ß»çÇÏ´Â ¸Ş¼­µå È£Ãâ
+			// Ground Collision Box Componentë¥¼ ë°œì‚¬í•˜ëŠ” ë©”ì„œë“œ í˜¸ì¶œ
 			Ground->LaunchProjectile(this, &SpawnLocation, &SpawnRotation);
 			/*GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Orange, TEXT("Start Ground LaunchProjectile"));*/
 		}
@@ -502,50 +504,50 @@ void AGnuMonster::SpawnGroundSpikeAttack()
 		NiagaraSpawnLocation.Z = 0.f;
 		FRotator NiagaraSpawnRotation = GetActorRotation();
 
-		// ±×¶ó¿îµå ½ºÆÄÀÌÅ© ¾×ÅÍ¸¦ ½ºÆù (³ªÀÌ¾Æ°¡¶ó ½Ã½ºÅÛ ½ºÆù)
+		// ê·¸ë¼ìš´ë“œ ìŠ¤íŒŒì´í¬ ì•¡í„°ë¥¼ ìŠ¤í° (ë‚˜ì´ì•„ê°€ë¼ ì‹œìŠ¤í…œ ìŠ¤í°)
 		AGnuGroundSpikeActor* GroundSpike = GetWorld()->SpawnActor<AGnuGroundSpikeActor>(GroundSpikeClass, NiagaraSpawnLocation, NiagaraSpawnRotation);
 
-		FVector CenterLocation = GetActorLocation(); // Áß½É À§Ä¡
-		const float Radius = 700.f; // ¸ó½ºÅÍ¿Í GroundSpikeCollisionActor »çÀÌÀÇ °Å¸®
-		const int32 SpikeCount = 5; // ½ºÆÄÀÌÅ© °³¼ö
-		const float AngleIncrement = 360.f / SpikeCount; // °¢ ½ºÆÄÀÌÅ© °£ÀÇ °¢µµ °£°İ
+		FVector CenterLocation = GetActorLocation(); // ì¤‘ì‹¬ ìœ„ì¹˜
+		const float Radius = 700.f; // ëª¬ìŠ¤í„°ì™€ GroundSpikeCollisionActor ì‚¬ì´ì˜ ê±°ë¦¬
+		const int32 SpikeCount = 5; // ìŠ¤íŒŒì´í¬ ê°œìˆ˜
+		const float AngleIncrement = 360.f / SpikeCount; // ê° ìŠ¤íŒŒì´í¬ ê°„ì˜ ê°ë„ ê°„ê²©
 
 		FActorSpawnParameters SpawnParams;
-		SpawnParams.Owner = this;                         // ¼ÒÀ¯ÀÚ¸¦ ÇöÀç ¸ó½ºÅÍ·Î ¼³Á¤
-		SpawnParams.Instigator = Cast<APawn>(this);       // Instigator(µ¥¹ÌÁö¸¦ À¯¹ßÇÑ ÁÖÃ¼)¸¦ ÇöÀç ¸ó½ºÅÍ·Î ¼³Á¤
-		SpawnParams.SpawnCollisionHandlingOverride =							// »ı¼ºµÈ ¾×ÅÍ°¡ ½ºÆùµÉ ¶§ Ãæµ¹ Ã³¸® ¹æ½Ä ¼³Á¤ 
-			ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;	// Ãæµ¹ÀÌ ¹ß»ıÇÒ °æ¿ì, °¡´ÉÇÑ À§Ä¡·Î Á¶Á¤ÇÏ¿© ¾×ÅÍ¸¦ »ı¼º
+		SpawnParams.Owner = this;                         // ì†Œìœ ìë¥¼ í˜„ì¬ ëª¬ìŠ¤í„°ë¡œ ì„¤ì •
+		SpawnParams.Instigator = Cast<APawn>(this);       // Instigator(ë°ë¯¸ì§€ë¥¼ ìœ ë°œí•œ ì£¼ì²´)ë¥¼ í˜„ì¬ ëª¬ìŠ¤í„°ë¡œ ì„¤ì •
+		SpawnParams.SpawnCollisionHandlingOverride =							// ìƒì„±ëœ ì•¡í„°ê°€ ìŠ¤í°ë  ë•Œ ì¶©ëŒ ì²˜ë¦¬ ë°©ì‹ ì„¤ì • 
+			ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;	// ì¶©ëŒì´ ë°œìƒí•  ê²½ìš°, ê°€ëŠ¥í•œ ìœ„ì¹˜ë¡œ ì¡°ì •í•˜ì—¬ ì•¡í„°ë¥¼ ìƒì„±
 
 
-		// ³ªÀÌ¾Æ°¡¶ó ÆÄÆ¼Å¬ ¹æÇâ¿¡ ¸Â´Â Äİ¸®Àü ½ºÆù (5¹æÇâ, 5°³)
+		// ë‚˜ì´ì•„ê°€ë¼ íŒŒí‹°í´ ë°©í–¥ì— ë§ëŠ” ì½œë¦¬ì „ ìŠ¤í° (5ë°©í–¥, 5ê°œ)
 		for (int32 i = 0; i < SpikeCount; i++)
 		{
-			float CurrentAngle = i * AngleIncrement;	// °¢µµ °è»ê
+			float CurrentAngle = i * AngleIncrement;	// ê°ë„ ê³„ì‚°
 
-			// ¹æÇâ º¤ÅÍ¸¦ °è»ê
+			// ë°©í–¥ ë²¡í„°ë¥¼ ê³„ì‚°
 			FRotator SpawnRotation = GetActorRotation();
-			SpawnRotation.Yaw += CurrentAngle; // Áß½É¿¡¼­ Yaw °ªÀ» Áõ°¡
+			SpawnRotation.Yaw += CurrentAngle; // ì¤‘ì‹¬ì—ì„œ Yaw ê°’ì„ ì¦ê°€
 			FVector SpawnDirection = SpawnRotation.Vector();
 
-			// À§Ä¡ °è»ê: Áß½É¿¡¼­ SpawnDirection ¹æÇâÀ¸·Î Radius ¸¸Å­ ÀÌµ¿
+			// ìœ„ì¹˜ ê³„ì‚°: ì¤‘ì‹¬ì—ì„œ SpawnDirection ë°©í–¥ìœ¼ë¡œ Radius ë§Œí¼ ì´ë™
 			FVector SpawnLocation = CenterLocation + SpawnDirection * Radius;
 
-			// GroundSpikeCollisionActor »ı¼º
-			AGnuGroundSpikeCollisionActor* GroundSpikeCollision = 
+			// GroundSpikeCollisionActor ìƒì„±
+			AGnuGroundSpikeCollisionActor* GroundSpikeCollision =
 				GetWorld()->SpawnActor<AGnuGroundSpikeCollisionActor>(GroundSpikeCollisionClass, SpawnLocation, SpawnRotation, SpawnParams);
 			if (GroundSpikeCollision)
 			{
-				// GroundSpikeCollisionActor ¹ß»ç
+				// GroundSpikeCollisionActor ë°œì‚¬
 				GroundSpikeCollision->LaunchProjectile(this);
 			}
 		}
 	}
 }
 
-// Ã¼·Â ¹İÇÇ ÀÌÇÏÀÏ¶§ HP È¸º¹ 10% / ÆĞÅÏ ¹ßµ¿
+// ì²´ë ¥ ë°˜í”¼ ì´í•˜ì¼ë•Œ HP íšŒë³µ 10% / íŒ¨í„´ ë°œë™
 void AGnuMonster::StartCraterAttack()
 {
-	// Å¸ÀÌ¸Ó ÃÊ±âÈ­
+	// íƒ€ì´ë¨¸ ì´ˆê¸°í™”
 	ScheduleNextCrater(CraterTimerHandle1);
 	ScheduleNextCrater(CraterTimerHandle2);
 	ScheduleNextCrater(CraterTimerHandle3);
@@ -568,16 +570,16 @@ void AGnuMonster::EndCraterAttack()
 
 void AGnuMonster::ScheduleNextCrater(FTimerHandle& TimerHandle)
 {
-	// 1.5 ~ 2.5 ¹üÀ§ÀÇ ·£´ı °£°İ »ı¼º
+	// 1.5 ~ 2.5 ë²”ìœ„ì˜ ëœë¤ ê°„ê²© ìƒì„±
 	float RandomInterval = FMath::RandRange(0.5f, 1.5f);
 
-	// ·£´ı °£°İÀ¸·Î Å¸ÀÌ¸Ó ¼³Á¤ (°¢°¢ µ¶¸³ÀûÀ¸·Î ÀÛµ¿)
+	// ëœë¤ ê°„ê²©ìœ¼ë¡œ íƒ€ì´ë¨¸ ì„¤ì • (ê°ê° ë…ë¦½ì ìœ¼ë¡œ ì‘ë™)
 	GetWorldTimerManager().SetTimer(TimerHandle, this, &AGnuMonster::SpawnCraterAndReschedule, RandomInterval, false);
 }
 
 void AGnuMonster::SpawnCraterAndReschedule()
 {
-	// Crater ½ºÆù
+	// Crater ìŠ¤í°
 	if (!bIsDead)
 	{
 		SpawnCrater();
@@ -586,8 +588,8 @@ void AGnuMonster::SpawnCraterAndReschedule()
 	{
 		EndCraterAttack();
 	}
-	
-	// È£ÃâµÈ Å¸ÀÌ¸Ó ÇÚµéÀ» ÅëÇØ ´Ù½Ã ½ºÄÉÁÙ¸µ
+
+	// í˜¸ì¶œëœ íƒ€ì´ë¨¸ í•¸ë“¤ì„ í†µí•´ ë‹¤ì‹œ ìŠ¤ì¼€ì¤„ë§
 	if (CraterTimerHandle1.IsValid())
 	{
 		ScheduleNextCrater(CraterTimerHandle1);
@@ -617,196 +619,137 @@ void AGnuMonster::SpawnCrater()
 	FVector Origin = GetActorLocation();
 	Origin.Z = 0.f;
 
-	// ·£´ı ¹æÇâ°ú °Å¸®
-	float RandomAngle = FMath::RandRange(0.f, 360.f); // 0µµ ~ 360µµ
-	float RandomDistance = FMath::RandRange(0.f, 4000.f); // ÃÖ¼Ò ~ ÃÖ´ë ¹İ°æ
+	// ëœë¤ ë°©í–¥ê³¼ ê±°ë¦¬
+	float RandomAngle = FMath::RandRange(0.f, 360.f); // 0ë„ ~ 360ë„
+	float RandomDistance = FMath::RandRange(0.f, 4000.f); // ìµœì†Œ ~ ìµœëŒ€ ë°˜ê²½
 
-	// ·£´ıÇÑ ¹æÇâÀ¸·Î À§Ä¡ °è»ê
+	// ëœë¤í•œ ë°©í–¥ìœ¼ë¡œ ìœ„ì¹˜ ê³„ì‚°
 	FVector RandomOffset = FVector(
 		FMath::Cos(FMath::DegreesToRadians(RandomAngle)) * RandomDistance,
 		FMath::Sin(FMath::DegreesToRadians(RandomAngle)) * RandomDistance,
-		0.f // ³ôÀÌ´Â °íÁ¤
+		0.f // ë†’ì´ëŠ” ê³ ì •
 	);
 
 	FActorSpawnParameters SpawnParams;
-	SpawnParams.Owner = this;                         // ¼ÒÀ¯ÀÚ¸¦ ÇöÀç ¸ó½ºÅÍ·Î ¼³Á¤
-	SpawnParams.Instigator = Cast<APawn>(this);       // Instigator(µ¥¹ÌÁö¸¦ À¯¹ßÇÑ ÁÖÃ¼)¸¦ ÇöÀç ¸ó½ºÅÍ·Î ¼³Á¤
-	SpawnParams.SpawnCollisionHandlingOverride =							// »ı¼ºµÈ ¾×ÅÍ°¡ ½ºÆùµÉ ¶§ Ãæµ¹ Ã³¸® ¹æ½Ä ¼³Á¤ 
-		ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;	// Ãæµ¹ÀÌ ¹ß»ıÇÒ °æ¿ì, °¡´ÉÇÑ À§Ä¡·Î Á¶Á¤ÇÏ¿© ¾×ÅÍ¸¦ »ı¼º
+	SpawnParams.Owner = this;                         // ì†Œìœ ìë¥¼ í˜„ì¬ ëª¬ìŠ¤í„°ë¡œ ì„¤ì •
+	SpawnParams.Instigator = Cast<APawn>(this);       // Instigator(ë°ë¯¸ì§€ë¥¼ ìœ ë°œí•œ ì£¼ì²´)ë¥¼ í˜„ì¬ ëª¬ìŠ¤í„°ë¡œ ì„¤ì •
+	SpawnParams.SpawnCollisionHandlingOverride =							// ìƒì„±ëœ ì•¡í„°ê°€ ìŠ¤í°ë  ë•Œ ì¶©ëŒ ì²˜ë¦¬ ë°©ì‹ ì„¤ì • 
+		ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;	// ì¶©ëŒì´ ë°œìƒí•  ê²½ìš°, ê°€ëŠ¥í•œ ìœ„ì¹˜ë¡œ ì¡°ì •í•˜ì—¬ ì•¡í„°ë¥¼ ìƒì„±
 
 	FVector SpawnLocation = Origin + RandomOffset;
 
-	// ¼ÒÈ¯ (Niagara Comp / Attack Collision)
+	// ì†Œí™˜ (Niagara Comp / Attack Collision)
 	AGnuLavaBurstActor* SpawnCrater = GetWorld()->SpawnActor<AGnuLavaBurstActor>(CraterActorClass, SpawnLocation, FRotator::ZeroRotator, SpawnParams);
 	AGnuLavaBurstCollisionActor* SpawnCraterCollision = GetWorld()->SpawnActor<AGnuLavaBurstCollisionActor>(CraterCollisionClass, SpawnLocation, FRotator::ZeroRotator, SpawnParams);
 	if (SpawnCraterCollision)
 	{
-		SpawnCraterCollision->LaunchProjectile(this); // ¹ß»ç ½ÇÇà
+		SpawnCraterCollision->LaunchProjectile(this); // ë°œì‚¬ ì‹¤í–‰
 	}
 }
 
-// ±Ù°Å¸® °ø°İ ºÎºĞ (3°³)
-// ½Ã¹ß ¿Ö Trace°¡ Å¬¶óÀÌ¾ğÆ®ÇÑÅ×¸¸ ¸Ô°í ¼­¹öÇÑÅ×´Â ¾È¸ÔÀ»±î?
+// ê·¼ê±°ë¦¬ ê³µê²© ë¶€ë¶„ (3ê°œ)
 void AGnuMonster::BodyAttack()
 {
-	// ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ
-	// ¸ó½ºÅÍ°¡ 10µµ ¾î±ß³­Ã¤·Î ¸öÅë¹ÚÄ¡±âÇÔ ÀÌ°É·Î ÇØ°á
-	FRotator CurrentRotation = this->GetActorRotation();	// ¸ó½ºÅÍÀÇ ÇöÀç È¸Àü°ªÀ» ¹Ş¾Æ¿È
-	CurrentRotation.Yaw += 10.0f;							// ÇöÀç È¸Àü°ª¿¡ 10µµ Ãß°¡ (Yaw °ª¸¸ ¼öÁ¤)
-	this->SetActorRotation(CurrentRotation);				// ¼öÁ¤µÈ È¸Àü°ªÀ» ¾Ö´Ï¸ŞÀÌ¼Ç¿¡ Àû¿ë
-	// ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ
-
-	//float SphereRadius = 220.0f; // Sphere Trace ¹İ°æ
-	//FVector Start = GetActorLocation();
-
-	//FRotator Rotation = GetActorRotation(); // ¸ó½ºÅÍÀÇ ÇöÀç È¸Àü
-	//Rotation.Yaw -= 40.f;                  // Yaw ¹æÇâ -40µµ
-
-	//FVector ForwardDirection = Rotation.Vector(); // È¸ÀüµÈ ¹æÇâÀÇ º¤ÅÍ¸¦ °¡Á®¿È
-
-	//FVector End = Start + (ForwardDirection * 1900.0f); // 1800.0 Àü¹æ ÀÌµ¿
-	//FHitResult HitResult;	// Ãæµ¹ °á°ú¸¦ ´ã´Â º¯¼ö
-
-	//// Trace ½ÇÇà
-	//bool bHit = GetWorld()->SweepSingleByChannel(
-	//	HitResult,
-	//	Start,
-	//	End,
-	//	FQuat::Identity,
-	//	ECC_Visibility,
-	//	FCollisionShape::MakeSphere(SphereRadius) //  220 ¹İ°æ
-	//);
-
-	//// µğ¹ö±×: Sphere TraceÀÇ °æ·Î¸¦ Ç¥½Ã
-	//DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 2.0f, 0, 2.0f); // ½ÃÀÛÁ¡°ú ³¡Á¡À» ÀÕ´Â ¼±
-	//DrawDebugSphere(GetWorld(), Start, SphereRadius, 12, FColor::Blue, false, 2.0f); // ½ÃÀÛÁ¡¿¡ ±¸Ã¼ Ç¥½Ã
-	//DrawDebugSphere(GetWorld(), End, SphereRadius, 12, FColor::Red, false, 2.0f);   // ³¡Á¡¿¡ ±¸Ã¼ Ç¥½Ã
-
-	//if (bHit && HitResult.GetActor() != this)
-	//{
-	//	AActor* HitActor = HitResult.GetActor();
-	//	FString HitActorName = HitActor->GetName();
-	//	GEngine->AddOnScreenDebugMessage(-1, 4, FColor::Orange, FString::Printf(TEXT("Hit! %s"), *HitActorName));
-	//	
-	//	AGnuMyCharacter* TargetCharacter = Cast<AGnuMyCharacter>(HitResult.GetActor());
-	//	if (TargetCharacter)
-	//	{
-	//		FString HitName = TargetCharacter->GetName();
-	//		GEngine->AddOnScreenDebugMessage(-1, 4, FColor::Yellow, FString::Printf(TEXT("Target Character set %s"), *HitName));
-	//		// µğ¹ö±×: Ãæµ¹ÇÑ ActorÀÇ À§Ä¡¿¡ ±¸Ã¼ Ç¥½Ã
-	//		DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, 20.f, 12, FColor::Yellow, false, 2.0f);
-	//	}
-	//	else
-	//	{
-	//		GEngine->AddOnScreenDebugMessage(-1, 4, FColor::Red, FString::Printf(TEXT("Hit Actor: %s is not TargetCharacter"), *HitActorName));
-	//	}
-	//}
-	//else
-	//{
-	//	GEngine->AddOnScreenDebugMessage(-1, 4, FColor::Red, FString::Printf(TEXT("Hit Actor is nullptr")));
-	//}
+	// ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡
+	// ëª¬ìŠ¤í„°ê°€ 10ë„ ì–´ê¸‹ë‚œì±„ë¡œ ëª¸í†µë°•ì¹˜ê¸°í•¨ ì´ê±¸ë¡œ í•´ê²°
+	FRotator CurrentRotation = this->GetActorRotation();	// ëª¬ìŠ¤í„°ì˜ í˜„ì¬ íšŒì „ê°’ì„ ë°›ì•„ì˜´
+	CurrentRotation.Yaw += 10.0f;							// í˜„ì¬ íšŒì „ê°’ì— 10ë„ ì¶”ê°€ (Yaw ê°’ë§Œ ìˆ˜ì •)
+	this->SetActorRotation(CurrentRotation);				// ìˆ˜ì •ëœ íšŒì „ê°’ì„ ì• ë‹ˆë©”ì´ì…˜ì— ì ìš©
+	// ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡
 }
 
 
-// Claw °ø°İ½Ã overlap µÇ¸é ºÒ·¯Áú ÇÔ¼ö
+// Claw ê³µê²©ì‹œ overlap ë˜ë©´ ë¶ˆëŸ¬ì§ˆ í•¨ìˆ˜
 void AGnuMonster::OnClawOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor && OtherActor != this)
 	{
-		// Ä³¸¯ÅÍ È®ÀÎ
+		// ìºë¦­í„° í™•ì¸
 		AGnuMyCharacter* TargetCharacter = Cast<AGnuMyCharacter>(OtherActor);
 		if (TargetCharacter)
 		{
-			// ¸¶Áö¸· Å¸°İ ½Ã°£ °¡Á®¿À±â
+			// ë§ˆì§€ë§‰ íƒ€ê²© ì‹œê°„ ê°€ì ¸ì˜¤ê¸°
 			float* LastHit = LastHitTime.Find(OtherActor);
 			float CurrentTime = GetWorld()->GetTimeSeconds();
 
-			// Å¸°İ °£°İ ³»¿¡ ¸ÂÀº Ä³¸¯ÅÍ´Â ¹«½ÃÇÏ°í, Å¸°İÀ» ¹ŞÀº ½Ã°£ÀÌ ÃæºĞÇÏ¸é µ¥¹ÌÁö Àû¿ë
+			// íƒ€ê²© ê°„ê²© ë‚´ì— ë§ì€ ìºë¦­í„°ëŠ” ë¬´ì‹œí•˜ê³ , íƒ€ê²©ì„ ë°›ì€ ì‹œê°„ì´ ì¶©ë¶„í•˜ë©´ ë°ë¯¸ì§€ ì ìš©
 			if (LastHit && (CurrentTime - *LastHit) < AttackCooldown)
 			{
-				return; // Å¸°İÀÌ °£°İ ÀÌ³»¿¡ ¹ß»ıÇßÀ¸¸é Ã³¸®ÇÏÁö ¾ÊÀ½
+				return; // íƒ€ê²©ì´ ê°„ê²© ì´ë‚´ì— ë°œìƒí–ˆìœ¼ë©´ ì²˜ë¦¬í•˜ì§€ ì•ŠìŒ
 			}
 
-			// µ¥¹ÌÁö Ã³¸®
-			float DamageAmount = 30.0f; // µ¥¹ÌÁö ¾ç
+			// ë°ë¯¸ì§€ ì²˜ë¦¬
+			float DamageAmount = 30.0f; // ë°ë¯¸ì§€ ì–‘
 			UGameplayStatics::ApplyDamage(OtherActor, DamageAmount, GetController(), this, UDamageType::StaticClass());
 			/*GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Claw Attack Overlap"));*/
 
-			// ÇÃ·¹ÀÌ¾î¿¡°Ô ³Ë¹é Àû¿ë
+			// í”Œë ˆì´ì–´ì—ê²Œ ë„‰ë°± ì ìš©
 			KnockbackStrength = 5000.f;
 			KnockbackPlayer(TargetCharacter);
 
 			LastHitTime.Add(OtherActor, CurrentTime);
 		}
-		else
-		{
-			/*GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("This is not TargetChracter"));*/
-		}
 	}
 }
 
-// Tail °ø°İ½Ã overlap µÇ¸é ºÒ·¯Áú ÇÔ¼ö
+// Tail ê³µê²©ì‹œ overlap ë˜ë©´ ë¶ˆëŸ¬ì§ˆ í•¨ìˆ˜
 void AGnuMonster::OnTailOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor && OtherActor != this)
 	{
-		// Ä³¸¯ÅÍ È®ÀÎ
+		// ìºë¦­í„° í™•ì¸
 		AGnuMyCharacter* TargetCharacter = Cast<AGnuMyCharacter>(OtherActor);
 		if (TargetCharacter)
 		{
-			// ¸¶Áö¸· Å¸°İ ½Ã°£ °¡Á®¿À±â
+			// ë§ˆì§€ë§‰ íƒ€ê²© ì‹œê°„ ê°€ì ¸ì˜¤ê¸°
 			float* LastHit = LastHitTime.Find(OtherActor);
 			float CurrentTime = GetWorld()->GetTimeSeconds();
 
-			// Å¸°İ °£°İ ³»¿¡ ¸ÂÀº Ä³¸¯ÅÍ´Â ¹«½ÃÇÏ°í, Å¸°İÀ» ¹ŞÀº ½Ã°£ÀÌ ÃæºĞÇÏ¸é µ¥¹ÌÁö Àû¿ë
+			// íƒ€ê²© ê°„ê²© ë‚´ì— ë§ì€ ìºë¦­í„°ëŠ” ë¬´ì‹œí•˜ê³ , íƒ€ê²©ì„ ë°›ì€ ì‹œê°„ì´ ì¶©ë¶„í•˜ë©´ ë°ë¯¸ì§€ ì ìš©
 			if (LastHit && (CurrentTime - *LastHit) < AttackCooldown)
 			{
-				return; // Å¸°İÀÌ °£°İ ÀÌ³»¿¡ ¹ß»ıÇßÀ¸¸é Ã³¸®ÇÏÁö ¾ÊÀ½
+				return; // íƒ€ê²©ì´ ê°„ê²© ì´ë‚´ì— ë°œìƒí–ˆìœ¼ë©´ ì²˜ë¦¬í•˜ì§€ ì•ŠìŒ
 			}
 
-			// µ¥¹ÌÁö Ã³¸®
-			float DamageAmount = 40.0f; // µ¥¹ÌÁö ¾ç
+			// ë°ë¯¸ì§€ ì²˜ë¦¬
+			float DamageAmount = 40.0f; // ë°ë¯¸ì§€ ì–‘
 			UGameplayStatics::ApplyDamage(OtherActor, DamageAmount, GetController(), this, UDamageType::StaticClass());
 			/*GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Tail Take Damage Overlap"));*/
 
-			// ÇÃ·¹ÀÌ¾î¿¡°Ô ³Ë¹é Àû¿ë
+			// í”Œë ˆì´ì–´ì—ê²Œ ë„‰ë°± ì ìš©
 			KnockbackStrength = 10000.f;
 			KnockbackPlayer(TargetCharacter);
 
 			LastHitTime.Add(OtherActor, CurrentTime);
 		}
-		else
-		{
-			/*GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("This is not TargetChracter"));*/
-		}
 	}
 }
 
-// Body °ø°İ½Ã overlap µÇ¸é ºÒ·¯Áú ÇÔ¼ö
+// Body ê³µê²©ì‹œ overlap ë˜ë©´ ë¶ˆëŸ¬ì§ˆ í•¨ìˆ˜
 void AGnuMonster::OnBodyOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor && OtherActor != this)
 	{
-		// Ä³¸¯ÅÍ È®ÀÎ
+		// ìºë¦­í„° í™•ì¸
 		AGnuMyCharacter* TargetCharacter = Cast<AGnuMyCharacter>(OtherActor);
 		if (TargetCharacter)
 		{
-			// ¸¶Áö¸· Å¸°İ ½Ã°£ °¡Á®¿À±â
+			// ë§ˆì§€ë§‰ íƒ€ê²© ì‹œê°„ ê°€ì ¸ì˜¤ê¸°
 			float* LastHit = LastHitTime.Find(OtherActor);
 			float CurrentTime = GetWorld()->GetTimeSeconds();
 
-			// Å¸°İ °£°İ ³»¿¡ ¸ÂÀº Ä³¸¯ÅÍ´Â ¹«½ÃÇÏ°í, Å¸°İÀ» ¹ŞÀº ½Ã°£ÀÌ ÃæºĞÇÏ¸é µ¥¹ÌÁö Àû¿ë
+			// íƒ€ê²© ê°„ê²© ë‚´ì— ë§ì€ ìºë¦­í„°ëŠ” ë¬´ì‹œí•˜ê³ , íƒ€ê²©ì„ ë°›ì€ ì‹œê°„ì´ ì¶©ë¶„í•˜ë©´ ë°ë¯¸ì§€ ì ìš©
 			if (LastHit && (CurrentTime - *LastHit) < AttackCooldown)
 			{
 				return;
 			}
 
-			// µ¥¹ÌÁö Ã³¸®
-			float DamageAmount = 35.0f; // µ¥¹ÌÁö ¾ç
+			// ë°ë¯¸ì§€ ì²˜ë¦¬
+			float DamageAmount = 35.0f; // ë°ë¯¸ì§€ ì–‘
 			UGameplayStatics::ApplyDamage(OtherActor, DamageAmount, GetController(), this, UDamageType::StaticClass());
 			/*GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Tail Take Damage Overlap"));*/
 
-			// ÇÃ·¹ÀÌ¾î¿¡°Ô ³Ë¹é Àû¿ë
+			// í”Œë ˆì´ì–´ì—ê²Œ ë„‰ë°± ì ìš©
 			KnockbackStrength = 30000.f;
 			KnockbackPlayer(TargetCharacter);
 
@@ -818,12 +761,12 @@ void AGnuMonster::OnBodyOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor
 		}
 	}
 }
-//¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ Attack °ü·Ã ³¡ ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ
+//ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ Attack ê´€ë ¨ ë ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡
 
-//¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ Monster Collision °ü·Ã ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ
+//ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ Monster Collision ê´€ë ¨ ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡
 void AGnuMonster::ActivateSkeletalMesh()
 {
-	// ½ºÄÌ·¹Å» ¸Ş½Ã È°¼ºÈ­
+	// ìŠ¤ì¼ˆë ˆíƒˆ ë©”ì‹œ í™œì„±í™”
 	if (USkeletalMeshComponent* SkeletalMesh = GetMesh())
 	{
 		SkeletalMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
@@ -832,7 +775,7 @@ void AGnuMonster::ActivateSkeletalMesh()
 
 void AGnuMonster::ActivateCapsuleComp()
 {
-	// Ä¸½¶ ÄÄÆ÷³ÍÆ® È°¼ºÈ­
+	// ìº¡ìŠ ì»´í¬ë„ŒíŠ¸ í™œì„±í™”
 	if (UCapsuleComponent* CapsuleComp = GetCapsuleComponent())
 	{
 		CapsuleComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
@@ -841,7 +784,7 @@ void AGnuMonster::ActivateCapsuleComp()
 
 void AGnuMonster::DeactivateSkeletalMesh()
 {
-	// ½ºÄÌ·¹Å» ¸Ş½Ã ºñÈ°¼ºÈ­
+	// ìŠ¤ì¼ˆë ˆíƒˆ ë©”ì‹œ ë¹„í™œì„±í™”
 	if (USkeletalMeshComponent* SkeletalMesh = GetMesh())
 	{
 		SkeletalMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -850,22 +793,22 @@ void AGnuMonster::DeactivateSkeletalMesh()
 
 void AGnuMonster::DeactivateCapsuleComp()
 {
-	// Ä¸½¶ ÄÄÆ÷³ÍÆ® ºñÈ°¼ºÈ­
+	// ìº¡ìŠ ì»´í¬ë„ŒíŠ¸ ë¹„í™œì„±í™”
 	if (UCapsuleComponent* CapsuleComp = GetCapsuleComponent())
 	{
 		CapsuleComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
 }
 
-// °ø°İ ÄÄÆ÷³ÍÆ®
+// ê³µê²© ì»´í¬ë„ŒíŠ¸
 void AGnuMonster::ActivateClawCollision()
 {
-	ClawCollision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics); // Äİ¸®Àü È°¼ºÈ­
+	ClawCollision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics); // ì½œë¦¬ì „ í™œì„±í™”
 }
 
 void AGnuMonster::DeactivateClawCollision()
 {
-	ClawCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision); // Äİ¸®Àü ºñÈ°¼ºÈ­
+	ClawCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision); // ì½œë¦¬ì „ ë¹„í™œì„±í™”
 }
 
 void AGnuMonster::ActivateTailCollision()
@@ -887,18 +830,18 @@ void AGnuMonster::DeactivateBodyCollision()
 {
 	BodyCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
-//¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ Monster Collision °ü·Ã ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ
+//ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ Monster Collision ê´€ë ¨ ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡
 
 
-// Claw, Tail Äİ¸®Àü ÃÊ±âÈ­·Î ¸¸µé¾ú´ø ÃÊ±â¼³Á¤ ÇÔ¼ö
+// Claw, Tail ì½œë¦¬ì „ ì´ˆê¸°í™”ë¡œ ë§Œë“¤ì—ˆë˜ ì´ˆê¸°ì„¤ì • í•¨ìˆ˜
 void AGnuMonster::InitializeCollisionComponent(UBoxComponent*& CollisionComponent, const FName& ComponentName)
 {
 	//CollisionComponent = CreateDefaultSubobject<UBoxComponent>(ComponentName);
 	//CollisionComponent->SetupAttachment(GetMesh());
-	//CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly); // ¿À¹ö·¦À» À§ÇØ QueryOnly·Î ¼³Á¤
+	//CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly); // ì˜¤ë²„ë©ì„ ìœ„í•´ QueryOnlyë¡œ ì„¤ì •
 }
 
-// ºí·çÇÁ¸°Æ®¿¡¼­ Attach Socket ¼³Á¤ °¡´ÉÇÑ °¡º¯Çü ÇÔ¼ö, »ç¿ë½Ã ÁÖÀÇÇØ¾ßÇÔ
+// ë¸”ë£¨í”„ë¦°íŠ¸ì—ì„œ Attach Socket ì„¤ì • ê°€ëŠ¥í•œ ê°€ë³€í˜• í•¨ìˆ˜, ì‚¬ìš©ì‹œ ì£¼ì˜í•´ì•¼í•¨
 #if WITH_EDITOR
 void AGnuMonster::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
@@ -906,24 +849,24 @@ void AGnuMonster::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedE
 	if (PropertyChangedEvent.GetMemberPropertyName() == GET_MEMBER_NAME_CHECKED(ThisClass, ClawCollisionBoxAttachBoneName))
 	{
 		ClawCollision->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, ClawCollisionBoxAttachBoneName);
-		ClawCollision->SetWorldScale3D(FVector(0.25f)); // ½ºÄÉÀÏÀ» 1/4¹è·Î ¼³Á¤ => ±âÁ¸ ½ºÄÉÀÏÀÌ ³Ê¹« Ä¿¼­ 0.25·Î ¼³Á¤ÇØµÒ
+		ClawCollision->SetWorldScale3D(FVector(0.25f)); // ìŠ¤ì¼€ì¼ì„ 1/4ë°°ë¡œ ì„¤ì • => ê¸°ì¡´ ìŠ¤ì¼€ì¼ì´ ë„ˆë¬´ ì»¤ì„œ 0.25ë¡œ ì„¤ì •í•´ë‘ 
 	}
 	if (PropertyChangedEvent.GetMemberPropertyName() == GET_MEMBER_NAME_CHECKED(ThisClass, TailCollisionBoxAttachBoneName))
 	{
 		TailCollision->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, TailCollisionBoxAttachBoneName);
-		TailCollision->SetWorldScale3D(FVector(0.25f)); // ½ºÄÉÀÏÀ» 1/4¹è·Î ¼³Á¤ => ±âÁ¸ ½ºÄÉÀÏÀÌ ³Ê¹« Ä¿¼­ 0.25·Î ¼³Á¤ÇØµÒ
+		TailCollision->SetWorldScale3D(FVector(0.25f)); // ìŠ¤ì¼€ì¼ì„ 1/4ë°°ë¡œ ì„¤ì • => ê¸°ì¡´ ìŠ¤ì¼€ì¼ì´ ë„ˆë¬´ ì»¤ì„œ 0.25ë¡œ ì„¤ì •í•´ë‘ 
 	}
 }
 #endif
 
 
-// ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ ¸ÖÆ¼ °ü·Ã ½ÃÀÛ ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ //
-// ÀüÃ¼Àû °ª º¹Á¦ ÇÔ¼ö
+// ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ ë©€í‹° ê´€ë ¨ ì‹œì‘ ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ //
+// ì „ì²´ì  ê°’ ë³µì œ í•¨ìˆ˜
 void AGnuMonster::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	DOREPLIFETIME(AGnuMonster, CurrentHealth);
 
-	// GroundSpeed¸¦ º¹Á¦
+	// GroundSpeedë¥¼ ë³µì œ
 	DOREPLIFETIME(AGnuMonster, GroundSpeed);
 
 	DOREPLIFETIME(AGnuMonster, Direction);
@@ -946,4 +889,4 @@ void AGnuMonster::MulticastPlayMontage_Implementation(UAnimMontage* MontageToPla
 		AnimInstance->PlayMontage(MontageToPlay);
 	}
 }
-// ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ ¸ÖÆ¼ °ü·Ã ³¡ ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ //
+// ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ ë©€í‹° ê´€ë ¨ ë ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ //
