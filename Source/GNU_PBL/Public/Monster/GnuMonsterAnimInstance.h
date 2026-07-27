@@ -31,6 +31,13 @@ public:
     UPROPERTY(BlueprintReadOnly)
     bool ShouldMove;
 
+    // 몬스터 데이터 (속도, 각도 / 멀티처리는 몬스터한테서 설정됨) 
+    UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "AnimData")
+    float Speed_Anim;
+
+    UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "AnimData")
+    float Direction_Anim;
+
     UPROPERTY()
     UCharacterMovementComponent* MosnterMovementComponent;
 
@@ -96,12 +103,7 @@ public:
     UAnimMontage* FlyingDodgeMontage;
 
 protected:
-    // 몬스터 데이터 (속도, 각도 / 멀티처리는 몬스터한테서 설정됨) 
-    UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "AnimData")
-    float Speed_Anim;
 
-    UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "AnimData")
-    float Direction_Anim;
 
 private:
 

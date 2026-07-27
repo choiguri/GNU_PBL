@@ -868,17 +868,23 @@ void AGnuMonster::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 
 	// GroundSpeed를 복제
 	DOREPLIFETIME(AGnuMonster, GroundSpeed);
-
 	DOREPLIFETIME(AGnuMonster, Direction);
-
 }
 
 void AGnuMonster::OnRep_GroundSpeed()
 {
+	if (UGnuMonsterAnimInstance* AnimInstance = Cast<UGnuMonsterAnimInstance>(GetMesh()->GetAnimInstance()))
+	{
+		AnimInstance->Speed_Anim = GroundSpeed;
+	}
 }
 
 void AGnuMonster::OnRep_Direction()
 {
+	if (UGnuMonsterAnimInstance* AnimInstance = Cast<UGnuMonsterAnimInstance>(GetMesh()->GetAnimInstance()))
+	{
+		AnimInstance->Direction_Anim = Direction;
+	}
 }
 
 void AGnuMonster::MulticastPlayMontage_Implementation(UAnimMontage* MontageToPlay)
